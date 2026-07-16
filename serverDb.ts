@@ -981,6 +981,14 @@ export interface ContactInfo {
   tiktokUrl: string;
   instagramUrl: string;
   youtubeUrl: string;
+  logoUrl?: string;
+  heroBgUrl?: string;
+  wingAboutBgUrl?: string;
+  wingGalleryBgUrl?: string;
+  wingFabricsBgUrl?: string;
+  wingStylesBgUrl?: string;
+  wingOrderBgUrl?: string;
+  wingContactBgUrl?: string;
 }
 
 export const DEFAULT_CONTACT_INFO: ContactInfo = {
@@ -992,7 +1000,15 @@ export const DEFAULT_CONTACT_INFO: ContactInfo = {
   mapUrl: "https://maps.google.com/maps?q=39%20Bamgbose%20Street,%20Lagos%20Island,%20Lagos,%20Nigeria&t=&z=16&ie=UTF8&iwloc=&output=embed",
   tiktokUrl: "https://www.tiktok.com/@oluwashola.textiles",
   instagramUrl: "https://www.instagram.com/OluwasholaTextiles",
-  youtubeUrl: "https://www.youtube.com/@oluwasholatextiles"
+  youtubeUrl: "https://www.youtube.com/@oluwasholatextiles",
+  logoUrl: "/src/assets/images/oluwashola_logo_1784138680903.jpg",
+  heroBgUrl: "/src/assets/images/textile_hero_1784138693639.jpg",
+  wingAboutBgUrl: "https://images.unsplash.com/photo-1593032465175-481ac7f401a0?auto=format&fit=crop&q=80&w=600",
+  wingGalleryBgUrl: "https://images.unsplash.com/photo-1617137984095-74e4e5e3613f?auto=format&fit=crop&q=80&w=600",
+  wingFabricsBgUrl: "https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17?auto=format&fit=crop&q=80&w=600",
+  wingStylesBgUrl: "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&q=80&w=600",
+  wingOrderBgUrl: "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&q=80&w=600",
+  wingContactBgUrl: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=600"
 };
 
 export async function getContactInfo(): Promise<ContactInfo> {
@@ -1000,14 +1016,21 @@ export async function getContactInfo(): Promise<ContactInfo> {
     try {
       const [rows]: any = await pool.query("SELECT `value` FROM system_config WHERE `key` = 'contact_info'");
       if (rows && rows.length > 0) {
-        return JSON.parse(rows[0].value);
+        const data = JSON.parse(rows[0].value);
+        return {
+          ...DEFAULT_CONTACT_INFO,
+          ...data
+        };
       }
     } catch (err) {
       console.error("MySQL getContactInfo error, returning default:", err);
     }
   }
   const db = readJsonDb();
-  return db.contact_info || DEFAULT_CONTACT_INFO;
+  return {
+    ...DEFAULT_CONTACT_INFO,
+    ...(db.contact_info || {})
+  };
 }
 
 export async function updateContactInfo(info: ContactInfo): Promise<boolean> {

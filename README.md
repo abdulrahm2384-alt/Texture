@@ -94,3 +94,44 @@ Your `package.json` contains pre-configured scripts for all cycles of operations
 * **Database Security**: All queries utilize **parameterized statements** through `mysql2/promise` to prevent any possibility of SQL Injection.
 * **Storage Optimization**: User measurement drawings are stored in `/public/uploads/` directory on the disk. Ensure this folder has write permissions in your DirectAdmin file manager (`chmod 755`).
 * **Clean Fallbacks**: If MySQL ever loses connection, detailed logs are printed, and the server self-stabilizes to keep running.
+
+---
+
+## 🚀 Render Deployment Guide
+
+This application is fully compatible with **Render** out-of-the-box. We have resolved the runtime CommonJS `import.meta.url` file-path resolution and configured dynamic `PORT` binding so that the container builds and boots flawlessly.
+
+### Step 1: Create a Web Service on Render
+1. Go to your **Render Dashboard** and click **New +** -> **Web Service**.
+2. Connect your GitHub repository containing this codebase.
+
+### Step 2: Configure Build and Start Settings
+Configure the service settings with the following parameters:
+* **Runtime**: `Node`
+* **Build Command**: `npm install && npm run build`
+* **Start Command**: `npm start` *(or `node dist/server.cjs`)*
+* **Instance Type**: Select your preferred tier (e.g., Free, Starter).
+
+### Step 3: Configure Environment Variables
+Navigate to the **Environment** tab of your Render Web Service and add the following variables:
+* `NODE_ENV`: `production`
+* `JWT_SECRET`: A long, random, secure cryptographic string for signing user sessions.
+* `ADMIN_EMAIL`: The email authorized to access the admin panel (defaults to `admin@oluwashola-atelier.com`).
+
+#### Optional Database Setup (MySQL/MariaDB)
+Render does not provision MySQL databases natively on its platform. You have two excellent options:
+1. **Cloud Database (Highly Recommended)**: Sign up for a free cloud MySQL instance on services like **TiDB Cloud**, **Aiven**, or **Clever Cloud**. Provide the following connection variables in Render:
+   * `DB_HOST`: Your cloud database host
+   * `DB_PORT`: `3306` (or your provider's port)
+   * `DB_NAME`: Your database name
+   * `DB_USER`: Your database user
+   * `DB_PASSWORD`: Your database password
+2. **Ephemeral Fallback (`db.json`)**: If no MySQL variables are defined, the app automatically falls back to local `db.json` file-based storage. *Note: Since Render web services have ephemeral disks, any registrations or orders in `db.json` will be reset on redeploys or restarts. For persistent file storage, a cloud database is required.*
+
+#### SMTP Setup (For Admin OTP Email)
+To receive admin OTP verification codes, add:
+* `SMTP_HOST`: e.g., `mail.yourdomain.com` or `smtp.gmail.com`
+* `SMTP_PORT`: `587` (or `465` with `SMTP_SECURE="true"`)
+* `SMTP_USER`: Your email address
+* `SMTP_PASS`: Your email password or App Password
+* `SMTP_SECURE`: `false` (or `true` if port 465)

@@ -7,8 +7,8 @@ import React, { useState, useEffect } from "react";
 import { Loader2, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
-import { User, Fabric, FashionWork, ClothingStyle } from "./types";
-import { getProfile, fetchCatalog, setAuthToken } from "./utils/api";
+import { User, Fabric, FashionWork, ClothingStyle, ContactInfo } from "./types";
+import { getProfile, fetchCatalog, setAuthToken, fetchContactInfo } from "./utils/api";
 
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
@@ -49,6 +49,9 @@ export default function App() {
   const [orderOpen, setOrderOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
 
+  // Site Custom Branding & Coordinates State
+  const [contactInfo, setContactInfo] = useState<ContactInfo | null>(null);
+
   // Notifications State
   const [notification, setNotification] = useState<{ message: string; type: "success" | "info" } | null>(null);
 
@@ -71,14 +74,23 @@ export default function App() {
     }
   };
 
+  const refreshContactInfo = async () => {
+    try {
+      const info = await fetchContactInfo();
+      setContactInfo(info);
+    } catch (err) {
+      console.error("Site contact info/branding could not be refreshed:", err);
+    }
+  };
+
   // 1. Initial Page Mount Setup
   useEffect(() => {
     async function loadAppSession() {
       setCheckingAuth(false);
  
-      // Load products catalog from backend
+      // Load products catalog and branding from backend
       setLoadingCatalog(true);
-      await refreshCatalog();
+      await Promise.all([refreshCatalog(), refreshContactInfo()]);
       setLoadingCatalog(false);
     }
 
@@ -137,6 +149,7 @@ export default function App() {
         onOpenStyles={() => setStylesOpen(true)}
         onOpenOrder={() => setOrderOpen(true)}
         onOpenContact={() => setContactOpen(true)}
+        logoUrl={contactInfo?.logoUrl}
       />
 
       {/* 2. Showroom Landing Section & Grand Showroom Deck */}
@@ -147,6 +160,14 @@ export default function App() {
         onOpenStyles={() => setStylesOpen(true)}
         onOpenOrder={() => setOrderOpen(true)}
         onOpenContact={() => setContactOpen(true)}
+        logoUrl={contactInfo?.logoUrl}
+        heroBgUrl={contactInfo?.heroBgUrl}
+        wingAboutBgUrl={contactInfo?.wingAboutBgUrl}
+        wingGalleryBgUrl={contactInfo?.wingGalleryBgUrl}
+        wingFabricsBgUrl={contactInfo?.wingFabricsBgUrl}
+        wingStylesBgUrl={contactInfo?.wingStylesBgUrl}
+        wingOrderBgUrl={contactInfo?.wingOrderBgUrl}
+        wingContactBgUrl={contactInfo?.wingContactBgUrl}
       />
 
       {/* 3. Subsections Modals */}
@@ -241,7 +262,10 @@ export default function App() {
         isOpen={adminPortalOpen}
         onClose={() => setAdminPortalOpen(false)}
         triggerToast={triggerToast}
-        onCatalogChanged={refreshCatalog}
+        onCatalogChanged={async () => {
+          await refreshCatalog();
+          await refreshContactInfo();
+        }}
       />
 
       {/* LUXURY TOAST NOTIFICATIONS */}

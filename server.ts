@@ -2,9 +2,22 @@ import express from "express";
 import path from "path";
 import fs from "fs";
 import crypto from "crypto";
+import { createServer as createViteServer } from "vite";
+import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 
 dotenv.config();
+
+declare const __filename: string;
+declare const __dirname: string;
+
+const _filename = (typeof import.meta !== "undefined" && import.meta.url)
+  ? fileURLToPath(import.meta.url)
+  : (typeof __filename !== "undefined" ? __filename : "");
+
+const _dirname = (typeof import.meta !== "undefined" && import.meta.url)
+  ? path.dirname(_filename)
+  : (typeof __dirname !== "undefined" ? __dirname : "");
 
 const app = express();
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
@@ -845,23 +858,31 @@ app.put("/api/admin/orders/:id/status", async (req, res) => {
   }
 });
 
-// Start express and serve static files
+// Start express and configure Dev Vite Middleware or static files
 async function startServer() {
   // Initialize DB (MySQL pool or JSON file-based fallback)
   await initializeDatabase();
 
-  const distPath = path.join(process.cwd(), "dist");
-  app.use(express.static(distPath));
-
-  // Serve uploaded measurement files statically in production as well
-  const uploadsPath = path.join(process.cwd(), "public", "uploads");
-  if (fs.existsSync(uploadsPath)) {
-    app.use("/uploads", express.static(uploadsPath));
+  if (process.env.NODE_ENV !== "production") {
+    const vite = await createViteServer({
+      server: { middlewareMode: true },
+      appType: "spa",
+    });
+    app.use(vite.middlewares);
+  } else {
+    const distPath = path.join(process.cwd(), "dist");
+    app.use(express.static(distPath));
+    // Serve src/assets folder statically under /src/assets path so that default logo and hero background resolve in production
+    app.use("/src/assets", express.static(path.join(process.cwd(), "src", "assets")));
+    // Serve uploaded measurement files statically in production as well
+    const uploadsPath = path.join(process.cwd(), "public", "uploads");
+    if (fs.existsSync(uploadsPath)) {
+      app.use("/uploads", express.static(uploadsPath));
+    }
+    app.get("*", (req, res) => {
+      res.sendFile(path.join(distPath, "index.html"));
+    });
   }
-
-  app.get("*", (req, res) => {
-    res.sendFile(path.join(distPath, "index.html"));
-  });
 
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Express server fully loaded. Running on port ${PORT}`);

@@ -19,6 +19,7 @@ interface NavbarProps {
   onOpenStyles: () => void;
   onOpenOrder: () => void;
   onOpenContact: () => void;
+  logoUrl?: string;
 }
 
 export default function Navbar({
@@ -32,6 +33,7 @@ export default function Navbar({
   onOpenStyles,
   onOpenOrder,
   onOpenContact,
+  logoUrl,
 }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -71,7 +73,7 @@ export default function Navbar({
         >
           <div className="h-10 w-10 flex items-center justify-center rounded-full border border-amber-500 bg-stone-900 overflow-hidden text-amber-500 font-serif font-bold text-lg shadow-md transition group-hover:border-amber-400">
             <img
-              src="/src/assets/images/oluwashola_logo_1784138680903.jpg"
+              src={logoUrl || "/src/assets/images/oluwashola_logo_1784138680903.jpg"}
               alt="OLUWASHOLA LOGO"
               referrerPolicy="no-referrer"
               className="h-full w-full object-cover"

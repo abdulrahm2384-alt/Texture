@@ -88,4 +88,12 @@ export interface ContactInfo {
   tiktokUrl: string;
   instagramUrl: string;
   youtubeUrl: string;
+  logoUrl?: string;
+  heroBgUrl?: string;
+  wingAboutBgUrl?: string;
+  wingGalleryBgUrl?: string;
+  wingFabricsBgUrl?: string;
+  wingStylesBgUrl?: string;
+  wingOrderBgUrl?: string;
+  wingContactBgUrl?: string;
 }
