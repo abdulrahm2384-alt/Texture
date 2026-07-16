@@ -94,5 +94,3 @@ Your `package.json` contains pre-configured scripts for all cycles of operations
 * **Database Security**: All queries utilize **parameterized statements** through `mysql2/promise` to prevent any possibility of SQL Injection.
 * **Storage Optimization**: User measurement drawings are stored in `/public/uploads/` directory on the disk. Ensure this folder has write permissions in your DirectAdmin file manager (`chmod 755`).
 * **Clean Fallbacks**: If MySQL ever loses connection, detailed logs are printed, and the server self-stabilizes to keep running.
-# Texture
-# Texture
