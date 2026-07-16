@@ -2,7 +2,6 @@ import express from "express";
 import path from "path";
 import fs from "fs";
 import crypto from "crypto";
-import { createServer as createViteServer } from "vite";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -846,29 +845,23 @@ app.put("/api/admin/orders/:id/status", async (req, res) => {
   }
 });
 
-// Start express and configure Dev Vite Middleware or static files
+// Start express and serve static files
 async function startServer() {
   // Initialize DB (MySQL pool or JSON file-based fallback)
   await initializeDatabase();
 
-  if (process.env.NODE_ENV !== "production") {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
-    });
-    app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), "dist");
-    app.use(express.static(distPath));
-    // Serve uploaded measurement files statically in production as well
-    const uploadsPath = path.join(process.cwd(), "public", "uploads");
-    if (fs.existsSync(uploadsPath)) {
-      app.use("/uploads", express.static(uploadsPath));
-    }
-    app.get("*", (req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
-    });
+  const distPath = path.join(process.cwd(), "dist");
+  app.use(express.static(distPath));
+
+  // Serve uploaded measurement files statically in production as well
+  const uploadsPath = path.join(process.cwd(), "public", "uploads");
+  if (fs.existsSync(uploadsPath)) {
+    app.use("/uploads", express.static(uploadsPath));
   }
+
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(distPath, "index.html"));
+  });
 
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Express server fully loaded. Running on port ${PORT}`);
