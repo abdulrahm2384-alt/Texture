@@ -1,0 +1,224 @@
+{
+  "users": [],
+  "orders": [],
+  "fabrics": [
+    {
+      "id": "fab-1",
+      "name": "Gilded Gold Swiss Voile Lace",
+      "category": "Lace",
+      "pricePerYard": 50000,
+      "availableColors": [
+        "Gold & Emerald",
+        "Ivory Gold",
+        "Champagne Gold"
+      ],
+      "colorsHex": [
+        "#155e3b",
+        "#fffff0",
+        "#f1e9d2"
+      ],
+      "description": "Intricately embroidered premium Swiss voile lace adorned with gold-threaded floral motifs and subtle sequin highlights. Ideal for Nigerian traditional weddings (Owambe) and luxury custom garments.",
+      "stockAvailability": "In Stock",
+      "imageUrl": "https://images.unsplash.com/photo-1594224140980-6e9dd0223e38?auto=format&fit=crop&q=80&w=600"
+    },
+    {
+      "id": "fab-2",
+      "name": "Classic Vlisco Ankara (Vintage Sunburst)",
+      "category": "Ankara",
+      "pricePerYard": 15000,
+      "availableColors": [
+        "Royal Indigo",
+        "Saffron Sunburst",
+        "Crimson Wave"
+      ],
+      "colorsHex": [
+        "#1e3a8a",
+        "#f59e0b",
+        "#991b1b"
+      ],
+      "description": "Genuine luxury grade Vlisco wax print, 100% fine cotton. Features premium heritage African motifs with rich, lightfast saturation that holds its structural form perfectly for traditional Senator, Kaftan, or custom gowns.",
+      "stockAvailability": "In Stock",
+      "imageUrl": "https://images.unsplash.com/photo-1584184924103-e310d9dc82fc?auto=format&fit=crop&q=80&w=600"
+    },
+    {
+      "id": "fab-3",
+      "name": "Handwoven Metallic Aso Oke (Luxe Thread)",
+      "category": "Aso Oke",
+      "pricePerYard": 65000,
+      "availableColors": [
+        "Crimson Gold",
+        "Silver Onyx",
+        "Champagne Bronze"
+      ],
+      "colorsHex": [
+        "#7f1d1d",
+        "#374151",
+        "#b45309"
+      ],
+      "description": "Masterfully hand-loomed traditional Yoruba fabric interwoven with premium metallic lurex threads for an unmatched royal reflection. Ideal for majestic caps, geles, sashes, and luxury custom Agbada sets.",
+      "stockAvailability": "Low Stock",
+      "imageUrl": "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&q=80&w=600"
+    },
+    {
+      "id": "fab-4",
+      "name": "Royal Damask Brocade (Imperial Silk)",
+      "category": "Brocade",
+      "pricePerYard": 35000,
+      "availableColors": [
+        "Midnight Blue",
+        "Crimson Gold",
+        "Imperial Teal"
+      ],
+      "colorsHex": [
+        "#1e3a8a",
+        "#b45309",
+        "#0f766e"
+      ],
+      "description": "Heavyweight, luxurious jacquard-weave silk brocade featuring sophisticated regal damask patterns. Tailors beautifully into structured traditional men's Kaftans and corporate evening wears.",
+      "stockAvailability": "In Stock",
+      "imageUrl": "https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17?auto=format&fit=crop&q=80&w=600"
+    },
+    {
+      "id": "fab-5",
+      "name": "Elysian Mulberry Silk (Heavy Satin)",
+      "category": "Silk",
+      "pricePerYard": 40000,
+      "availableColors": [
+        "Emerald Satin",
+        "Rose Quartz",
+        "Sapphire Silk"
+      ],
+      "colorsHex": [
+        "#064e3b",
+        "#fda4af",
+        "#1d4ed8"
+      ],
+      "description": "Ultra-fluid 100% pure organic mulberry silk satin. Possesses a glossy, luminous outer finish and a liquid-soft touch that skims the silhouette elegantly, perfect for bridal reception gowns and luxury boubou styles.",
+      "stockAvailability": "In Stock",
+      "imageUrl": "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?auto=format&fit=crop&q=80&w=600"
+    },
+    {
+      "id": "fab-6",
+      "name": "Midnight Velvet Crush (Luxury Stretch)",
+      "category": "Velvet",
+      "pricePerYard": 25000,
+      "availableColors": [
+        "Deep Burgundy",
+        "Forest Green",
+        "Obsidian Black"
+      ],
+      "colorsHex": [
+        "#4c0519",
+        "#064e3b",
+        "#0f172a"
+      ],
+      "description": "Thick plush pile velvet with a rich multi-toned deep crush effect. Supple, comfortable stretch, excellent for opulent evening gowns, traditional wrappers, or custom embroidery accents.",
+      "stockAvailability": "In Stock",
+      "imageUrl": "https://images.unsplash.com/photo-1571242337471-70529d89196b?auto=format&fit=crop&q=80&w=600"
+    },
+    {
+      "id": "fab-7",
+      "name": "Super 140s Italian Cashmere Wool",
+      "category": "Cashmere",
+      "pricePerYard": 60000,
+      "availableColors": [
+        "Classic Charcoal",
+        "Camel Luxe",
+        "Deep Navy"
+      ],
+      "colorsHex": [
+        "#4b5563",
+        "#d97706",
+        "#1e3a8a"
+      ],
+      "description": "Exquisite, lightweight superfine wool mixed with high-grade Italian cashmere fibers. Highly breathable, soft, and designed specifically for bespoke Senator wear, high-end Kaftans, and traditional executive styles.",
+      "stockAvailability": "Low Stock",
+      "imageUrl": "https://images.unsplash.com/photo-1582298538104-fe2e74c27f59?auto=format&fit=crop&q=80&w=600"
+    }
+  ],
+  "gallery": [
+    {
+      "id": "work-1",
+      "title": "The Majestic Royal Agbada Set",
+      "category": "Traditional",
+      "imageUrl": "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=600",
+      "description": "A breathtaking 4-piece traditional Nigerian Agbada tailored in hand-loomed Royal Aso Oke. Features geometric hand-embroidered patterns in metallic gold thread."
+    },
+    {
+      "id": "work-2",
+      "title": "Imperial Damask Kaftan with Crest",
+      "category": "Male",
+      "imageUrl": "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&q=80&w=600",
+      "description": "An elegant, structurally tailored ivory and navy senator outfit. Designed using luxury Italian cashmere and features a minimalist modern embroidered breast seal."
+    },
+    {
+      "id": "work-3",
+      "title": "Gilded Ivory Mermaid Lace Gown",
+      "category": "Female",
+      "imageUrl": "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=600",
+      "description": "Stunning custom wedding gown designed in double-lined Swiss voile lace. Tailored to perfection with a hand-stitched beaded corset bodice and trailing train."
+    },
+    {
+      "id": "work-4",
+      "title": "Vibrant Ankara Ruffled Ballgown",
+      "category": "Children",
+      "imageUrl": "https://images.unsplash.com/photo-1621184455862-c163dfb30e0f?auto=format&fit=crop&q=80&w=600",
+      "description": "High-contrast tiered children's party gown designed with combined vintage sunburst Ankara and soft satin underlays."
+    },
+    {
+      "id": "work-5",
+      "title": "Contemporary Adire Resort Jumpsuit",
+      "category": "Casual",
+      "imageUrl": "https://images.unsplash.com/photo-1561932690-f98b9cd64221?auto=format&fit=crop&q=80&w=600",
+      "description": "Lightweight, fluid casual wear designed in premium indigo-dyed adire cotton. High-waisted belt design suited for everyday luxury."
+    },
+    {
+      "id": "work-6",
+      "title": "Classic Bespoke Corporate Suit",
+      "category": "Corporate",
+      "imageUrl": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&q=80&w=600",
+      "description": "Sharp corporate menswear piece tailored with Italian superfine cashmere wool, featuring structured lapels and customized inner satin lining."
+    },
+    {
+      "id": "work-7",
+      "title": "Bridal Reception Lace Wrap Dress",
+      "category": "Wedding",
+      "imageUrl": "https://images.unsplash.com/photo-1566174053879-31528523f8ae?auto=format&fit=crop&q=80&w=600",
+      "description": "Luxurious reception dress for brides, combining fluid Elysian mulberry silk draping and premium French embroidered lace accents."
+    }
+  ],
+  "styles": [
+    {
+      "id": "style-1",
+      "name": "The Majestic Agbada (4-Piece Outfit)",
+      "category": "Traditional",
+      "description": "A supreme traditional attire representing power and heritage, featuring the large flowing agbada gown, matching long sleeve kaftan, tapered trousers, and standard embroidered cap.",
+      "imageUrl": "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=600",
+      "estimatedYardage": "7-8 Yards (Fabric) + 2 Yards (Aso Oke for Cap/Accents)"
+    },
+    {
+      "id": "style-2",
+      "name": "Corset Mermaid Lace Silhouette",
+      "category": "Female",
+      "description": "A tailored-to-fit evening and wedding design. Built on a sturdy boned corset foundation, cascading into a sweeping flare that highlights the fabrics' lace pattern beautifully.",
+      "imageUrl": "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=600",
+      "estimatedYardage": "5-6 Yards"
+    },
+    {
+      "id": "style-3",
+      "name": "Minimalist Senator Suit",
+      "category": "Male",
+      "description": "A sleek modern African formal alternative. Structured collar, dynamic custom embroidery or contrast piping, complete with tailored straight-cut trousers.",
+      "imageUrl": "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&q=80&w=600",
+      "estimatedYardage": "4 Yards"
+    },
+    {
+      "id": "style-4",
+      "name": "Premium Buba & Iro Wrapper Set",
+      "category": "Traditional",
+      "description": "Classic Yoruba traditional elegance. Beautifully draped long sleeve top (Buba) paired with a wrapper skirt (Iro) and matching shoulder sash (Ipele). Highlighted by custom lace or Aso Oke border.",
+      "imageUrl": "https://images.unsplash.com/photo-1566174053879-31528523f8ae?auto=format&fit=crop&q=80&w=600",
+      "estimatedYardage": "5-6 Yards"
+    }
+  ]
+}
