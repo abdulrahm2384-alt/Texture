@@ -1,0 +1,1761 @@
+import React, { useState, useEffect } from "react";
+import { 
+  X, 
+  ShieldCheck, 
+  Mail, 
+  Key, 
+  Loader2, 
+  Lock, 
+  Search, 
+  Filter, 
+  Calendar, 
+  DollarSign, 
+  User, 
+  Phone, 
+  MapPin, 
+  FileText, 
+  CheckCircle, 
+  AlertCircle,
+  TrendingUp,
+  Sliders,
+  LogOut,
+  Sparkles,
+  RefreshCw,
+  Trash2,
+  Upload,
+  Plus,
+  Scissors,
+  Award
+} from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { ContactInfo } from "../types";
+import { 
+  requestAdminOtp, 
+  verifyAdminOtp, 
+  getAdminToken, 
+  setAdminToken,
+  fetchCatalog,
+  addFabricAdmin,
+  deleteFabricAdmin,
+  addGalleryAdmin,
+  deleteGalleryAdmin,
+  addStyleAdmin,
+  deleteStyleAdmin,
+  fetchContactInfo,
+  updateContactInfoAdmin
+} from "../utils/api";
+import { getCategoryDisplayLabel } from "../utils/categoryParser";
+
+interface AdminPortalModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  triggerToast: (message: string, type?: "success" | "info") => void;
+  onCatalogChanged?: () => void;
+}
+
+export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCatalogChanged }: AdminPortalModalProps) {
+  // Authentication status
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminEmail, setAdminEmail] = useState("");
+  const [step, setStep] = useState<"email" | "otp">("email");
+  const [otpCode, setOtpCode] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const isProduction = (import.meta as any).env?.PROD || false;
+
+  // Bypass / Testing Key auth states
+  const [authMode, setAuthMode] = useState<"key" | "email">(isProduction ? "email" : "key");
+  const [bypassKey, setBypassKey] = useState("");
+  const DEFAULT_BYPASS_KEY = "86a75ad47d95dc819401842e3883824ad95c8e49ade9cec151b064a5144111b3";
+
+  // OTP Timer countdown (5 minutes)
+  const [timeLeft, setTimeLeft] = useState(300);
+  const [timerActive, setTimerActive] = useState(false);
+
+  // Tabs navigation
+  const [activeTab, setActiveTab] = useState<"gallery" | "fabrics" | "styles" | "contact">("gallery");
+
+  // Contact Form State
+  const [contactInfo, setContactInfo] = useState<ContactInfo>({
+    phoneNumber: "+234705378152",
+    displayPhone: "0705378152",
+    emailAddress: "info@oluwasholatextiles.com.ng",
+    websiteAddress: "www.oluwasholatextiles.com.ng",
+    physicalAddress: "39, Bamgbose Street, Lagos Island, Lagos State",
+    mapUrl: "https://maps.google.com/maps?q=39%20Bamgbose%20Street,%20Lagos%20Island,%20Lagos,%20Nigeria&t=&z=16&ie=UTF8&iwloc=&output=embed",
+    tiktokUrl: "https://www.tiktok.com/@oluwashola.textiles",
+    instagramUrl: "https://www.instagram.com/OluwasholaTextiles",
+    youtubeUrl: "https://www.youtube.com/@oluwasholatextiles"
+  });
+  const [loadingContact, setLoadingContact] = useState(false);
+  const [savingContact, setSavingContact] = useState(false);
+
+  // Helper to check if testing/bypass mode is active
+  const isTestingMode = () => {
+    if (isProduction) return false;
+    const token = getAdminToken();
+    return token === DEFAULT_BYPASS_KEY || authMode === "key";
+  };
+
+  // Showroom Catalog State
+  const [catalog, setCatalog] = useState<{ fabrics: any[]; gallery: any[]; styles: any[] }>({
+    fabrics: [],
+    gallery: [],
+    styles: []
+  });
+  const [loadingCatalog, setLoadingCatalog] = useState(false);
+
+  // Fabric Form State
+  const [fabName, setFabName] = useState("");
+  const [fabCategory, setFabCategory] = useState("Lace");
+  const [customFabCategory, setCustomFabCategory] = useState("");
+  const [fabPrice, setFabPrice] = useState("");
+  const [fabColors, setFabColors] = useState("");
+  const [fabStock, setFabStock] = useState("In Stock");
+  const [fabDesc, setFabDesc] = useState("");
+  const [fabImageType, setFabImageType] = useState<"default" | "upload">("default");
+  const [fabImageFile, setFabImageFile] = useState<string | null>(null);
+
+  // Gallery (Showcase) Form State
+  const [galTitle, setGalTitle] = useState("");
+  const [galGender, setGalGender] = useState("Female");
+  const [galAgeGroup, setGalAgeGroup] = useState("Adult");
+  const [galStyleType, setGalStyleType] = useState("Traditional");
+  const [galCustom, setGalCustom] = useState("");
+  const [galDesc, setGalDesc] = useState("");
+  const [galImageType, setGalImageType] = useState<"default" | "upload">("default");
+  const [galImageFile, setGalImageFile] = useState<string | null>(null);
+
+  // Style Form State
+  const [styName, setStyName] = useState("");
+  const [styGender, setStyGender] = useState("Female");
+  const [styAgeGroup, setStyAgeGroup] = useState("Adult");
+  const [styStyleType, setStyStyleType] = useState("Traditional");
+  const [styCustom, setStyCustom] = useState("");
+  const [styYardage, setStyYardage] = useState("");
+  const [styDesc, setStyDesc] = useState("");
+  const [styImageType, setStyImageType] = useState<"default" | "upload">("default");
+  const [styImageFile, setStyImageFile] = useState<string | null>(null);
+
+  const [addingItem, setAddingItem] = useState(false);
+
+  // Helper helper to convert file to base64
+  const convertFileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  const getDefaultStudioCutImage = (category: string, type: 'fabric' | 'gallery' | 'style'): string => {
+    if (type === 'fabric') {
+      switch (category.toLowerCase()) {
+        case 'lace':
+          return "https://images.unsplash.com/photo-1594224140980-6e9dd0223e38?auto=format&fit=crop&q=80&w=600";
+        case 'ankara':
+          return "https://images.unsplash.com/photo-1584184924103-e310d9dc82fc?auto=format&fit=crop&q=80&w=600";
+        case 'aso oke':
+          return "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&q=80&w=600";
+        case 'brocade':
+          return "https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17?auto=format&fit=crop&q=80&w=600";
+        case 'silk':
+          return "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?auto=format&fit=crop&q=80&w=600";
+        case 'velvet':
+          return "https://images.unsplash.com/photo-1571242337471-70529d89196b?auto=format&fit=crop&q=80&w=600";
+        case 'cashmere':
+          return "https://images.unsplash.com/photo-1582298538104-fe2e74c27f59?auto=format&fit=crop&q=80&w=600";
+        default:
+          return "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&q=80&w=600";
+      }
+    } else {
+      switch (category.toLowerCase()) {
+        case 'traditional':
+          return "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=600";
+        case 'male':
+          return "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&q=80&w=600";
+        case 'female':
+          return "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=600";
+        case 'children':
+          return "https://images.unsplash.com/photo-1621184455862-c163dfb30e0f?auto=format&fit=crop&q=80&w=600";
+        case 'casual':
+          return "https://images.unsplash.com/photo-1561932690-f98b9cd64221?auto=format&fit=crop&q=80&w=600";
+        case 'corporate':
+          return "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&q=80&w=600";
+        case 'wedding':
+          return "https://images.unsplash.com/photo-1566174053879-31528523f8ae?auto=format&fit=crop&q=80&w=600";
+        default:
+          return "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=600";
+      }
+    }
+  };
+
+  // Timer effect
+  useEffect(() => {
+    let timer: any;
+    if (timerActive && timeLeft > 0) {
+      timer = setInterval(() => {
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
+    } else if (timeLeft === 0) {
+      setTimerActive(false);
+    }
+    return () => clearInterval(timer);
+  }, [timerActive, timeLeft]);
+
+  // Check if already authenticated on open
+  useEffect(() => {
+    if (isOpen) {
+      const token = getAdminToken();
+      if (token) {
+        setIsAdmin(true);
+        loadCatalog();
+      } else {
+        setIsAdmin(false);
+        setStep("email");
+        setOtpCode("");
+        setBypassKey("");
+        setError(null);
+        setAuthMode(isProduction ? "email" : "key");
+      }
+    }
+  }, [isOpen]);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+  };
+
+  // Load administrative catalog
+  const loadCatalog = async () => {
+    setLoadingCatalog(true);
+    try {
+      const data = await fetchCatalog();
+      setCatalog(data);
+    } catch (err: any) {
+      console.error("Failed to load catalog inside admin portal", err);
+    } finally {
+      setLoadingCatalog(false);
+    }
+  };
+
+  // Step 1: Request OTP
+  const handleRequestOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!adminEmail) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await requestAdminOtp(adminEmail);
+      if (res.success) {
+        setStep("otp");
+        setTimeLeft(300); // 5 minutes
+        setTimerActive(true);
+        triggerToast("A secure 6-digit verification code has been dispatched.");
+      }
+    } catch (err: any) {
+      setError(err.message || "Email validation failed.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Step 2: Verify OTP
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!otpCode || otpCode.length !== 6) {
+      setError("Please enter a valid 6-digit code.");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await verifyAdminOtp(adminEmail, otpCode);
+      if (res.success) {
+        setIsAdmin(true);
+        setTimerActive(false);
+        triggerToast("Access authorized. Welcome back, Administrator.");
+        loadCatalog();
+      }
+    } catch (err: any) {
+      setError(err.message || "Incorrect or expired verification code.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Verify Bypass / Testing Key
+  const handleVerifyBypassKey = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!bypassKey.trim()) {
+      setError("Please enter the development bypass key.");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    setTimeout(() => {
+      if (bypassKey.trim() === DEFAULT_BYPASS_KEY) {
+        setAdminToken(DEFAULT_BYPASS_KEY);
+        setIsAdmin(true);
+        triggerToast("Access authorized via Development Bypass Key.");
+        loadCatalog();
+      } else {
+        setError("Invalid Development Bypass Key. Please enter the correct testing key.");
+      }
+      setLoading(false);
+    }, 450);
+  };
+
+  // Add/Delete Handlers
+  const handleAddFabric = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!fabName || !fabPrice) {
+      triggerToast("Please provide fabric name and price", "info");
+      return;
+    }
+    setAddingItem(true);
+    const finalCategory = fabCategory === "Custom" ? (customFabCategory.trim() || "Custom Fabric") : fabCategory;
+
+    const finalImageUrl = fabImageType === "default" 
+      ? getDefaultStudioCutImage(finalCategory, 'fabric')
+      : (fabImageFile || getDefaultStudioCutImage(finalCategory, 'fabric'));
+
+    const colorsArr = fabColors.split(",").map(c => c.trim()).filter(Boolean);
+    const colorsHexArr = colorsArr.map(() => "#" + Math.floor(Math.random()*16777215).toString(16));
+
+    const fabricData = {
+      name: fabName,
+      category: finalCategory,
+      pricePerYard: Number(fabPrice),
+      availableColors: colorsArr,
+      colorsHex: colorsHexArr,
+      description: fabDesc || `${fabName} premium visual styling.`,
+      stockAvailability: fabStock,
+      imageUrl: finalImageUrl
+    };
+
+    try {
+
+      await addFabricAdmin(fabricData);
+      triggerToast("Custom fabric added successfully to showroom!");
+      await loadCatalog();
+
+      setFabName("");
+      setFabCategory("Lace");
+      setCustomFabCategory("");
+      setFabPrice("");
+      setFabColors("");
+      setFabDesc("");
+      setFabImageFile(null);
+      if (onCatalogChanged) onCatalogChanged();
+    } catch (err: any) {
+      if (isTestingMode()) {
+        const newFab = {
+          ...fabricData,
+          id: "fab-" + Math.random().toString(36).substring(2, 9),
+        };
+        const updatedFabrics = [...(catalog.fabrics || []), newFab];
+        const updatedCatalog = { ...catalog, fabrics: updatedFabrics };
+        setCatalog(updatedCatalog);
+        triggerToast("Testing Mode: Fabric added locally to current session.");
+        
+        setFabName("");
+        setFabCategory("Lace");
+        setCustomFabCategory("");
+        setFabPrice("");
+        setFabColors("");
+        setFabDesc("");
+        setFabImageFile(null);
+        if (onCatalogChanged) onCatalogChanged();
+      } else {
+        triggerToast(err.message || "Failed to add fabric.", "info");
+      }
+    } finally {
+      setAddingItem(false);
+    }
+  };
+
+  const handleAddGallery = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!galTitle) {
+      triggerToast("Please provide showcase title", "info");
+      return;
+    }
+    setAddingItem(true);
+    try {
+      const isCustomStyleType = galStyleType === "Custom";
+      const serializedCategory = JSON.stringify({
+        gender: galGender,
+        ageGroup: galAgeGroup,
+        styleType: galStyleType,
+        custom: isCustomStyleType ? galCustom.trim() : ""
+      });
+
+      const finalImageUrl = galImageType === "default"
+        ? getDefaultStudioCutImage(galStyleType, 'gallery')
+        : (galImageFile || getDefaultStudioCutImage(galStyleType, 'gallery'));
+
+      const galleryData = {
+        title: galTitle,
+        category: serializedCategory,
+        description: galDesc || `${galTitle} designer piece showcase.`,
+        imageUrl: finalImageUrl
+      };
+
+      await addGalleryAdmin(galleryData);
+      triggerToast("Showcase item added perfectly!");
+      await loadCatalog();
+
+      setGalTitle("");
+      setGalGender("Female");
+      setGalAgeGroup("Adult");
+      setGalStyleType("Traditional");
+      setGalCustom("");
+      setGalDesc("");
+      setGalImageFile(null);
+      if (onCatalogChanged) onCatalogChanged();
+    } catch (err: any) {
+      if (isTestingMode()) {
+        const isCustomStyleType = galStyleType === "Custom";
+        const serializedCategory = JSON.stringify({
+          gender: galGender,
+          ageGroup: galAgeGroup,
+          styleType: galStyleType,
+          custom: isCustomStyleType ? galCustom.trim() : ""
+        });
+        const galleryData = {
+          title: galTitle,
+          category: serializedCategory,
+          description: galDesc || `${galTitle} designer piece showcase.`,
+          imageUrl: galImageType === "default"
+            ? getDefaultStudioCutImage(galStyleType, 'gallery')
+            : (galImageFile || getDefaultStudioCutImage(galStyleType, 'gallery'))
+        };
+        const newGal = {
+          ...galleryData,
+          id: "gal-" + Math.random().toString(36).substring(2, 9),
+        };
+        const updatedGallery = [...(catalog.gallery || []), newGal];
+        const updatedCatalog = { ...catalog, gallery: updatedGallery };
+        setCatalog(updatedCatalog);
+        triggerToast("Testing Mode: Showcase item added locally to current session.");
+
+        setGalTitle("");
+        setGalGender("Female");
+        setGalAgeGroup("Adult");
+        setGalStyleType("Traditional");
+        setGalCustom("");
+        setGalDesc("");
+        setGalImageFile(null);
+        if (onCatalogChanged) onCatalogChanged();
+      } else {
+        triggerToast(err.message || "Failed to add showcase item.", "info");
+      }
+    } finally {
+      setAddingItem(false);
+    }
+  };
+
+  const handleAddStyle = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!styName || !styYardage) {
+      triggerToast("Please provide style name and yardage", "info");
+      return;
+    }
+    setAddingItem(true);
+    try {
+      const isCustomStyleType = styStyleType === "Custom";
+      const serializedCategory = JSON.stringify({
+        gender: styGender,
+        ageGroup: styAgeGroup,
+        styleType: styStyleType,
+        custom: isCustomStyleType ? styCustom.trim() : ""
+      });
+
+      const finalImageUrl = styImageType === "default"
+        ? getDefaultStudioCutImage(styStyleType, 'style')
+        : (styImageFile || getDefaultStudioCutImage(styStyleType, 'style'));
+
+      const styleData = {
+        name: styName,
+        category: serializedCategory,
+        estimatedYardage: styYardage,
+        description: styDesc || `${styName} aesthetic cut guidance.`,
+        imageUrl: finalImageUrl
+      };
+
+      await addStyleAdmin(styleData);
+      triggerToast("Style inspiration added perfectly!");
+      await loadCatalog();
+
+      setStyName("");
+      setStyGender("Female");
+      setStyAgeGroup("Adult");
+      setStyStyleType("Traditional");
+      setStyCustom("");
+      setStyYardage("");
+      setStyDesc("");
+      setStyImageFile(null);
+      if (onCatalogChanged) onCatalogChanged();
+    } catch (err: any) {
+      if (isTestingMode()) {
+        const isCustomStyleType = styStyleType === "Custom";
+        const serializedCategory = JSON.stringify({
+          gender: styGender,
+          ageGroup: styAgeGroup,
+          styleType: styStyleType,
+          custom: isCustomStyleType ? styCustom.trim() : ""
+        });
+        const styleData = {
+          name: styName,
+          category: serializedCategory,
+          estimatedYardage: styYardage,
+          description: styDesc || `${styName} aesthetic cut guidance.`,
+          imageUrl: styImageType === "default"
+            ? getDefaultStudioCutImage(styStyleType, 'style')
+            : (styImageFile || getDefaultStudioCutImage(styStyleType, 'style'))
+        };
+        const newStyle = {
+          ...styleData,
+          id: "sty-" + Math.random().toString(36).substring(2, 9),
+        };
+        const updatedStyles = [...(catalog.styles || []), newStyle];
+        const updatedCatalog = { ...catalog, styles: updatedStyles };
+        setCatalog(updatedCatalog);
+        triggerToast("Testing Mode: Style inspiration added locally to current session.");
+
+        setStyName("");
+        setStyGender("Female");
+        setStyAgeGroup("Adult");
+        setStyStyleType("Traditional");
+        setStyCustom("");
+        setStyYardage("");
+        setStyDesc("");
+        setStyImageFile(null);
+        if (onCatalogChanged) onCatalogChanged();
+      } else {
+        triggerToast(err.message || "Failed to add style.", "info");
+      }
+    } finally {
+      setAddingItem(false);
+    }
+  };
+
+  const handleDeleteFabric = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this custom fabric?")) return;
+    try {
+      await deleteFabricAdmin(id);
+      triggerToast("Fabric deleted from showroom.");
+      await loadCatalog();
+      if (onCatalogChanged) onCatalogChanged();
+    } catch (err: any) {
+      if (isTestingMode()) {
+        const updatedFabrics = (catalog.fabrics || []).filter(f => f.id !== id);
+        const updatedCatalog = { ...catalog, fabrics: updatedFabrics };
+        setCatalog(updatedCatalog);
+        triggerToast("Testing Mode: Fabric deleted from current session view.");
+        if (onCatalogChanged) onCatalogChanged();
+      } else {
+        triggerToast(err.message || "Failed to delete fabric.", "info");
+      }
+    }
+  };
+
+  const handleDeleteGallery = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this showcase item?")) return;
+    try {
+      await deleteGalleryAdmin(id);
+      triggerToast("Showcase item deleted.");
+      await loadCatalog();
+      if (onCatalogChanged) onCatalogChanged();
+    } catch (err: any) {
+      if (isTestingMode()) {
+        const updatedGallery = (catalog.gallery || []).filter(g => g.id !== id);
+        const updatedCatalog = { ...catalog, gallery: updatedGallery };
+        setCatalog(updatedCatalog);
+        triggerToast("Testing Mode: Showcase item deleted from current session view.");
+        if (onCatalogChanged) onCatalogChanged();
+      } else {
+        triggerToast(err.message || "Failed to delete showcase item.", "info");
+      }
+    }
+  };
+
+  const handleDeleteStyle = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this style inspiration?")) return;
+    try {
+      await deleteStyleAdmin(id);
+      triggerToast("Style inspiration deleted.");
+      await loadCatalog();
+      if (onCatalogChanged) onCatalogChanged();
+    } catch (err: any) {
+      if (isTestingMode()) {
+        const updatedStyles = (catalog.styles || []).filter(s => s.id !== id);
+        const updatedCatalog = { ...catalog, styles: updatedStyles };
+        setCatalog(updatedCatalog);
+        triggerToast("Testing Mode: Style inspiration deleted from current session view.");
+        if (onCatalogChanged) onCatalogChanged();
+      } else {
+        triggerToast(err.message || "Failed to delete style.", "info");
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (isAdmin) {
+      setLoadingContact(true);
+      fetchContactInfo()
+        .then((data) => {
+          if (data) {
+            setContactInfo(data);
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to load contact info:", err);
+        })
+        .finally(() => {
+          setLoadingContact(false);
+        });
+    }
+  }, [isAdmin]);
+
+  const handleSaveContact = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingContact(true);
+    try {
+      if (isTestingMode()) {
+        localStorage.setItem("oluwashola_testing_contact", JSON.stringify(contactInfo));
+        triggerToast("Testing Mode: Contact info updated locally!");
+      } else {
+        await updateContactInfoAdmin(contactInfo);
+        triggerToast("Contact info successfully updated on server!");
+      }
+    } catch (err: any) {
+      triggerToast(err.message || "Failed to update contact info", "info");
+    } finally {
+      setSavingContact(false);
+    }
+  };
+
+  const handleLogout = () => {
+    setAdminToken(null);
+    setIsAdmin(false);
+    setAdminEmail("");
+    setStep("email");
+    setOtpCode("");
+    triggerToast("Administrative session closed safely.", "info");
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <AnimatePresence>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-0 md:p-6 overflow-y-auto bg-stone-950/40 backdrop-blur-sm">
+        
+        {/* Backdrop for desktop */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.6 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+          className="absolute inset-0 bg-stone-950/60 hidden md:block"
+          id="admin-modal-backdrop"
+        />
+
+        {/* Modal Window Container */}
+        <motion.div
+          initial={{ opacity: 0, y: "100%" }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: "100%" }}
+          transition={{ type: "spring", damping: 26, stiffness: 220 }}
+          className="relative w-full h-full md:max-w-6xl md:h-[88vh] flex flex-col overflow-hidden rounded-none md:rounded-3xl border-0 md:border border-amber-500/20 bg-[#FAF9F6] text-stone-900 shadow-2xl z-10"
+        >
+          {/* Top gold accent line */}
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-600 to-amber-500 z-20" />
+
+          {/* Header section */}
+          <div className="p-6 border-b border-stone-200 flex items-center justify-between shrink-0 bg-stone-100/60 pt-7">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="text-amber-700 h-5 w-5" />
+              <h2 className="font-serif text-xs sm:text-sm tracking-[0.2em] text-amber-800 uppercase font-bold">
+                {isAdmin ? "ADMIN CONTROL CENTER" : "ADMINISTRATION ACCESS"}
+              </h2>
+            </div>
+            <button
+              onClick={onClose}
+              className="text-stone-500 hover:text-stone-900 p-1.5 rounded-full hover:bg-stone-200 transition"
+              id="admin-close-modal-btn"
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          {/* Core Modal Body */}
+          <div className="p-4 sm:p-6 overflow-y-auto flex-1 flex flex-col">
+            
+            {/* NO AUTHENTICATION: SHOW LOG IN FLOW */}
+            {!isAdmin && (
+              <div className="py-6 sm:py-12 flex flex-col items-center justify-center flex-1">
+                <div className="w-full max-w-md bg-white border border-stone-200 p-6 sm:p-8 rounded-3xl shadow-sm flex flex-col items-center">
+                  <div className="h-16 w-16 bg-amber-500/10 border border-amber-500/20 rounded-full flex items-center justify-center text-amber-700 mb-6">
+                    <Lock size={28} className="animate-pulse" />
+                  </div>
+
+                  <p className="text-center text-xs text-stone-600 max-w-sm mb-6 leading-relaxed font-sans">
+                    {isProduction 
+                      ? "Unauthorized access is strictly monitored. Please authenticate using your secure administrative email and OTP code."
+                      : "Unauthorized access is strictly monitored. To verify credentials, enter your development bypass key or choose standard email OTP verification."
+                    }
+                  </p>
+
+                {/* Auth Mode Toggle */}
+                {!isProduction && (
+                  <div className="flex border border-stone-200 rounded-xl p-1 mb-6 w-full max-w-xs shrink-0 bg-stone-100/50">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMode("key");
+                        setError(null);
+                      }}
+                      className={`flex-1 py-2 text-[10px] font-mono uppercase tracking-wider rounded-lg transition-all duration-300 ${
+                        authMode === "key"
+                          ? "bg-amber-700/10 text-amber-800 border border-amber-700/15 shadow-sm font-semibold"
+                          : "text-stone-500 hover:text-stone-800 border border-transparent"
+                      }`}
+                    >
+                      Bypass Key
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMode("email");
+                        setError(null);
+                      }}
+                      className={`flex-1 py-2 text-[10px] font-mono uppercase tracking-wider rounded-lg transition-all duration-300 ${
+                        authMode === "email"
+                          ? "bg-amber-700/10 text-amber-800 border border-amber-700/15 shadow-sm font-semibold"
+                          : "text-stone-500 hover:text-stone-800 border border-transparent"
+                      }`}
+                    >
+                      Email OTP
+                    </button>
+                  </div>
+                )}
+
+                {error && (
+                  <div className="w-full flex items-center gap-2.5 bg-rose-50 border border-rose-200 text-rose-700 text-xs px-4 py-3 rounded-xl mb-6">
+                    <AlertCircle size={14} className="shrink-0" />
+                    <p className="font-sans leading-normal">{error}</p>
+                  </div>
+                )}
+
+                {/* BYPASS KEY AUTH MODE */}
+                {!isProduction && authMode === "key" && (
+                  <form onSubmit={handleVerifyBypassKey} className="w-full space-y-4">
+                    <div className="space-y-1.5 text-left w-full">
+                      <div className="flex justify-between items-center">
+                        <label className="text-[10px] font-mono uppercase tracking-widest text-stone-500">
+                          Bypass / Testing Key
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setBypassKey(DEFAULT_BYPASS_KEY);
+                            triggerToast("Default testing key filled.");
+                          }}
+                          className="text-[9px] font-mono text-amber-700 hover:text-amber-800 hover:underline"
+                          title="Pre-fill testing key"
+                        >
+                          Auto-fill key
+                        </button>
+                      </div>
+                      <div className="relative">
+                        <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-stone-400">
+                          <Key size={16} />
+                        </span>
+                        <input
+                          type="password"
+                          required
+                          value={bypassKey}
+                          onChange={(e) => setBypassKey(e.target.value)}
+                          placeholder="Enter 64-character hex key..."
+                          className="w-full bg-stone-50 border border-stone-200 hover:border-stone-300 focus:border-amber-600/50 rounded-xl py-3 pl-11 pr-4 text-xs text-stone-800 placeholder-stone-400 focus:outline-none transition font-sans font-mono"
+                        />
+                      </div>
+                      <p className="text-[9px] font-mono text-stone-400 leading-normal text-left w-full">
+                        Default key: <code className="text-amber-700 select-all">86a75ad4...11b3</code>
+                      </p>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full bg-amber-700 hover:bg-amber-800 disabled:bg-amber-700/30 text-white font-serif font-bold text-xs py-3.5 rounded-xl uppercase tracking-widest transition flex items-center justify-center gap-2 shadow-sm"
+                    >
+                      {loading ? (
+                        <Loader2 className="animate-spin h-4 w-4" />
+                      ) : (
+                        <>
+                          <ShieldCheck size={14} />
+                          Verify Bypass Key
+                        </>
+                      )}
+                    </button>
+                  </form>
+                )}
+
+                {/* EMAIL OTP AUTH MODE */}
+                {authMode === "email" && (
+                  <div className="w-full">
+                    {/* STEP 1: ENTER ADMINISTRATIVE EMAIL */}
+                    {step === "email" && (
+                      <form onSubmit={handleRequestOtp} className="w-full space-y-4">
+                        <div className="space-y-1.5 text-left w-full">
+                          <label className="text-[10px] font-mono uppercase tracking-widest text-stone-500">
+                            Admin Account Email
+                          </label>
+                          <div className="relative">
+                            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-stone-400">
+                              <Mail size={16} />
+                            </span>
+                            <input
+                              type="email"
+                              required
+                              value={adminEmail}
+                              onChange={(e) => setAdminEmail(e.target.value)}
+                              placeholder="e.g. admin@oluwashola-atelier.com"
+                              className="w-full bg-stone-50 border border-stone-200 hover:border-stone-300 focus:border-amber-600/50 rounded-xl py-3 pl-11 pr-4 text-xs text-stone-800 placeholder-stone-400 focus:outline-none transition font-sans"
+                            />
+                          </div>
+                        </div>
+
+                        <button
+                          type="submit"
+                          disabled={loading}
+                          className="w-full bg-amber-700 hover:bg-amber-800 disabled:bg-amber-700/30 text-white font-serif font-bold text-xs py-3.5 rounded-xl uppercase tracking-widest transition flex items-center justify-center gap-2 shadow-sm"
+                        >
+                          {loading ? (
+                            <Loader2 className="animate-spin h-4 w-4" />
+                          ) : (
+                            <>
+                              <Key size={14} />
+                              Request Verification Key
+                            </>
+                          )}
+                        </button>
+                      </form>
+                    )}
+
+                    {/* STEP 2: ENTER OTP CODE */}
+                    {step === "otp" && (
+                      <form onSubmit={handleVerifyOtp} className="w-full space-y-5">
+                        <div className="space-y-1.5 text-left w-full">
+                          <div className="flex justify-between items-center">
+                            <label className="text-[10px] font-mono uppercase tracking-widest text-stone-500">
+                              6-Digit OTP Code
+                            </label>
+                            <span className="text-[10px] font-mono text-amber-700 font-bold">
+                              Expires in: {formatTime(timeLeft)}
+                            </span>
+                          </div>
+                          <div className="relative">
+                            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-stone-400">
+                              <ShieldCheck size={16} />
+                            </span>
+                            <input
+                              type="text"
+                              maxLength={6}
+                              required
+                              value={otpCode}
+                              onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
+                              placeholder="000000"
+                              className="w-full bg-stone-50 border border-stone-200 hover:border-stone-300 focus:border-amber-600/50 rounded-xl py-3 pl-11 pr-4 text-center text-lg font-mono tracking-[0.5em] text-stone-850 placeholder-stone-300 focus:outline-none transition"
+                            />
+                          </div>
+                        </div>
+
+                        <button
+                          type="submit"
+                          disabled={loading || timeLeft === 0}
+                          className="w-full bg-amber-700 hover:bg-amber-800 disabled:bg-amber-700/30 text-white font-serif font-bold text-xs py-3.5 rounded-xl uppercase tracking-widest transition flex items-center justify-center gap-2 shadow-sm"
+                        >
+                          {loading ? (
+                            <Loader2 className="animate-spin h-4 w-4" />
+                          ) : (
+                            "Verify & Authorize"
+                          )}
+                        </button>
+
+                        <div className="text-center">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setStep("email");
+                              setOtpCode("");
+                              setError(null);
+                            }}
+                            className="text-[10px] font-mono uppercase tracking-widest text-stone-500 hover:text-stone-800 transition"
+                          >
+                            ← Back to Email
+                          </button>
+                        </div>
+                      </form>
+                    )}
+                  </div>
+                )}
+                </div>
+              </div>
+            )}
+
+            {/* AUTHENTICATED: SHOW ADMIN DASHBOARD */}
+            {isAdmin && (
+              <div className="flex-1 flex flex-col gap-6 overflow-hidden">
+                               {/* Tab Navigation Bar */}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-stone-200 shrink-0 gap-4 mb-2 pb-1">
+                  <div className="flex gap-1 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
+                    <button
+                      onClick={() => setActiveTab("gallery")}
+                      className={`pb-3 px-4 font-serif text-xs tracking-wider uppercase border-b-2 transition shrink-0 ${
+                        activeTab === "gallery" ? "border-amber-600 text-amber-800 font-bold" : "border-transparent text-stone-500 hover:text-stone-800"
+                      }`}
+                    >
+                      Showcase Gallery
+                    </button>
+                    <button
+                      onClick={() => setActiveTab("fabrics")}
+                      className={`pb-3 px-4 font-serif text-xs tracking-wider uppercase border-b-2 transition shrink-0 ${
+                        activeTab === "fabrics" ? "border-amber-600 text-amber-800 font-bold" : "border-transparent text-stone-500 hover:text-stone-800"
+                      }`}
+                    >
+                      Fabrics Catalog
+                    </button>
+                    <button
+                      onClick={() => setActiveTab("styles")}
+                      className={`pb-3 px-4 font-serif text-xs tracking-wider uppercase border-b-2 transition shrink-0 ${
+                        activeTab === "styles" ? "border-amber-600 text-amber-800 font-bold" : "border-transparent text-stone-500 hover:text-stone-800"
+                      }`}
+                    >
+                      Style Inspiration
+                    </button>
+                    <button
+                      onClick={() => setActiveTab("contact")}
+                      className={`pb-3 px-4 font-serif text-xs tracking-wider uppercase border-b-2 transition shrink-0 ${
+                        activeTab === "contact" ? "border-amber-600 text-amber-800 font-bold" : "border-transparent text-stone-500 hover:text-stone-800"
+                      }`}
+                    >
+                      Contact Coordinates
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-2 pb-2 self-stretch sm:self-auto justify-end">
+                    <button
+                      onClick={loadCatalog}
+                      className="flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-xl px-3 py-1.5 text-[10px] uppercase font-mono tracking-wider transition font-medium cursor-pointer"
+                      title="Reload catalog from database"
+                    >
+                      <RefreshCw size={11} />
+                      Reload Catalog
+                    </button>
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center gap-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl px-3.5 py-1.5 text-[10px] uppercase font-mono tracking-wider transition"
+                      id="admin-logout-btn"
+                    >
+                      <LogOut size={11} />
+                      Log Out
+                    </button>
+                  </div>
+                </div>
+
+            {/* Showroom Tab Content Sections */}
+            {activeTab === "fabrics" && (
+              <div className="flex-1 flex flex-col gap-6 overflow-y-auto pr-1 min-h-0 text-left pb-10 scrollbar-thin">
+                {/* 1. Existing Fabrics Section (Scrollable List) */}
+                <div className="space-y-3 bg-white p-5 rounded-2xl border border-stone-200 shadow-sm shrink-0">
+                  <div className="flex justify-between items-center pb-2 border-b border-stone-100">
+                    <div>
+                      <h3 className="font-serif text-xs text-stone-805 font-bold uppercase tracking-wider">Existing Fabrics</h3>
+                      <p className="text-[10px] text-stone-500 font-mono mt-0.5">Total: {catalog.fabrics?.length || 0} fabrics listed</p>
+                    </div>
+                    {loadingCatalog && <Loader2 size={12} className="animate-spin text-amber-700" />}
+                  </div>
+                  
+                  {/* Scrollable grid of items inside the card */}
+                  <div className="max-h-[360px] overflow-y-auto pr-1">
+                    {catalog.fabrics?.length === 0 ? (
+                      <div className="text-center py-12 text-stone-400 text-xs">
+                        No fabrics found in catalog.
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pb-2 pt-1">
+                        {catalog.fabrics?.map((fab: any) => (
+                          <div key={fab.id} className="bg-stone-50/50 border border-stone-200 rounded-xl p-3 flex gap-3 items-center relative group shadow-sm hover:border-amber-600/30 hover:bg-stone-50 transition duration-300 animate-fadeIn">
+                            <img src={fab.imageUrl} alt={fab.name} className="h-14 w-14 rounded-lg object-cover bg-white border border-stone-200 shrink-0" />
+                            <div className="flex-1 min-w-0 text-left">
+                              <span className="text-[9px] font-mono text-amber-800 uppercase tracking-wide block font-semibold">{fab.category}</span>
+                              <h4 className="font-sans text-stone-900 font-semibold text-xs truncate">{fab.name}</h4>
+                              <p className="text-[10px] text-stone-500 font-mono mt-0.5">₦{fab.pricePerYard?.toLocaleString()} / Yard</p>
+                              <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono inline-block mt-1 ${fab.stockAvailability === "In Stock" ? "bg-emerald-50 text-emerald-800 border border-emerald-200" : "bg-rose-50 text-rose-800 border border-rose-200"}`}>
+                                {fab.stockAvailability}
+                              </span>
+                            </div>
+                            <button
+                              onClick={() => handleDeleteFabric(fab.id)}
+                              className="absolute top-2 right-2 p-1.5 bg-white hover:bg-rose-50 text-stone-500 hover:text-rose-700 rounded-lg border border-stone-100 hover:border-rose-200 transition"
+                              title="Delete fabric"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* 2. Add New Section (Below, fully visible/accessible) */}
+                <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm space-y-4 shrink-0">
+                  <div className="flex items-center gap-2 pb-2 border-b border-stone-100">
+                    <Plus size={14} className="text-amber-800" />
+                    <h3 className="font-serif text-xs uppercase tracking-wider text-amber-850 font-bold">Add Premium Fabric to Showroom</h3>
+                  </div>
+                  <form onSubmit={handleAddFabric} className="space-y-4 text-xs">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Fabric Name</label>
+                        <input
+                          type="text"
+                          required
+                          value={fabName}
+                          onChange={(e) => setFabName(e.target.value)}
+                          placeholder="e.g. Royal Silk Velvet"
+                          className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 placeholder-stone-400"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Category</label>
+                          <select
+                            value={fabCategory}
+                            onChange={(e) => setFabCategory(e.target.value)}
+                            className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800"
+                          >
+                            <option value="Lace">Lace</option>
+                            <option value="Ankara">Ankara</option>
+                            <option value="Aso Oke">Aso Oke</option>
+                            <option value="Brocade">Brocade</option>
+                            <option value="Silk">Silk</option>
+                            <option value="Velvet">Velvet</option>
+                            <option value="Cashmere">Cashmere</option>
+                            <option value="Custom">Custom (Specify below)</option>
+                          </select>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Price per Yard (₦)</label>
+                          <input
+                            type="number"
+                            required
+                            value={fabPrice}
+                            onChange={(e) => setFabPrice(e.target.value)}
+                            placeholder="e.g. 15000"
+                            className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {fabCategory === "Custom" && (
+                      <div className="space-y-1 bg-amber-500/5 border border-amber-500/15 p-3.5 rounded-xl animate-fadeIn">
+                        <label className="text-amber-800 font-mono text-[9px] uppercase tracking-wider block font-semibold">Custom Fabric Category Name</label>
+                        <input
+                          type="text"
+                          required
+                          value={customFabCategory}
+                          onChange={(e) => setCustomFabCategory(e.target.value)}
+                          placeholder="e.g. Crepe, Chiffon, Adire, Organza"
+                          className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 placeholder-stone-400"
+                        />
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Available Colors (Comma Separated)</label>
+                        <input
+                          type="text"
+                          value={fabColors}
+                          onChange={(e) => setFabColors(e.target.value)}
+                          placeholder="e.g. Red, Blue, Gold"
+                          className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 placeholder-stone-400"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Stock Status</label>
+                        <select
+                          value={fabStock}
+                          onChange={(e) => setFabStock(e.target.value)}
+                          className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800"
+                        >
+                          <option value="In Stock">In Stock</option>
+                          <option value="Out of Stock">Out of Stock</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Description</label>
+                      <textarea
+                        value={fabDesc}
+                        onChange={(e) => setFabDesc(e.target.value)}
+                        rows={2}
+                        placeholder="A premium description..."
+                        className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 resize-none placeholder-stone-400"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Image Source</label>
+                      <div className="flex gap-4">
+                        <label className="flex items-center gap-1.5 cursor-pointer text-stone-600 font-sans">
+                          <input
+                            type="radio"
+                            checked={fabImageType === "default"}
+                            onChange={() => setFabImageType("default")}
+                            className="accent-amber-700"
+                          />
+                          Unsplash Preset
+                        </label>
+                        <label className="flex items-center gap-1.5 cursor-pointer text-stone-600 font-sans">
+                          <input
+                            type="radio"
+                            checked={fabImageType === "upload"}
+                            onChange={() => setFabImageType("upload")}
+                            className="accent-amber-700"
+                          />
+                          Custom Upload
+                        </label>
+                      </div>
+
+                      {fabImageType === "upload" ? (
+                        <div className="border border-dashed border-stone-200 rounded-xl p-4 text-center hover:border-amber-600/40 transition bg-stone-50/50">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                try {
+                                  const base = await convertFileToBase64(file);
+                                  setFabImageFile(base);
+                                  triggerToast("Fabric image loaded successfully!");
+                                } catch (err) {
+                                  triggerToast("Error loading file", "info");
+                                }
+                              }
+                            }}
+                            className="hidden"
+                            id="fabric-img-upload"
+                          />
+                          <label htmlFor="fabric-img-upload" className="cursor-pointer flex flex-col items-center gap-2">
+                            <Upload size={18} className="text-stone-400" />
+                            <span className="text-[10px] text-stone-500">
+                              {fabImageFile ? "Image Loaded (Click to Change)" : "Upload Custom Fabric Image"}
+                            </span>
+                          </label>
+                          {fabImageFile && (
+                            <img src={fabImageFile} className="mt-2 h-14 mx-auto rounded-lg object-cover" alt="Preview" />
+                          )}
+                        </div>
+                      ) : (
+                        <p className="text-[10px] text-stone-400 italic">
+                          Category default image will be assigned automatically.
+                        </p>
+                      )}
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={addingItem}
+                      className="w-full bg-amber-700 hover:bg-amber-800 disabled:bg-amber-700/30 text-white font-serif font-bold py-2.5 rounded-xl uppercase tracking-wider transition flex items-center justify-center gap-2 shadow-sm"
+                    >
+                      {addingItem ? <Loader2 className="animate-spin h-3.5 w-3.5" /> : <><Plus size={12} /> Add Fabric</>}
+                    </button>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {activeTab === "gallery" && (
+              <div className="flex-1 flex flex-col gap-6 overflow-y-auto pr-1 min-h-0 text-left pb-10 scrollbar-thin">
+                {/* 1. Existing Gallery Section (Scrollable List) */}
+                <div className="space-y-3 bg-white p-5 rounded-2xl border border-stone-200 shadow-sm shrink-0">
+                  <div className="flex justify-between items-center pb-2 border-b border-stone-100">
+                    <div>
+                      <h3 className="font-serif text-xs text-stone-800 font-bold uppercase tracking-wider">Existing Showcase Designs</h3>
+                      <p className="text-[10px] text-stone-500 font-mono mt-0.5">Total: {catalog.gallery?.length || 0} items published</p>
+                    </div>
+                    {loadingCatalog && <Loader2 size={12} className="animate-spin text-amber-700" />}
+                  </div>
+                  
+                  <div className="max-h-[360px] overflow-y-auto pr-1">
+                    {catalog.gallery?.length === 0 ? (
+                      <div className="text-center py-12 text-stone-400 text-xs">
+                        No showcase items found in catalog.
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pb-2 pt-1">
+                        {catalog.gallery?.map((gal: any) => (
+                          <div key={gal.id} className="bg-stone-50/50 border border-stone-200 rounded-xl p-3 flex gap-3 items-center relative group shadow-sm hover:border-amber-600/30 hover:bg-stone-50 transition duration-300 animate-fadeIn">
+                            <img src={gal.imageUrl} alt={gal.title} className="h-14 w-14 rounded-lg object-cover bg-white border border-stone-200 shrink-0" />
+                            <div className="flex-1 min-w-0 text-left">
+                              <span className="text-[9px] font-mono text-amber-800 uppercase tracking-wide block font-semibold">{getCategoryDisplayLabel(gal.category)}</span>
+                              <h4 className="font-sans text-stone-900 font-semibold text-xs truncate">{gal.title}</h4>
+                              <p className="text-[10px] text-stone-500 truncate mt-0.5">{gal.description}</p>
+                            </div>
+                            <button
+                              onClick={() => handleDeleteGallery(gal.id)}
+                              className="absolute top-2 right-2 p-1.5 bg-white hover:bg-rose-50 text-stone-500 hover:text-rose-700 rounded-lg border border-stone-100 hover:border-rose-200 transition"
+                              title="Delete showcase item"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* 2. Add New Section (Below, fully visible/accessible) */}
+                <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm space-y-4 shrink-0">
+                  <div className="flex items-center gap-2 pb-2 border-b border-stone-100">
+                    <Plus size={14} className="text-amber-800" />
+                    <h3 className="font-serif text-xs uppercase tracking-wider text-amber-850 font-bold">Add Showcase Item to Gallery</h3>
+                  </div>
+                  <form onSubmit={handleAddGallery} className="space-y-4 text-xs">
+                    <div className="space-y-1">
+                      <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Showcase Title</label>
+                      <input
+                        type="text"
+                        required
+                        value={galTitle}
+                        onChange={(e) => setGalTitle(e.target.value)}
+                        placeholder="e.g. Crystal Embellished Lace Dress"
+                        className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 placeholder-stone-400"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-stone-50 p-3.5 border border-stone-200 rounded-xl">
+                      <div className="space-y-1">
+                        <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Gender</label>
+                        <select
+                          value={galGender}
+                          onChange={(e) => setGalGender(e.target.value)}
+                          className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 font-medium"
+                        >
+                          <option value="Male">Male</option>
+                          <option value="Female">Female</option>
+                          <option value="Unisex">Unisex</option>
+                        </select>
+                      </div>
+                      
+                      <div className="space-y-1">
+                        <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Age Group</label>
+                        <select
+                          value={galAgeGroup}
+                          onChange={(e) => setGalAgeGroup(e.target.value)}
+                          className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 font-medium"
+                        >
+                          <option value="Adult">Adult</option>
+                          <option value="Kids">Kids</option>
+                          <option value="Middle Age">Middle Age</option>
+                          <option value="Elder">Elder</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Style Type</label>
+                        <select
+                          value={galStyleType}
+                          onChange={(e) => setGalStyleType(e.target.value)}
+                          className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 font-medium"
+                        >
+                          <option value="Traditional">Traditional</option>
+                          <option value="Corporate">Corporate</option>
+                          <option value="Casual">Casual</option>
+                          <option value="Wedding">Wedding</option>
+                          <option value="Children">Children</option>
+                          <option value="Custom">Custom (Specific Type)</option>
+                        </select>
+                      </div>
+
+                      {galStyleType === "Custom" && (
+                        <div className="space-y-1">
+                          <label className="text-amber-700 font-mono text-[9px] uppercase tracking-wider block font-semibold">Specific Style Type</label>
+                          <input
+                            type="text"
+                            required
+                            value={galCustom}
+                            onChange={(e) => setGalCustom(e.target.value)}
+                            placeholder="e.g. Agbada, Embroidery"
+                            className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-650/50 text-stone-800 placeholder-stone-400 font-medium"
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Description</label>
+                      <textarea
+                        value={galDesc}
+                        onChange={(e) => setGalDesc(e.target.value)}
+                        rows={2}
+                        placeholder="Designer bespoke specifications..."
+                        className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 resize-none placeholder-stone-400"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Image Source</label>
+                      <div className="flex gap-4">
+                        <label className="flex items-center gap-1.5 cursor-pointer text-stone-600 font-sans">
+                          <input
+                            type="radio"
+                            checked={galImageType === "default"}
+                            onChange={() => setGalImageType("default")}
+                            className="accent-amber-700"
+                          />
+                          Unsplash Preset
+                        </label>
+                        <label className="flex items-center gap-1.5 cursor-pointer text-stone-600 font-sans">
+                          <input
+                            type="radio"
+                            checked={galImageType === "upload"}
+                            onChange={() => setGalImageType("upload")}
+                            className="accent-amber-700"
+                          />
+                          Custom Upload
+                        </label>
+                      </div>
+
+                      {galImageType === "upload" ? (
+                        <div className="border border-dashed border-stone-200 rounded-xl p-4 text-center hover:border-amber-600/40 transition bg-stone-50/50">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                try {
+                                  const base = await convertFileToBase64(file);
+                                  setGalImageFile(base);
+                                  triggerToast("Showcase image loaded successfully!");
+                                } catch (err) {
+                                  triggerToast("Error loading file", "info");
+                                }
+                              }
+                            }}
+                            className="hidden"
+                            id="gallery-img-upload"
+                          />
+                          <label htmlFor="gallery-img-upload" className="cursor-pointer flex flex-col items-center gap-2">
+                            <Upload size={18} className="text-stone-400" />
+                            <span className="text-[10px] text-stone-500">
+                              {galImageFile ? "Image Loaded (Click to Change)" : "Upload Custom Showcase Image"}
+                            </span>
+                          </label>
+                          {galImageFile && (
+                            <img src={galImageFile} className="mt-2 h-14 mx-auto rounded-lg object-cover" alt="Preview" />
+                          )}
+                        </div>
+                      ) : (
+                        <p className="text-[10px] text-stone-400 italic">
+                          Category default image will be assigned automatically.
+                        </p>
+                      )}
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={addingItem}
+                      className="w-full bg-amber-700 hover:bg-amber-800 disabled:bg-amber-700/30 text-white font-serif font-bold py-2.5 rounded-xl uppercase tracking-wider transition flex items-center justify-center gap-2 shadow-sm"
+                    >
+                      {addingItem ? <Loader2 className="animate-spin h-3.5 w-3.5" /> : <><Plus size={12} /> Add Showcase Item</>}
+                    </button>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {activeTab === "styles" && (
+              <div className="flex-1 flex flex-col gap-6 overflow-y-auto pr-1 min-h-0 text-left pb-10 scrollbar-thin">
+                {/* 1. Existing Styles Section (Scrollable List) */}
+                <div className="space-y-3 bg-white p-5 rounded-2xl border border-stone-200 shadow-sm shrink-0">
+                  <div className="flex justify-between items-center pb-2 border-b border-stone-100">
+                    <div>
+                      <h3 className="font-serif text-xs text-stone-800 font-bold uppercase tracking-wider">Existing Style Inspirations</h3>
+                      <p className="text-[10px] text-stone-500 font-mono mt-0.5">Total: {catalog.styles?.length || 0} styles available</p>
+                    </div>
+                    {loadingCatalog && <Loader2 size={12} className="animate-spin text-amber-700" />}
+                  </div>
+                  
+                  <div className="max-h-[360px] overflow-y-auto pr-1">
+                    {catalog.styles?.length === 0 ? (
+                      <div className="text-center py-12 text-stone-400 text-xs">
+                        No styles found in catalog.
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pb-2 pt-1">
+                        {catalog.styles?.map((sty: any) => (
+                          <div key={sty.id} className="bg-stone-50/50 border border-stone-200 rounded-xl p-3 flex gap-3 items-center relative group shadow-sm hover:border-amber-600/30 hover:bg-stone-50 transition duration-300 animate-fadeIn">
+                            <img src={sty.imageUrl} alt={sty.name} className="h-14 w-14 rounded-lg object-cover bg-white border border-stone-200 shrink-0" />
+                            <div className="flex-1 min-w-0 text-left">
+                              <span className="text-[9px] font-mono text-amber-800 uppercase tracking-wide block font-semibold">{getCategoryDisplayLabel(sty.category)}</span>
+                              <h4 className="font-sans text-stone-900 font-semibold text-xs truncate">{sty.name}</h4>
+                              <p className="text-[10px] text-stone-500 font-mono mt-0.5">{sty.estimatedYardage} Needed</p>
+                            </div>
+                            <button
+                              onClick={() => handleDeleteStyle(sty.id)}
+                              className="absolute top-2 right-2 p-1.5 bg-white hover:bg-rose-50 text-stone-500 hover:text-rose-700 rounded-lg border border-stone-100 hover:border-rose-200 transition"
+                              title="Delete style"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* 2. Add New Section (Below, fully visible/accessible) */}
+                <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm space-y-4 shrink-0">
+                  <div className="flex items-center gap-2 pb-2 border-b border-stone-100">
+                    <Plus size={14} className="text-amber-800" />
+                    <h3 className="font-serif text-xs uppercase tracking-wider text-amber-850 font-bold">Add Style Inspiration</h3>
+                  </div>
+                  <form onSubmit={handleAddStyle} className="space-y-4 text-xs">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Style Name</label>
+                        <input
+                          type="text"
+                          required
+                          value={styName}
+                          onChange={(e) => setStyName(e.target.value)}
+                          placeholder="e.g. Agbada Traditional 4-Piece"
+                          className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 placeholder-stone-400"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Est. Yardage Needed</label>
+                        <input
+                          type="text"
+                          required
+                          value={styYardage}
+                          onChange={(e) => setStyYardage(e.target.value)}
+                          placeholder="e.g. 4-5 Yards"
+                          className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 placeholder-stone-400"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-stone-50 p-3.5 border border-stone-200 rounded-xl">
+                      <div className="space-y-1">
+                        <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Gender</label>
+                        <select
+                          value={styGender}
+                          onChange={(e) => setStyGender(e.target.value)}
+                          className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 font-medium"
+                        >
+                          <option value="Male">Male</option>
+                          <option value="Female">Female</option>
+                          <option value="Unisex">Unisex</option>
+                        </select>
+                      </div>
+                      
+                      <div className="space-y-1">
+                        <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Age Group</label>
+                        <select
+                          value={styAgeGroup}
+                          onChange={(e) => setStyAgeGroup(e.target.value)}
+                          className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 font-medium"
+                        >
+                          <option value="Adult">Adult</option>
+                          <option value="Kids">Kids</option>
+                          <option value="Middle Age">Middle Age</option>
+                          <option value="Elder">Elder</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Style Type</label>
+                        <select
+                          value={styStyleType}
+                          onChange={(e) => setStyStyleType(e.target.value)}
+                          className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 font-medium"
+                        >
+                          <option value="Traditional">Traditional</option>
+                          <option value="Corporate">Corporate</option>
+                          <option value="Casual">Casual</option>
+                          <option value="Wedding">Wedding</option>
+                          <option value="Children">Children</option>
+                          <option value="Custom">Custom (Specific Type)</option>
+                        </select>
+                      </div>
+
+                      {styStyleType === "Custom" && (
+                        <div className="space-y-1">
+                          <label className="text-amber-700 font-mono text-[9px] uppercase tracking-wider block font-semibold">Specific Style Type</label>
+                          <input
+                            type="text"
+                            required
+                            value={styCustom}
+                            onChange={(e) => setStyCustom(e.target.value)}
+                            placeholder="e.g. Agbada, Embroidery"
+                            className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-650/50 text-stone-800 placeholder-stone-400 font-medium"
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Description</label>
+                      <textarea
+                        value={styDesc}
+                        onChange={(e) => setStyDesc(e.target.value)}
+                        rows={2}
+                        placeholder="Atelier cut & stitching inspiration details..."
+                        className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 resize-none placeholder-stone-400"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Image Source</label>
+                      <div className="flex gap-4">
+                        <label className="flex items-center gap-1.5 cursor-pointer text-stone-600 font-sans">
+                          <input
+                            type="radio"
+                            checked={styImageType === "default"}
+                            onChange={() => setStyImageType("default")}
+                            className="accent-amber-700"
+                          />
+                          Unsplash Preset
+                        </label>
+                        <label className="flex items-center gap-1.5 cursor-pointer text-stone-600 font-sans">
+                          <input
+                            type="radio"
+                            checked={styImageType === "upload"}
+                            onChange={() => setStyImageType("upload")}
+                            className="accent-amber-700"
+                          />
+                          Custom Upload
+                        </label>
+                      </div>
+
+                      {styImageType === "upload" ? (
+                        <div className="border border-dashed border-stone-200 rounded-xl p-4 text-center hover:border-amber-600/40 transition bg-stone-50/50">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                try {
+                                  const base = await convertFileToBase64(file);
+                                  setStyImageFile(base);
+                                  triggerToast("Style image loaded successfully!");
+                                } catch (err) {
+                                  triggerToast("Error loading file", "info");
+                                }
+                              }
+                            }}
+                            className="hidden"
+                            id="style-img-upload"
+                          />
+                          <label htmlFor="style-img-upload" className="cursor-pointer flex flex-col items-center gap-2">
+                            <Upload size={18} className="text-stone-400" />
+                            <span className="text-[10px] text-stone-500">
+                              {styImageFile ? "Image Loaded (Click to Change)" : "Upload Custom Style Image"}
+                            </span>
+                          </label>
+                          {styImageFile && (
+                            <img src={styImageFile} className="mt-2 h-14 mx-auto rounded-lg object-cover" alt="Preview" />
+                          )}
+                        </div>
+                      ) : (
+                        <p className="text-[10px] text-stone-400 italic">
+                          Category default image will be assigned automatically.
+                        </p>
+                      )}
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={addingItem}
+                      className="w-full bg-amber-700 hover:bg-amber-800 disabled:bg-amber-700/30 text-white font-serif font-bold py-2.5 rounded-xl uppercase tracking-wider transition flex items-center justify-center gap-2 shadow-sm"
+                    >
+                      {addingItem ? <Loader2 className="animate-spin h-3.5 w-3.5" /> : <><Plus size={12} /> Add Style</>}
+                    </button>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {activeTab === "contact" && (
+              <div className="flex-1 flex flex-col gap-6 overflow-y-auto pr-1 min-h-0 text-left pb-10 scrollbar-thin">
+                <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm space-y-4 shrink-0">
+                  <div className="flex items-center justify-between pb-2 border-b border-stone-100">
+                    <div className="flex items-center gap-2">
+                      <Phone size={14} className="text-amber-800" />
+                      <h3 className="font-serif text-xs uppercase tracking-wider text-amber-850 font-bold">Update Atelier Contact Coordinates</h3>
+                    </div>
+                    {loadingContact && <Loader2 size={12} className="animate-spin text-amber-700" />}
+                  </div>
+
+                  <p className="text-[11px] text-stone-500 leading-relaxed font-light">
+                    Modify physical coordinates, email, hotlines, maps locator embed, and active social profiles shown dynamically across user digital viewports.
+                  </p>
+
+                  <form onSubmit={handleSaveContact} className="space-y-4 text-xs">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">WhatsApp Number (with +)</label>
+                        <input
+                          type="text"
+                          required
+                          value={contactInfo.phoneNumber}
+                          onChange={(e) => setContactInfo({ ...contactInfo, phoneNumber: e.target.value })}
+                          placeholder="e.g. +234705378152"
+                          className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 font-mono"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Display Phone Number</label>
+                        <input
+                          type="text"
+                          required
+                          value={contactInfo.displayPhone}
+                          onChange={(e) => setContactInfo({ ...contactInfo, displayPhone: e.target.value })}
+                          placeholder="e.g. 0705378152"
+                          className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 font-mono"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Electronic Mailbox Address</label>
+                        <input
+                          type="email"
+                          required
+                          value={contactInfo.emailAddress}
+                          onChange={(e) => setContactInfo({ ...contactInfo, emailAddress: e.target.value })}
+                          placeholder="info@oluwasholatextiles.com.ng"
+                          className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Official Website</label>
+                        <input
+                          type="text"
+                          value={contactInfo.websiteAddress || ""}
+                          onChange={(e) => setContactInfo({ ...contactInfo, websiteAddress: e.target.value })}
+                          placeholder="www.oluwasholatextiles.com.ng"
+                          className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Atelier Physical Location</label>
+                      <input
+                        type="text"
+                        required
+                        value={contactInfo.physicalAddress}
+                        onChange={(e) => setContactInfo({ ...contactInfo, physicalAddress: e.target.value })}
+                        placeholder="39, Bamgbose Street, Lagos Island, Lagos State"
+                        className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Google Map Embed Source URL</label>
+                      <textarea
+                        rows={2}
+                        required
+                        value={contactInfo.mapUrl}
+                        onChange={(e) => setContactInfo({ ...contactInfo, mapUrl: e.target.value })}
+                        placeholder="https://maps.google.com/maps?q=..."
+                        className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 font-mono text-[10px]"
+                      />
+                    </div>
+
+                    <div className="space-y-3 bg-stone-50 p-4 border border-stone-200 rounded-2xl">
+                      <h4 className="font-serif text-[10px] font-bold uppercase tracking-wider text-stone-700">Social Media Links</h4>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">TikTok URL</label>
+                          <input
+                            type="text"
+                            value={contactInfo.tiktokUrl || ""}
+                            onChange={(e) => setContactInfo({ ...contactInfo, tiktokUrl: e.target.value })}
+                            placeholder="https://www.tiktok.com/@..."
+                            className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 text-[11px]"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Instagram URL</label>
+                          <input
+                            type="text"
+                            value={contactInfo.instagramUrl || ""}
+                            onChange={(e) => setContactInfo({ ...contactInfo, instagramUrl: e.target.value })}
+                            placeholder="https://www.instagram.com/..."
+                            className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 text-[11px]"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">YouTube URL</label>
+                          <input
+                            type="text"
+                            value={contactInfo.youtubeUrl || ""}
+                            onChange={(e) => setContactInfo({ ...contactInfo, youtubeUrl: e.target.value })}
+                            placeholder="https://www.youtube.com/@..."
+                            className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 text-[11px]"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={savingContact}
+                      className="w-full bg-amber-700 hover:bg-amber-800 disabled:bg-amber-700/30 text-white font-serif font-bold py-2.5 rounded-xl uppercase tracking-wider transition flex items-center justify-center gap-2 shadow-sm cursor-pointer"
+                    >
+                      {savingContact ? <Loader2 className="animate-spin h-3.5 w-3.5" /> : "Save Coordinates"}
+                    </button>
+                  </form>
+                </div>
+              </div>
+            )}
+
+          </div>
+        )}
+
+      </div>
+
+        </motion.div>
+      </div>
+    </AnimatePresence>
+  );
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Oluwashola Textile Accessories",
+  "description": "Premium bespoke showroom catalog of luxury textiles, traditional and corporate tailoring style inspirations, secure body specifications, and order intakes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
