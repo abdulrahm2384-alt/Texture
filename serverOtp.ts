@@ -1,36 +1,10 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 import dotenv from "dotenv";
 import crypto from "crypto";
 
 dotenv.config();
 
-// Load SMTP configurations safely
-const SMTP_HOST = process.env.SMTP_HOST?.trim();
-
-let parsedPort = 587;
-if (process.env.SMTP_PORT) {
-  const p = parseInt(process.env.SMTP_PORT.trim(), 10);
-  if (!isNaN(p)) {
-    parsedPort = p;
-  }
-}
-const SMTP_PORT = parsedPort;
-
-const SMTP_USER = process.env.SMTP_USER?.trim();
-const SMTP_PASS = process.env.SMTP_PASS?.trim();
-
-// Secure is true if explicitly configured, or defaults to true if port is 465
-const SMTP_SECURE = process.env.SMTP_SECURE?.trim().toLowerCase() === "true" || 
-                    process.env.SMTP_SECURE?.trim().toLowerCase() === "yes" || 
-                    SMTP_PORT === 465;
-
-// Optional custom sender, fallback to SMTP_USER if it is an email, otherwise ADMIN_EMAIL
-const SMTP_FROM = process.env.SMTP_FROM?.trim() || 
-                  (SMTP_USER && SMTP_USER.includes("@") ? SMTP_USER : null) || 
-                  (process.env.ADMIN_EMAIL?.trim()) || 
-                  "admin@oluwashola-atelier.com";
-
-// Secure Admin Email configured on DirectAdmin
+// Secure Admin Email configured
 export const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "admin@oluwashola-atelier.com").toLowerCase().trim();
 
 /**
@@ -40,6 +14,22 @@ export function isAdminEmail(email: string): boolean {
   const lower = email.toLowerCase().trim();
   return lower === ADMIN_EMAIL;
 }
+
+// Lazy initializer for Resend client to prevent crashes if key is initially absent
+let resendClient: Resend | null = null;
+function getResendClient(): Resend {
+  if (!resendClient) {
+    const key = process.env.RESEND_API_KEY;
+    if (!key) {
+      throw new Error("RESEND_API_KEY environment variable is required to send emails via Resend.");
+    }
+    resendClient = new Resend(key);
+  }
+  return resendClient;
+}
+
+// Optional custom sender, fallback to onboarding@resend.dev
+const RESEND_FROM = process.env.RESEND_FROM?.trim() || "onboarding@resend.dev";
 
 // In-Memory OTP store (lightweight, highly secure, automatic expiry)
 // Key: email -> Value: { otp: string, expiresAt: number }
@@ -55,15 +45,16 @@ export function generateOtp(): string {
 }
 
 /**
- * Send OTP via SMTP
+ * Send OTP via Resend
  */
 export async function sendOtpEmail(toEmail: string, otpCode: string): Promise<{ success: boolean; error?: string }> {
   // Enforce lowercase
   const targetEmail = toEmail.toLowerCase().trim();
 
-  // 1. Verify SMTP configurations are set
-  if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {
-    const errMsg = "SMTP mail server configuration is missing in environment variables (.env)";
+  // 1. Verify Resend configurations are set
+  const apiKey = process.env.RESEND_API_KEY?.trim();
+  if (!apiKey) {
+    const errMsg = "RESEND_API_KEY is missing in environment variables (.env)";
     console.error(`[OTP Error] ${errMsg}`);
     
     // Developer fallback log so testing isn't blocked on incomplete configurations
@@ -74,84 +65,96 @@ export async function sendOtpEmail(toEmail: string, otpCode: string): Promise<{ 
     
     return { 
       success: false, 
-      error: "Mail server credentials are not configured. If in development, check your server console log." 
+      error: "Resend API Key is not configured. If in development, check your server console log." 
     };
   }
 
   try {
-    // 2. Create SMTP transport with debug capabilities and robust timeouts
-    console.log(`[SMTP Debug] Preparing SMTP connection:`);
-    console.log(`  Host: ${SMTP_HOST}`);
-    console.log(`  Port: ${SMTP_PORT}`);
-    console.log(`  Secure Mode: ${SMTP_SECURE}`);
-    console.log(`  Auth User: ${SMTP_USER}`);
-    console.log(`  From Header: ${SMTP_FROM}`);
+    console.log(`[Resend Debug] Preparing email via Resend:`);
+    console.log(`  From Header: ${RESEND_FROM}`);
     console.log(`  To Recipient: ${targetEmail}`);
 
-    const transporter = nodemailer.createTransport({
-      host: SMTP_HOST,
-      port: SMTP_PORT,
-      secure: SMTP_SECURE, // true for 465, false for other ports
-      auth: {
-        user: SMTP_USER,
-        pass: SMTP_PASS,
-      },
-      tls: {
-        // Prevent self-signed certificate errors common in custom mail servers / DirectAdmin
-        rejectUnauthorized: false,
-      },
-      connectionTimeout: 15000, // 15 seconds connection timeout
-      greetingTimeout: 15000,   // 15 seconds greeting timeout
-      socketTimeout: 20000,     // 20 seconds socket timeout
-      debug: true,              // Enable Nodemailer internal SMTP handshake debug logs
-      logger: true,             // Log SMTP conversation trace to process stdout/console
+    const resend = getResendClient();
+    const currentYear = new Date().getFullYear();
+
+    const fromHeader = RESEND_FROM.includes("<") ? RESEND_FROM : `"Oluwashola Atelier" <${RESEND_FROM}>`;
+
+    // 2. Define html template
+    const textContent = `Hello,\n\nYou requested a one-time verification code to access the Oluwashola Atelier administrative panel. Please enter this code to securely complete your login:\n\n${otpCode}\n\nThis verification code is valid for 5 minutes. It can only be used once.\n\nIf you did not make this request, please ignore this email.\n\nBest regards,\nOluwashola Atelier`;
+    
+    const htmlContent = `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #fafaf9; padding: 48px 16px; color: #292524; line-height: 1.5; -webkit-font-smoothing: antialiased;">
+          <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 500px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e7e5e4; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+            <!-- Header -->
+            <tr>
+              <td style="padding: 32px 32px 20px 32px; text-align: center; border-bottom: 1px solid #f5f5f4;">
+                <span style="font-size: 16px; font-weight: 600; letter-spacing: 0.15em; color: #1c1917; text-transform: uppercase;">
+                  OLUWASHOLA ATELIER
+                </span>
+              </td>
+            </tr>
+            <!-- Content Body -->
+            <tr>
+              <td style="padding: 32px;">
+                <p style="font-size: 14px; color: #44403c; margin: 0 0 16px 0;">
+                  Hello,
+                </p>
+                <p style="font-size: 14px; color: #44403c; margin: 0 0 24px 0; line-height: 1.6;">
+                  You requested a one-time verification code to access the Oluwashola Atelier administrative panel. Please enter this code to securely complete your login:
+                </p>
+                
+                <!-- OTP Display Card -->
+                <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin: 24px 0;">
+                  <tr>
+                    <td align="center" style="background-color: #f5f5f4; border: 1px solid #e7e5e4; padding: 18px; border-radius: 8px;">
+                      <span style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 36px; font-weight: 700; letter-spacing: 0.25em; color: #b45309; text-align: center; display: inline-block; padding-left: 0.25em;">
+                        ${otpCode}
+                      </span>
+                    </td>
+                  </tr>
+                </table>
+                
+                <p style="font-size: 12px; color: #78716c; margin: 24px 0 0 0; line-height: 1.6;">
+                  ⌛ This verification code is valid for <strong>5 minutes</strong>. It can only be used once.
+                </p>
+              </td>
+            </tr>
+            <!-- Footer -->
+            <tr>
+              <td style="padding: 24px 32px; background-color: #fafaf9; border-top: 1px solid #f5f5f4; text-align: center;">
+                <p style="font-size: 11px; color: #a8a29e; margin: 0 0 8px 0; line-height: 1.5;">
+                  If you did not make this request, please ignore this email. No action is required to keep your account secure.
+                </p>
+                <p style="font-size: 10px; color: #c2c1be; margin: 12px 0 0 0; letter-spacing: 0.05em; text-transform: uppercase;">
+                  Oluwashola Atelier &copy; ${currentYear}
+                </p>
+              </td>
+            </tr>
+          </table>
+        </div>
+      `;
+
+    // 3. Dispatch email using Resend
+    const response = await resend.emails.send({
+      from: fromHeader,
+      to: targetEmail,
+      subject: `Oluwashola Atelier verification code: ${otpCode}`,
+      text: textContent,
+      html: htmlContent,
     });
 
-    // 3. Define luxurious rich-text email template matching Oluwashola style
-    const mailOptions = {
-      from: `"Oluwashola Atelier" <${SMTP_FROM}>`,
-      to: targetEmail,
-      subject: "🔒 Admin Access Verification - OLUWASHOLA ATELIER",
-      text: `Your OLUWASHOLA ATELIER Admin Access OTP code is: ${otpCode}. It will expire in 5 minutes. If you did not request this, please secure your server credentials.`,
-      html: `
-        <div style="font-family: 'Georgia', serif; background-color: #0c0a09; color: #f5f5f4; padding: 40px 20px; text-align: center;">
-          <div style="max-width: 500px; margin: 0 auto; background-color: #1c1917; border: 1px solid #d97706; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);">
-            
-            <h1 style="color: #f5f5f4; font-size: 20px; font-weight: normal; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 30px; border-bottom: 1px solid #44403c; padding-bottom: 15px;">
-              OLUWASHOLA ATELIER
-            </h1>
-            
-            <p style="font-size: 14px; line-height: 1.6; color: #d6d3d1; margin-bottom: 25px;">
-              A request was initiated for administrative login authorization. Use the temporary verification key below to grant entry:
-            </p>
-            
-            <div style="background-color: #292524; border: 1px solid #78350f; color: #f59e0b; font-family: monospace; font-size: 32px; font-weight: bold; letter-spacing: 0.25em; padding: 15px 0; border-radius: 12px; margin: 25px 0; user-select: all;">
-              ${otpCode}
-            </div>
-            
-            <p style="font-size: 11px; color: #a8a29e; line-height: 1.5; margin-top: 25px;">
-              ⌛ This access token is strictly valid for <strong>5 minutes</strong> and will render inactive immediately upon initial verification attempts (One-Time Use).
-            </p>
-            
-            <p style="font-size: 10px; color: #78716c; margin-top: 40px; border-top: 1px solid #44403c; padding-top: 20px;">
-              If you did not request administrative authorization, please review your hosting security immediately.
-            </p>
-            
-          </div>
-        </div>
-      `,
-    };
+    if (response.error) {
+      throw new Error(response.error.message || JSON.stringify(response.error));
+    }
 
-    // 4. Dispatch email
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`[OTP Sent] Code successfully dispatched to ${targetEmail}. Message ID: ${info.messageId}`);
+    console.log(`[Resend OTP Sent] Code successfully dispatched to ${targetEmail}. Message ID: ${response.data?.id}`);
     return { success: true };
   } catch (err: any) {
-    console.error(`[SMTP Transmission Error] Failed to send OTP to ${targetEmail}:`, err);
+    console.error(`[Resend Transmission Error] Failed to send OTP to ${targetEmail}:`, err);
     
     // Fallback log for development/troubleshooting so developer gets the code
     console.log(`\n======================================================`);
-    console.log(`[DEVELOPER BACKUP LOG] Failed to send SMTP mail to ${targetEmail}`);
+    console.log(`[DEVELOPER BACKUP LOG] Failed to send Resend mail to ${targetEmail}`);
     console.log(`OTP Code: ${otpCode} (Expires in 5 minutes)`);
     console.log(`Error Details: ${err.message || err}`);
     console.log(`======================================================\n`);

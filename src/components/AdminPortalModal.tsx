@@ -78,6 +78,11 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
   // Tabs navigation
   const [activeTab, setActiveTab] = useState<"gallery" | "fabrics" | "styles" | "contact">("gallery");
 
+  // Admin Control Dropdown & Seeding States
+  const [showAdminMenu, setShowAdminMenu] = useState(false);
+  const [showSeedDialog, setShowSeedDialog] = useState(false);
+  const [isSeeding, setIsSeeding] = useState(false);
+
   // Contact Form State
   const [contactInfo, setContactInfo] = useState<ContactInfo>({
     phoneNumber: "+234705378152",
@@ -706,6 +711,135 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
     }
   };
 
+  const handleSeedSection = async (section: string) => {
+    setIsSeeding(true);
+    try {
+      if (isTestingMode()) {
+        if (section === "fabrics") {
+          const mockFabrics = [
+            {
+              id: "fab-gen-" + Math.random().toString(36).substring(2, 9),
+              name: "Royal Emerald Beaded Voile Lace",
+              category: "Lace",
+              pricePerYard: 55000,
+              availableColors: ["Emerald Green", "Champagne Gold"],
+              colorsHex: ["#064e3b", "#f1e9d2"],
+              description: "Luxury Swiss voile lace intricately beaded with royal emerald green sequins and high-quality gold lurex thread details. Exquisite weight and drape, ideal for bridal owambe and high society events.",
+              stockAvailability: "In Stock",
+              imageUrl: "https://images.unsplash.com/photo-1594224140980-6e9dd0223e38?auto=format&fit=crop&q=80&w=600"
+            },
+            {
+              id: "fab-gen-" + Math.random().toString(36).substring(2, 9),
+              name: "Sunset Imperial Ankara Wax",
+              category: "Ankara",
+              pricePerYard: 18000,
+              availableColors: ["Saffron Orange", "Teal Waves", "Indigo Blue"],
+              colorsHex: ["#ea580c", "#0d9488", "#1e3a8a"],
+              description: "Exclusive high-grade Vlisco Ankara cotton wax print with a stunning vintage sunburst sunset pattern. Features rich, colorfast dyes and structured handfeel perfect for traditional Senator, Kaftan, or custom gowns.",
+              stockAvailability: "In Stock",
+              imageUrl: "https://images.unsplash.com/photo-1584184924103-e310d9dc82fc?auto=format&fit=crop&q=80&w=600"
+            },
+            {
+              id: "fab-gen-" + Math.random().toString(36).substring(2, 9),
+              name: "Crimson Gold Handloomed Aso Oke",
+              category: "Aso Oke",
+              pricePerYard: 70000,
+              availableColors: ["Crimson Wine", "Bronze Gold"],
+              colorsHex: ["#7f1d1d", "#b45309"],
+              description: "Masterfully hand-loomed traditional Yoruba fabric interwoven with premium metallic bronze and crimson gold threads for an unmatched royal reflection. Ideal for majestic caps, geles, sashes, and luxury custom Agbada sets.",
+              stockAvailability: "Low Stock",
+              imageUrl: "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&q=80&w=600"
+            }
+          ];
+          const updatedCatalog = { ...catalog, fabrics: [...(catalog.fabrics || []), ...mockFabrics] };
+          setCatalog(updatedCatalog);
+        } else if (section === "gallery") {
+          const mockGallery = [
+            {
+              id: "work-gen-" + Math.random().toString(36).substring(2, 9),
+              title: "The Sovereign Sapphire Agbada Masterpiece",
+              category: "Traditional",
+              description: "A majestic 4-piece flowing traditional Nigerian Agbada tailored to absolute perfection in luxury royal blue Aso Oke. Features complex golden hand embroidery on the breastplate and sleeves, designed for standard-set traditional events.",
+              imageUrl: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=600"
+            },
+            {
+              id: "work-gen-" + Math.random().toString(36).substring(2, 9),
+              title: "Gilded Emerald Mermaid Lace Corset",
+              category: "Female",
+              description: "A breathtaking bespoke floor-length mermaid bridal reception dress tailored in fine Swiss beaded lace. Finished with a sturdy hand-boned corset structure and elegant emerald satin underlays.",
+              imageUrl: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=600"
+            },
+            {
+              id: "work-gen-" + Math.random().toString(36).substring(2, 9),
+              title: "Imperial Ivory Senator Kaftan",
+              category: "Male",
+              description: "Premium tailored ivory-white senator suit with minimalist asymmetric navy piping and a custom monogrammed chest seal. Crafted in superfine breathable Italian wool-cashmere blend.",
+              imageUrl: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&q=80&w=600"
+            }
+          ];
+          const updatedCatalog = { ...catalog, gallery: [...(catalog.gallery || []), ...mockGallery] };
+          setCatalog(updatedCatalog);
+        } else if (section === "styles") {
+          const mockStyles = [
+            {
+              id: "style-gen-" + Math.random().toString(36).substring(2, 9),
+              name: "Regal Sovereign Agbada Style",
+              category: "Traditional",
+              description: "A majestic flowing traditional Nigerian 4-piece Agbada ensemble including the grand outer gown, matching long-sleeve Kaftan undergarment, slim straight-leg trousers, and custom matching cap. Exudes leadership and absolute status.",
+              estimatedYardage: "7-8 Yards of Fabric (e.g. Cashmere, Brocade) + 2 Yards of Accent Aso Oke",
+              imageUrl: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=600"
+            },
+            {
+              id: "style-gen-" + Math.random().toString(36).substring(2, 9),
+              name: "Corset Mermaid Lace Silhouette",
+              category: "Female",
+              description: "A tailored-to-fit evening and wedding design. Built on a sturdy boned corset foundation, cascading into a sweeping flare that highlights the fabrics' lace pattern beautifully.",
+              estimatedYardage: "5-6 Yards of Luxury Swiss Lace/Satin",
+              imageUrl: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=600"
+            },
+            {
+              id: "style-gen-" + Math.random().toString(36).substring(2, 9),
+              name: "Crisp Senator Kaftan Style",
+              category: "Male",
+              description: "Modern formal African elegance. High band collar, slim tapered sleeves, straight straight-cut trousers, highlighted by structured geometric embroidery or high-contrast side piping.",
+              estimatedYardage: "4 Yards of Superfine Cashmere or Wool",
+              imageUrl: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&q=80&w=600"
+            }
+          ];
+          const updatedCatalog = { ...catalog, styles: [...(catalog.styles || []), ...mockStyles] };
+          setCatalog(updatedCatalog);
+        }
+        triggerToast(`Testing Mode: Section seeded successfully locally.`);
+        setShowSeedDialog(false);
+        if (onCatalogChanged) onCatalogChanged();
+      } else {
+        const token = getAdminToken() || "";
+        const res = await fetch("/api/admin/seed-section", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ section })
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || "Failed to seed section");
+        }
+
+        triggerToast(`Showroom section seeded successfully with realistic items!`, "success");
+        setShowSeedDialog(false);
+        await loadCatalog();
+        if (onCatalogChanged) onCatalogChanged();
+      }
+    } catch (err: any) {
+      triggerToast(err.message || "Failed to seed section.", "info");
+    } finally {
+      setIsSeeding(false);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -1012,43 +1146,59 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
                     </button>
                   </div>
 
-                  <div className="flex items-center gap-2 pb-2 self-stretch sm:self-auto justify-end flex-wrap">
-                    <button
-                      onClick={handleSeedCatalog}
-                      disabled={performingAction}
-                      className="flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 disabled:opacity-50 text-emerald-800 border border-emerald-200 rounded-xl px-3 py-1.5 text-[10px] uppercase font-mono tracking-wider transition font-medium cursor-pointer shrink-0"
-                      title="Seed default showcase catalog items for preview"
-                    >
-                      <Sparkles size={11} />
-                      Seed Catalog
-                    </button>
-                    <button
-                      onClick={handleClearCatalog}
-                      disabled={performingAction}
-                      className="flex items-center gap-1.5 bg-orange-50 hover:bg-orange-100 disabled:opacity-50 text-orange-800 border border-orange-200 rounded-xl px-3 py-1.5 text-[10px] uppercase font-mono tracking-wider transition font-medium cursor-pointer shrink-0"
-                      title="Clear all showroom catalog items to inspect empty state"
-                    >
-                      <Trash2 size={11} />
-                      Purge Showroom
-                    </button>
-                    <button
-                      onClick={loadCatalog}
-                      disabled={performingAction}
-                      className="flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-xl px-3 py-1.5 text-[10px] uppercase font-mono tracking-wider transition font-medium cursor-pointer shrink-0"
-                      title="Reload catalog from database"
-                    >
-                      <RefreshCw size={11} />
-                      Reload Catalog
-                    </button>
-                    <button
-                      onClick={handleLogout}
-                      disabled={performingAction}
-                      className="flex items-center gap-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl px-3.5 py-1.5 text-[10px] uppercase font-mono tracking-wider transition shrink-0"
-                      id="admin-logout-btn"
-                    >
-                      <LogOut size={11} />
-                      Log Out
-                    </button>
+                  <div className="flex items-center gap-2 pb-2 self-stretch sm:self-auto justify-end flex-wrap relative">
+                    {(() => {
+                      const isGalleryEmpty = !catalog.gallery || catalog.gallery.length === 0;
+                      const isFabricsEmpty = !catalog.fabrics || catalog.fabrics.length === 0;
+                      const isStylesEmpty = !catalog.styles || catalog.styles.length === 0;
+                      const canSeed = isGalleryEmpty || isFabricsEmpty || isStylesEmpty;
+
+                      return (
+                        <div className="relative">
+                          <button
+                            onClick={() => setShowAdminMenu(!showAdminMenu)}
+                            className="flex items-center gap-1.5 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-300 rounded-xl px-4 py-2 text-[10px] uppercase font-mono tracking-wider transition font-medium cursor-pointer"
+                            id="admin-controls-dropdown-btn"
+                          >
+                            <Sliders size={12} className="text-stone-600" />
+                            Admin Control ▾
+                          </button>
+
+                          {showAdminMenu && (
+                            <>
+                              <div 
+                                className="fixed inset-0 z-10" 
+                                onClick={() => setShowAdminMenu(false)}
+                              />
+                              <div className="absolute right-0 mt-2 w-52 bg-white border border-stone-200 rounded-xl shadow-lg z-20 overflow-hidden font-mono text-[9px] uppercase tracking-wider divide-y divide-stone-100">
+                                {canSeed && (
+                                  <button
+                                    onClick={() => {
+                                      setShowAdminMenu(false);
+                                      setShowSeedDialog(true);
+                                    }}
+                                    className="w-full text-left flex items-center gap-2 px-4 py-3 hover:bg-emerald-50/50 text-emerald-800 hover:text-emerald-900 transition font-semibold"
+                                  >
+                                    <Sparkles size={11} className="text-emerald-600" />
+                                    Seed Catalog
+                                  </button>
+                                )}
+                                <button
+                                  onClick={() => {
+                                    setShowAdminMenu(false);
+                                    handleLogout();
+                                  }}
+                                  className="w-full text-left flex items-center gap-2 px-4 py-3 hover:bg-rose-50/50 text-rose-700 hover:text-rose-800 transition font-semibold"
+                                >
+                                  <LogOut size={11} className="text-rose-600" />
+                                  Log Out
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
 
@@ -2328,6 +2478,104 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
 
         </motion.div>
       </div>
+
+      {showSeedDialog && (
+        <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+          <div className="bg-white border border-stone-200 rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center space-y-4 font-sans relative">
+            <button 
+              onClick={() => setShowSeedDialog(false)} 
+              className="absolute top-4 right-4 text-stone-400 hover:text-stone-600 transition"
+            >
+              <X size={16} />
+            </button>
+
+            <div className="w-10 h-10 bg-emerald-50 rounded-full flex items-center justify-center mx-auto text-emerald-800">
+              <Sparkles size={18} />
+            </div>
+
+            <div className="space-y-1 text-center">
+              <h3 className="font-serif text-sm font-bold text-stone-900 uppercase tracking-wider">Seed Catalog Section</h3>
+              <p className="text-[10px] text-stone-500 leading-relaxed">
+                Select an empty showroom category below. Gemini will design 3 highly realistic, premium traditional and corporate fashion items with curated visual descriptions to populate your catalog.
+              </p>
+            </div>
+
+            <div className="space-y-2 pt-2 text-left">
+              {(() => {
+                const isGalleryEmpty = !catalog.gallery || catalog.gallery.length === 0;
+                const isFabricsEmpty = !catalog.fabrics || catalog.fabrics.length === 0;
+                const isStylesEmpty = !catalog.styles || catalog.styles.length === 0;
+
+                return (
+                  <>
+                    <button
+                      disabled={!isGalleryEmpty || isSeeding}
+                      onClick={() => handleSeedSection("gallery")}
+                      className={`w-full flex items-center justify-between px-4 py-3 border rounded-xl text-left transition ${
+                        isGalleryEmpty 
+                          ? "border-emerald-200 bg-emerald-50/40 hover:bg-emerald-50/80 text-emerald-950 cursor-pointer font-medium" 
+                          : "border-stone-100 bg-stone-50 text-stone-400 cursor-not-allowed"
+                      }`}
+                    >
+                      <span className="text-xs font-semibold">Showcase Gallery</span>
+                      <span className="text-[8px] font-mono px-2 py-0.5 rounded bg-white border border-stone-200">
+                        {isGalleryEmpty ? "Empty (Seedable)" : "Has Data"}
+                      </span>
+                    </button>
+
+                    <button
+                      disabled={!isFabricsEmpty || isSeeding}
+                      onClick={() => handleSeedSection("fabrics")}
+                      className={`w-full flex items-center justify-between px-4 py-3 border rounded-xl text-left transition ${
+                        isFabricsEmpty 
+                          ? "border-emerald-200 bg-emerald-50/40 hover:bg-emerald-50/80 text-emerald-950 cursor-pointer font-medium" 
+                          : "border-stone-100 bg-stone-50 text-stone-400 cursor-not-allowed"
+                      }`}
+                    >
+                      <span className="text-xs font-semibold">Fabrics Catalog</span>
+                      <span className="text-[8px] font-mono px-2 py-0.5 rounded bg-white border border-stone-200">
+                        {isFabricsEmpty ? "Empty (Seedable)" : "Has Data"}
+                      </span>
+                    </button>
+
+                    <button
+                      disabled={!isStylesEmpty || isSeeding}
+                      onClick={() => handleSeedSection("styles")}
+                      className={`w-full flex items-center justify-between px-4 py-3 border rounded-xl text-left transition ${
+                        isStylesEmpty 
+                          ? "border-emerald-200 bg-emerald-50/40 hover:bg-emerald-50/80 text-emerald-950 cursor-pointer font-medium" 
+                          : "border-stone-100 bg-stone-50 text-stone-400 cursor-not-allowed"
+                      }`}
+                    >
+                      <span className="text-xs font-semibold">Style Inspiration</span>
+                      <span className="text-[8px] font-mono px-2 py-0.5 rounded bg-white border border-stone-200">
+                        {isStylesEmpty ? "Empty (Seedable)" : "Has Data"}
+                      </span>
+                    </button>
+                  </>
+                );
+              })()}
+            </div>
+
+            {isSeeding && (
+              <div className="flex items-center justify-center gap-2 text-[10px] font-mono text-amber-800 animate-pulse bg-amber-50 py-2 rounded-lg">
+                <Loader2 className="animate-spin" size={12} />
+                <span>Generating premium fashion details...</span>
+              </div>
+            )}
+
+            <div className="pt-2">
+              <button
+                disabled={isSeeding}
+                onClick={() => setShowSeedDialog(false)}
+                className="w-full bg-stone-100 hover:bg-stone-200 text-stone-800 text-[10px] py-2.5 rounded-xl font-mono uppercase tracking-wider transition cursor-pointer"
+              >
+                Close Dialog
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AnimatePresence>
   );
 }

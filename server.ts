@@ -5,6 +5,7 @@ import crypto from "crypto";
 import { createServer as createViteServer } from "vite";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
+import { GoogleGenAI, Type } from "@google/genai";
 
 dotenv.config();
 
@@ -861,21 +862,331 @@ app.put("/api/admin/orders/:id/status", async (req, res) => {
   }
 });
 
-app.post("/api/admin/seed-default-catalog", async (req, res) => {
+// Lazy initializer for GoogleGenAI
+let aiClient: GoogleGenAI | null = null;
+function getGeminiClient(): GoogleGenAI | null {
+  if (!aiClient) {
+    const key = process.env.GEMINI_API_KEY;
+    if (key) {
+      aiClient = new GoogleGenAI({
+        apiKey: key,
+        httpOptions: {
+          headers: {
+            'User-Agent': 'aistudio-build',
+          }
+        }
+      });
+    }
+  }
+  return aiClient;
+}
+
+app.post("/api/admin/seed-section", async (req, res) => {
   try {
     const adminRole = getAdminFromAuthHeader(req.headers.authorization);
     if (!adminRole) {
       return res.status(401).json({ error: "Access denied: Invalid or expired admin session token" });
     }
-    const success = await seedDefaultCatalog();
-    if (success) {
-      res.json({ success: true, message: "Default showroom catalog has been seeded successfully" });
-    } else {
-      res.status(500).json({ error: "Failed to seed default catalog" });
+
+    const { section } = req.body;
+    if (!section || !["gallery", "fabrics", "styles"].includes(section)) {
+      return res.status(400).json({ error: "Invalid section specified for seeding" });
     }
+
+    const ai = getGeminiClient();
+
+    if (section === "fabrics") {
+      const existing = await getAddedFabrics();
+      if (existing.length > 0) {
+        return res.status(400).json({ error: "Fabric Catalog section is not empty" });
+      }
+
+      let generatedFabrics: any[] = [];
+
+      if (ai) {
+        try {
+          const prompt = `You are an expert luxury textile curator for Oluwashola Textile Accessories in Lagos, Nigeria.
+Generate exactly 3 premium, highly realistic, and unique luxury fabrics for our high-end showroom catalog.
+For each fabric, select the best matching image ID from this curated list of Unsplash IDs of high-quality textiles:
+- "1594224140980-6e9dd0223e38" for category Lace (Gold/Emerald Voile Lace pattern)
+- "1528459801416-a9e53bbf4e17" for category Lace (White/Beaded Swiss Voile Lace)
+- "1584184924103-e310d9dc82fc" for category Ankara (Vibrant, complex African wax print)
+- "1574169208507-84376144848b" for category Ankara (Vibrant patterned luxury silk Ankara)
+- "1544816155-12df9643f363" for category Aso Oke (Royal traditional hand-loomed metallic Yoruba cloth)
+- "1606144042614-b2417e99c4e3" for category Silk (Luminous organic mulberry silk satin)
+- "1571242337471-70529d89196b" for category Velvet (Deep wine/burgundy plush crushed velvet)
+- "1582298538104-fe2e74c27f59" for category Cashmere (Superfine charcoal/camel executive cashmere wool)
+- "1544441893-675973e31985" for category Brocade (Imperial damask brocade / clothing rolls)
+
+For each generated fabric, choose one corresponding image ID from the above list, and set the imageUrl field to "https://images.unsplash.com/photo-" + chosen_id + "?auto=format&fit=crop&q=80&w=600".
+
+Generate realistic, high-end, elegant fashion fabric details in English. Return the fabrics array in JSON format.`;
+
+          const response = await ai.models.generateContent({
+            model: "gemini-3.5-flash",
+            contents: prompt,
+            config: {
+              responseMimeType: "application/json",
+              responseSchema: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    name: { type: Type.STRING, description: "The name of the luxury fabric, e.g. Royal Lilac Beaded Voile Lace" },
+                    category: { type: Type.STRING, description: "One of: Lace, Ankara, Aso Oke, Brocade, Silk, Velvet, Cashmere" },
+                    pricePerYard: { type: Type.INTEGER, description: "Price in Nigerian Naira per yard, realistic luxury pricing between 15000 and 80000" },
+                    availableColors: {
+                      type: Type.ARRAY,
+                      items: { type: Type.STRING },
+                      description: "List of 2-3 matching beautiful color descriptions, e.g. ['Lilac Gold', 'Lavender Rose']"
+                    },
+                    colorsHex: {
+                      type: Type.ARRAY,
+                      items: { type: Type.STRING },
+                      description: "List of matching 2-3 CSS hex codes corresponding to availableColors, e.g. ['#c8a2c8', '#dda0dd']"
+                    },
+                    description: { type: Type.STRING, description: "A detailed description highlighting craftsmanship, embroidery, weight, and suitability" },
+                    stockAvailability: { type: Type.STRING, description: "Must be either 'In Stock' or 'Low Stock'" },
+                    imageUrl: { type: Type.STRING, description: "The Unsplash image URL constructed with the chosen ID" }
+                  },
+                  required: ["name", "category", "pricePerYard", "availableColors", "colorsHex", "description", "stockAvailability", "imageUrl"]
+                }
+              }
+            }
+          });
+
+          if (response && response.text) {
+            generatedFabrics = JSON.parse(response.text.trim());
+          }
+        } catch (genErr) {
+          console.error("Gemini fabric seeding error, falling back to static data:", genErr);
+        }
+      }
+
+      if (generatedFabrics.length === 0) {
+        generatedFabrics = [
+          {
+            name: "Royal Emerald Beaded Voile Lace",
+            category: "Lace",
+            pricePerYard: 55000,
+            availableColors: ["Emerald Green", "Champagne Gold"],
+            colorsHex: ["#064e3b", "#f1e9d2"],
+            description: "Luxury Swiss voile lace intricately beaded with royal emerald green sequins and high-quality gold lurex thread details. Exquisite weight and drape, ideal for bridal owambe and high society events.",
+            stockAvailability: "In Stock",
+            imageUrl: "https://images.unsplash.com/photo-1594224140980-6e9dd0223e38?auto=format&fit=crop&q=80&w=600"
+          },
+          {
+            name: "Sunset Imperial Ankara Wax",
+            category: "Ankara",
+            pricePerYard: 18000,
+            availableColors: ["Saffron Orange", "Teal Waves", "Indigo Blue"],
+            colorsHex: ["#ea580c", "#0d9488", "#1e3a8a"],
+            description: "Exclusive high-grade Vlisco Ankara cotton wax print with a stunning vintage sunburst sunset pattern. Features rich, colorfast dyes and structured handfeel perfect for traditional Senator, Kaftan, or custom gowns.",
+            stockAvailability: "In Stock",
+            imageUrl: "https://images.unsplash.com/photo-1584184924103-e310d9dc82fc?auto=format&fit=crop&q=80&w=600"
+          },
+          {
+            name: "Crimson Gold Handloomed Aso Oke",
+            category: "Aso Oke",
+            pricePerYard: 70000,
+            availableColors: ["Crimson Wine", "Bronze Gold"],
+            colorsHex: ["#7f1d1d", "#b45309"],
+            description: "Masterfully hand-loomed traditional Yoruba fabric interwoven with premium metallic bronze and crimson gold threads for an unmatched royal reflection. Ideal for majestic caps, geles, sashes, and luxury custom Agbada sets.",
+            stockAvailability: "Low Stock",
+            imageUrl: "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&q=80&w=600"
+          }
+        ];
+      }
+
+      for (let i = 0; i < generatedFabrics.length; i++) {
+        const fab = generatedFabrics[i];
+        fab.id = "fab-gen-" + crypto.randomBytes(4).toString("hex");
+        await addCustomFabric(fab);
+      }
+
+      return res.json({ success: true, message: "Fabric catalog section seeded successfully" });
+    }
+
+    if (section === "gallery") {
+      const existing = await getAddedGallery();
+      if (existing.length > 0) {
+        return res.status(400).json({ error: "Showcase Gallery section is not empty" });
+      }
+
+      let generatedGallery: any[] = [];
+
+      if (ai) {
+        try {
+          const prompt = `You are an elite bespoke fashion designer for Oluwashola Textile Accessories in Lagos, Nigeria.
+Generate exactly 3 premium, highly realistic, custom-tailored bespoke garments for our showcase showroom.
+For each garment, select the best matching image ID from this curated list of Unsplash IDs of high-quality finished clothing:
+- "1610030469983-98e550d6193c" for category Traditional (A magnificent hand-embroidered royal blue Agbada set)
+- "1611591437281-460bfbe1220a" for category Male (A sharp royal ivory/navy Senator suit or Kaftan with breast crest)
+- "1595777457583-95e059d581b8" for category Female (A stunning emerald green mermaid corset lace wedding gown)
+- "1529139574466-a303027c1d8b" for category Female (A luxurious designer custom couture dress)
+- "1566174053879-31528523f8ae" for category Wedding (An elegant Yoruba Buba and Iro bridal wrapper set with geles)
+- "1621184455862-c163dfb30e0f" for category Children (A cute custom tiered Ankara ruffled ballgown)
+- "1561932690-f98b9cd64221" for category Casual (Contemporary adire print indigo resort jumpsuit)
+- "1507679799987-c73779587ccf" for category Corporate (A classic bespoke 3-piece corporate Italian wool suit)
+
+For each generated garment, choose one corresponding image ID from the above list, and set the imageUrl field to "https://images.unsplash.com/photo-" + chosen_id + "?auto=format&fit=crop&q=80&w=600".
+
+Generate realistic, high-end, elegant fashion details in English. Return the gallery items array in JSON format.`;
+
+          const response = await ai.models.generateContent({
+            model: "gemini-3.5-flash",
+            contents: prompt,
+            config: {
+              responseMimeType: "application/json",
+              responseSchema: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    title: { type: Type.STRING, description: "Bespoke name, e.g. The Sovereign Sapphire Agbada" },
+                    category: { type: Type.STRING, description: "One of: Traditional, Male, Female, Children, Casual, Corporate, Wedding" },
+                    description: { type: Type.STRING, description: "A detailed, luxury designer description of the tailoring, silhouette, embroidery, and styling cues" },
+                    imageUrl: { type: Type.STRING, description: "The Unsplash image URL constructed with the chosen ID" }
+                  },
+                  required: ["title", "category", "description", "imageUrl"]
+                }
+              }
+            }
+          });
+
+          if (response && response.text) {
+            generatedGallery = JSON.parse(response.text.trim());
+          }
+        } catch (genErr) {
+          console.error("Gemini gallery seeding error, falling back to static data:", genErr);
+        }
+      }
+
+      if (generatedGallery.length === 0) {
+        generatedGallery = [
+          {
+            title: "The Sovereign Sapphire Agbada Masterpiece",
+            category: "Traditional",
+            description: "A majestic 4-piece flowing traditional Nigerian Agbada tailored to absolute perfection in luxury royal blue Aso Oke. Features complex golden hand embroidery on the breastplate and sleeves, designed for standard-set traditional events.",
+            imageUrl: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=600"
+          },
+          {
+            title: "Gilded Emerald Mermaid Lace Corset",
+            category: "Female",
+            description: "A breathtaking bespoke floor-length mermaid bridal reception dress tailored in fine Swiss beaded lace. Finished with a sturdy hand-boned corset structure and elegant emerald satin underlays.",
+            imageUrl: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=600"
+          },
+          {
+            title: "Imperial Ivory Senator Kaftan",
+            category: "Male",
+            description: "Premium tailored ivory-white senator suit with minimalist asymmetric navy piping and a custom monogrammed chest seal. Crafted in superfine breathable Italian wool-cashmere blend.",
+            imageUrl: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&q=80&w=600"
+          }
+        ];
+      }
+
+      for (let i = 0; i < generatedGallery.length; i++) {
+        const item = generatedGallery[i];
+        item.id = "work-gen-" + crypto.randomBytes(4).toString("hex");
+        await addCustomGalleryItem(item);
+      }
+
+      return res.json({ success: true, message: "Showcase gallery section seeded successfully" });
+    }
+
+    if (section === "styles") {
+      const existing = await getAddedStyles();
+      if (existing.length > 0) {
+        return res.status(400).json({ error: "Style Inspiration section is not empty" });
+      }
+
+      let generatedStyles: any[] = [];
+
+      if (ai) {
+        try {
+          const prompt = `You are an expert style consultant for Oluwashola Textile Accessories in Lagos, Nigeria.
+Generate exactly 3 luxury tailoring style inspirations for our lookbook catalog.
+For each style, select the best matching image ID from this curated list of Unsplash IDs of high-quality styled models:
+- "1610030469983-98e550d6193c" for traditional regal Agbada styling (Traditional / Male)
+- "1595777457583-95e059d581b8" for corset mermaid lace or evening gown silhouette styling (Female / Traditional)
+- "1611591437281-460bfbe1220a" for modern custom senator or tailored Kaftan style (Male / Traditional)
+- "1566174053879-31528523f8ae" for premium Buba & Iro wrapper set with matching sashes (Traditional / Female)
+- "1507679799987-c73779587ccf" for bespoke executive suit or corporate styling (Corporate / Male)
+- "1529139574466-a303027c1d8b" for contemporary luxury ladies gown style (Female / Casual)
+
+For each generated style, choose one corresponding image ID from the above list, and set the imageUrl field to "https://images.unsplash.com/photo-" + chosen_id + "?auto=format&fit=crop&q=80&w=600".
+
+Generate realistic, high-end style inspiration details in English. Return the styles array in JSON format.`;
+
+          const response = await ai.models.generateContent({
+            model: "gemini-3.5-flash",
+            contents: prompt,
+            config: {
+              responseMimeType: "application/json",
+              responseSchema: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    name: { type: Type.STRING, description: "Bespoke style name, e.g. Royal Sovereign Agbada Style" },
+                    category: { type: Type.STRING, description: "One of: Traditional, Male, Female, Corporate" },
+                    description: { type: Type.STRING, description: "A detailed styling description detailing the aesthetic, fabric pairing guidelines, and appropriate ceremony or event context" },
+                    estimatedYardage: { type: Type.STRING, description: "E.g. 7-8 Yards (Fabric) + 2 Yards (Aso Oke) or 4 Yards of Cashmere Wool" },
+                    imageUrl: { type: Type.STRING, description: "The Unsplash image URL constructed with the chosen ID" }
+                  },
+                  required: ["name", "category", "description", "estimatedYardage", "imageUrl"]
+                }
+              }
+            }
+          });
+
+          if (response && response.text) {
+            generatedStyles = JSON.parse(response.text.trim());
+          }
+        } catch (genErr) {
+          console.error("Gemini styles seeding error, falling back to static data:", genErr);
+        }
+      }
+
+      if (generatedStyles.length === 0) {
+        generatedStyles = [
+          {
+            name: "Regal Sovereign Agbada Style",
+            category: "Traditional",
+            description: "A majestic flowing traditional Nigerian 4-piece Agbada ensemble including the grand outer gown, matching long-sleeve Kaftan undergarment, slim straight-leg trousers, and custom matching cap. Exudes leadership and absolute status.",
+            estimatedYardage: "7-8 Yards of Fabric (e.g. Cashmere, Brocade) + 2 Yards of Accent Aso Oke",
+            imageUrl: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=600"
+          },
+          {
+            name: "Corset Mermaid Lace Silhouette",
+            category: "Female",
+            description: "A tailored-to-fit evening and wedding design. Built on a sturdy boned corset foundation, cascading into a sweeping flare that highlights the fabrics' lace pattern beautifully.",
+            estimatedYardage: "5-6 Yards of Luxury Swiss Lace/Satin",
+            imageUrl: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=600"
+          },
+          {
+            name: "Crisp Senator Kaftan Style",
+            category: "Male",
+            description: "Modern formal African elegance. High band collar, slim tapered sleeves, straight straight-cut trousers, highlighted by structured geometric embroidery or high-contrast side piping.",
+            estimatedYardage: "4 Yards of Superfine Cashmere or Wool",
+            imageUrl: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&q=80&w=600"
+          }
+        ];
+      }
+
+      for (let i = 0; i < generatedStyles.length; i++) {
+        const style = generatedStyles[i];
+        style.id = "style-gen-" + crypto.randomBytes(4).toString("hex");
+        await addCustomStyle(style);
+      }
+
+      return res.json({ success: true, message: "Style inspiration section seeded successfully" });
+    }
+
+    res.status(400).json({ error: "Invalid section specified" });
   } catch (err) {
-    console.error("Admin seed catalog error:", err);
-    res.status(500).json({ error: "An unexpected error occurred" });
+    console.error("Admin seed section error:", err);
+    res.status(500).json({ error: "An unexpected error occurred seeding catalog section" });
   }
 });
 

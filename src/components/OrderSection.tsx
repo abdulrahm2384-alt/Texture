@@ -7,7 +7,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Lock, Scissors, ShoppingBag, Ruler, FileText, Upload, MapPin, Sparkles, Loader2, CalendarCheck, Check, ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { User, Fabric, ClothingStyle, Measurements } from "../types";
-import { submitOrder } from "../utils/api";
+import { submitOrder, fetchContactInfo } from "../utils/api";
 import Modal from "./Modal";
 
 interface OrderSectionProps {
@@ -63,6 +63,24 @@ export default function OrderSection({
   // Custom flyer-based professional services add-ons
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [whatsappUrl, setWhatsappUrl] = useState("");
+  const [whatsappNumber, setWhatsappNumber] = useState("234705378152");
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchContactInfo()
+        .then((data) => {
+          if (data && data.phoneNumber) {
+            const cleaned = data.phoneNumber.replace(/\D/g, "");
+            if (cleaned) {
+              setWhatsappNumber(cleaned);
+            }
+          }
+        })
+        .catch((err) => {
+          console.error("Error fetching contact details in OrderSection:", err);
+        });
+    }
+  }, [isOpen]);
 
   const flyerServicesConfig = [
     { id: "monogramming", name: "Monogramming", price: 15000, desc: "Custom monograms that make a statement." },
@@ -303,7 +321,7 @@ export default function OrderSection({
     }
 
     try {
-      const phoneNumber = "234705378152"; // From Contact.tsx
+      const phoneNumber = whatsappNumber;
 
       // Format a high-fidelity, structured WhatsApp inquiry specification
       let msg = `🇳🇬 *OLUWASHOLA ATELIER ORDER INTAKE* 🇳🇬\n`;
