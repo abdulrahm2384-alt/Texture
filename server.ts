@@ -219,7 +219,9 @@ import {
   addCustomStyle,
   deleteCustomStyle,
   getContactInfo,
-  updateContactInfo
+  updateContactInfo,
+  seedDefaultCatalog,
+  clearCatalogData
 } from "./serverDb.js";
 
 import {
@@ -855,6 +857,42 @@ app.put("/api/admin/orders/:id/status", async (req, res) => {
   } catch (err: any) {
     console.error("Update order status admin error:", err);
     res.status(500).json({ error: "An unexpected error occurred updating order status" });
+  }
+});
+
+app.post("/api/admin/seed-default-catalog", async (req, res) => {
+  try {
+    const adminRole = getAdminFromAuthHeader(req.headers.authorization);
+    if (!adminRole) {
+      return res.status(401).json({ error: "Access denied: Invalid or expired admin session token" });
+    }
+    const success = await seedDefaultCatalog();
+    if (success) {
+      res.json({ success: true, message: "Default showroom catalog has been seeded successfully" });
+    } else {
+      res.status(500).json({ error: "Failed to seed default catalog" });
+    }
+  } catch (err) {
+    console.error("Admin seed catalog error:", err);
+    res.status(500).json({ error: "An unexpected error occurred" });
+  }
+});
+
+app.post("/api/admin/clear-catalog", async (req, res) => {
+  try {
+    const adminRole = getAdminFromAuthHeader(req.headers.authorization);
+    if (!adminRole) {
+      return res.status(401).json({ error: "Access denied: Invalid or expired admin session token" });
+    }
+    const success = await clearCatalogData();
+    if (success) {
+      res.json({ success: true, message: "Showroom catalog has been cleared successfully" });
+    } else {
+      res.status(500).json({ error: "Failed to clear catalog data" });
+    }
+  } catch (err) {
+    console.error("Admin clear catalog error:", err);
+    res.status(500).json({ error: "An unexpected error occurred" });
   }
 });
 

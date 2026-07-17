@@ -285,3 +285,21 @@ export async function updateContactInfoAdmin(info: ContactInfo): Promise<{ succe
   localStorage.setItem("oluwashola_testing_contact", JSON.stringify(info));
   return data;
 }
+
+export async function seedDefaultCatalogAdmin(): Promise<{ success: boolean; message: string }> {
+  const res = await fetchWithAdminAuth(`${API_BASE}/api/admin/seed-default-catalog`, {
+    method: "POST",
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Failed to seed default catalog");
+  return data;
+}
+
+export async function clearCatalogAdmin(): Promise<{ success: boolean; message: string }> {
+  const res = await fetchWithAdminAuth(`${API_BASE}/api/admin/clear-catalog`, {
+    method: "POST",
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Failed to clear catalog");
+  return data;
+}

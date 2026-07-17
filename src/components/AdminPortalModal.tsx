@@ -42,7 +42,9 @@ import {
   addStyleAdmin,
   deleteStyleAdmin,
   fetchContactInfo,
-  updateContactInfoAdmin
+  updateContactInfoAdmin,
+  seedDefaultCatalogAdmin,
+  clearCatalogAdmin
 } from "../utils/api";
 import { getCategoryDisplayLabel } from "../utils/categoryParser";
 
@@ -661,6 +663,49 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
     triggerToast("Administrative session closed safely.", "info");
   };
 
+  const [performingAction, setPerformingAction] = useState(false);
+
+  const handleSeedCatalog = async () => {
+    if (!confirm("Are you sure you want to seed the default showroom catalog into the database? This will clear any existing items to prevent duplicates.")) return;
+    setPerformingAction(true);
+    try {
+      if (isTestingMode()) {
+        triggerToast("Testing Mode: Seeding only works when connected to real database fallback.");
+      } else {
+        const res = await seedDefaultCatalogAdmin();
+        triggerToast(res.message);
+        await loadCatalog();
+        if (onCatalogChanged) onCatalogChanged();
+      }
+    } catch (err: any) {
+      triggerToast(err.message || "Failed to seed default catalog.", "info");
+    } finally {
+      setPerformingAction(false);
+    }
+  };
+
+  const handleClearCatalog = async () => {
+    if (!confirm("Are you sure you want to clear ALL showroom items (fabrics, showcase, and styles)? This is excellent for verifying empty/welcoming states.")) return;
+    setPerformingAction(true);
+    try {
+      if (isTestingMode()) {
+        const updatedCatalog = { fabrics: [], gallery: [], styles: [] };
+        setCatalog(updatedCatalog);
+        triggerToast("Testing Mode: Local catalog cleared.");
+        if (onCatalogChanged) onCatalogChanged();
+      } else {
+        const res = await clearCatalogAdmin();
+        triggerToast(res.message);
+        await loadCatalog();
+        if (onCatalogChanged) onCatalogChanged();
+      }
+    } catch (err: any) {
+      triggerToast(err.message || "Failed to clear catalog.", "info");
+    } finally {
+      setPerformingAction(false);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -962,10 +1007,29 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
                     </button>
                   </div>
 
-                  <div className="flex items-center gap-2 pb-2 self-stretch sm:self-auto justify-end">
+                  <div className="flex items-center gap-2 pb-2 self-stretch sm:self-auto justify-end flex-wrap">
+                    <button
+                      onClick={handleSeedCatalog}
+                      disabled={performingAction}
+                      className="flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 disabled:opacity-50 text-emerald-800 border border-emerald-200 rounded-xl px-3 py-1.5 text-[10px] uppercase font-mono tracking-wider transition font-medium cursor-pointer shrink-0"
+                      title="Seed default showcase catalog items for preview"
+                    >
+                      <Sparkles size={11} />
+                      Seed Catalog
+                    </button>
+                    <button
+                      onClick={handleClearCatalog}
+                      disabled={performingAction}
+                      className="flex items-center gap-1.5 bg-orange-50 hover:bg-orange-100 disabled:opacity-50 text-orange-800 border border-orange-200 rounded-xl px-3 py-1.5 text-[10px] uppercase font-mono tracking-wider transition font-medium cursor-pointer shrink-0"
+                      title="Clear all showroom catalog items to inspect empty state"
+                    >
+                      <Trash2 size={11} />
+                      Purge Showroom
+                    </button>
                     <button
                       onClick={loadCatalog}
-                      className="flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-xl px-3 py-1.5 text-[10px] uppercase font-mono tracking-wider transition font-medium cursor-pointer"
+                      disabled={performingAction}
+                      className="flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-xl px-3 py-1.5 text-[10px] uppercase font-mono tracking-wider transition font-medium cursor-pointer shrink-0"
                       title="Reload catalog from database"
                     >
                       <RefreshCw size={11} />
@@ -973,7 +1037,8 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
                     </button>
                     <button
                       onClick={handleLogout}
-                      className="flex items-center gap-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl px-3.5 py-1.5 text-[10px] uppercase font-mono tracking-wider transition"
+                      disabled={performingAction}
+                      className="flex items-center gap-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl px-3.5 py-1.5 text-[10px] uppercase font-mono tracking-wider transition shrink-0"
                       id="admin-logout-btn"
                     >
                       <LogOut size={11} />
@@ -2097,7 +2162,7 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
                               onClick={() => {
                                 setContactInfo({
                                   ...contactInfo,
-                                  wingOrderBgUrl: "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&q=80&w=600"
+                                  wingOrderBgUrl: "https://images.unsplash.com/photo-1598257006458-087169a1f08d?auto=format&fit=crop&q=80&w=600"
                                 });
                                 triggerToast("Book Tailoring image reset!");
                               }}

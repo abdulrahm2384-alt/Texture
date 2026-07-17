@@ -79,7 +79,7 @@ export default function Hero({
       description: "Initiate custom measurements, choose sizes, and book tailoring orders for your upcoming Owambe.",
       icon: <ShoppingBag className="text-amber-500" size={18} />,
       badge: "Submit intake",
-      image: wingOrderBgUrl || "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&q=80&w=600",
+      image: wingOrderBgUrl || "https://images.unsplash.com/photo-1598257006458-087169a1f08d?auto=format&fit=crop&q=80&w=600",
       action: onOpenOrder,
     },
     {

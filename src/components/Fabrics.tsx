@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from "react";
-import { ShoppingBag, Check } from "lucide-react";
+import { ShoppingBag, Check, Sparkles } from "lucide-react";
 import { Fabric } from "../types";
 import Modal from "./Modal";
 
@@ -75,63 +75,96 @@ export default function Fabrics({ isOpen, onClose, fabrics, onOpenOrder }: Fabri
           We source our luxury textiles from elite international mills, specially selected for the perfect Nigerian celebratory or corporate fit. Customize your yardage requirements below to view estimated material values.
         </p>
 
-        {/* Fabric Filter Toolbar */}
-        <div className="bg-stone-50 border border-stone-200 rounded-2xl p-4 space-y-4 shadow-sm" id="fabrics-filter-panel">
-          <div className="flex items-center justify-between border-b border-stone-200 pb-2">
-            <span className="text-xs font-mono font-bold text-stone-700 uppercase tracking-widest flex items-center gap-1.5">
-              <ShoppingBag size={13} className="text-amber-600" /> Filter & Search Showroom
-            </span>
-            {(filterCategory !== "All" || searchKeyword !== "") && (
+        {fabrics.length === 0 ? (
+          <div className="bg-stone-50 border border-stone-200 rounded-3xl p-8 text-center max-w-xl mx-auto space-y-5 my-6 shadow-sm">
+            <div className="h-16 w-16 bg-amber-500/10 text-amber-600 border border-amber-500/20 rounded-full flex items-center justify-center mx-auto shadow-inner">
+              <Sparkles className="h-8 w-8" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="font-serif text-lg font-bold text-stone-900 tracking-wide">
+                Luxury Textile Showroom Opening Soon
+              </h3>
+              <p className="text-xs text-stone-500 font-mono uppercase tracking-widest">
+                Fabric Catalog Status: Restocking
+              </p>
+            </div>
+            <p className="text-xs text-stone-600 leading-relaxed max-w-md mx-auto">
+              Welcome to our luxury textile catalog! This gallery is designed to showcase elite materials sourced from international mills, including heavy Swiss Voile lace, handwoven Aso Oke with metallic accents, organic Mulberry silks, and rich imperial brocades.
+            </p>
+            <div className="border-t border-stone-200/60 pt-4 text-xs text-stone-550 leading-relaxed">
+              We are currently restocking our digital textiles catalog for the upcoming fashion season. While this catalog is being updated, our master tailors can still source any custom fabric you desire! You can request specific fabrics during your custom fitting appointment or order submission.
+            </div>
+            <div className="pt-2">
               <button
                 onClick={() => {
-                  setFilterCategory("All");
-                  setSearchKeyword("");
+                  onClose();
+                  onOpenOrder({ fabricId: "custom", yards: 4, color: "As requested" });
                 }}
-                className="text-[10px] font-mono font-bold text-amber-700 hover:text-amber-900 uppercase tracking-wider underline cursor-pointer"
+                className="px-6 py-2.5 bg-amber-500 hover:bg-amber-400 text-stone-950 font-semibold text-xs uppercase tracking-widest rounded-xl transition cursor-pointer shadow-md shadow-amber-500/10"
               >
-                Clear Filters
+                Place Custom Order
               </button>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Category Filter */}
-            <div className="space-y-1.5">
-              <label className="text-[10px] uppercase font-mono font-semibold text-stone-550 block">Fabric Category</label>
-              <select
-                value={filterCategory}
-                onChange={(e) => setFilterCategory(e.target.value)}
-                className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-xs text-stone-850 focus:outline-none focus:border-amber-500/50"
-              >
-                {uniqueCategories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
             </div>
-
-            {/* Keyword Search */}
-            <div className="space-y-1.5">
-              <label className="text-[10px] uppercase font-mono font-semibold text-stone-550 block">Search Keywords</label>
-              <input
-                type="text"
-                value={searchKeyword}
-                onChange={(e) => setSearchKeyword(e.target.value)}
-                placeholder="e.g. Silk, Velvet, Gold, Red..."
-                className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:border-amber-500/50"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Fabrics Grid */}
-        {filteredFabrics.length === 0 ? (
-          <div className="text-center py-16 text-stone-500 font-mono text-xs">
-            No premium fabrics found matching your selected criteria.
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="fabrics-grid">
+          <>
+            {/* Fabric Filter Toolbar */}
+            <div className="bg-stone-50 border border-stone-200 rounded-2xl p-4 space-y-4 shadow-sm" id="fabrics-filter-panel">
+              <div className="flex items-center justify-between border-b border-stone-200 pb-2">
+                <span className="text-xs font-mono font-bold text-stone-700 uppercase tracking-widest flex items-center gap-1.5">
+                  <ShoppingBag size={13} className="text-amber-600" /> Filter & Search Showroom
+                </span>
+                {(filterCategory !== "All" || searchKeyword !== "") && (
+                  <button
+                    onClick={() => {
+                      setFilterCategory("All");
+                      setSearchKeyword("");
+                    }}
+                    className="text-[10px] font-mono font-bold text-amber-700 hover:text-amber-900 uppercase tracking-wider underline cursor-pointer"
+                  >
+                    Clear Filters
+                  </button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Category Filter */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] uppercase font-mono font-semibold text-stone-550 block">Fabric Category</label>
+                  <select
+                    value={filterCategory}
+                    onChange={(e) => setFilterCategory(e.target.value)}
+                    className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-xs text-stone-850 focus:outline-none focus:border-amber-500/50"
+                  >
+                    {uniqueCategories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Keyword Search */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] uppercase font-mono font-semibold text-stone-550 block">Search Keywords</label>
+                  <input
+                    type="text"
+                    value={searchKeyword}
+                    onChange={(e) => setSearchKeyword(e.target.value)}
+                    placeholder="e.g. Silk, Velvet, Gold, Red..."
+                    className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:border-amber-500/50"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Fabrics Grid */}
+            {filteredFabrics.length === 0 ? (
+              <div className="text-center py-16 text-stone-500 font-mono text-xs">
+                No premium fabrics found matching your selected criteria.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="fabrics-grid">
             {filteredFabrics.map((fabric) => {
               const spec = getSelection(fabric.id, fabric);
               const totalPrice = spec.yards * fabric.pricePerYard;
@@ -259,6 +292,8 @@ export default function Fabrics({ isOpen, onClose, fabrics, onOpenOrder }: Fabri
             );
           })}
         </div>
+        )}
+          </>
         )}
       </div>
     </Modal>

@@ -322,45 +322,15 @@ export async function initializeDatabase(): Promise<boolean> {
     }
 
     // Seed default catalog if not already done
-    const [seedRows]: any = await connection.query("SELECT * FROM system_config WHERE `key` = 'seeded'");
+    const [seedRows]: any = await connection.query("SELECT * FROM system_config WHERE \`key\` = 'seeded'");
     if (!seedRows || seedRows.length === 0) {
-      console.log("Database not seeded. Initializing default catalog into MySQL tables...");
-
-      // Seed default fabrics
-      for (const f of initialCatalogData.fabrics) {
-        const colorsStr = JSON.stringify(f.availableColors || []);
-        const colorsHexStr = JSON.stringify(f.colorsHex || []);
-        await connection.query(
-          `INSERT INTO custom_fabrics (id, name, category, pricePerYard, availableColors, colorsHex, description, stockAvailability, imageUrl) 
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [f.id, f.name, f.category, f.pricePerYard, colorsStr, colorsHexStr, f.description, f.stockAvailability, f.imageUrl]
-        );
-      }
-
-      // Seed default gallery items
-      for (const item of initialCatalogData.gallery) {
-        await connection.query(
-          `INSERT INTO custom_gallery (id, title, category, description, imageUrl) 
-           VALUES (?, ?, ?, ?, ?)`,
-          [item.id, item.title, item.category, item.description, item.imageUrl]
-        );
-      }
-
-      // Seed default style inspirations
-      for (const style of initialCatalogData.styles) {
-        await connection.query(
-          `INSERT INTO custom_styles (id, name, category, description, imageUrl, estimatedYardage) 
-           VALUES (?, ?, ?, ?, ?, ?)`,
-          [style.id, style.name, style.category, style.description, style.imageUrl, style.estimatedYardage]
-        );
-      }
-
-      await connection.query("INSERT INTO system_config (`key`, `value`) VALUES ('seeded', 'true')");
-      console.log("MySQL database seeding complete successfully!");
+      console.log("Database not seeded. Initializing empty catalog into MySQL tables for production...");
+      await connection.query("INSERT INTO system_config (\`key\`, \`value\`) VALUES ('seeded', 'true')");
+      console.log("MySQL database seeding complete successfully (started empty)!");
     }
 
     connection.release();
-    console.log("MySQL database tables verified, created, and seeded successfully.");
+    console.log("MySQL database tables verified and created successfully.");
     return true;
   } catch (error) {
     console.error("Failed to connect/initialize MySQL database. Falling back to local JSON file storage.", error);
@@ -376,9 +346,9 @@ function ensureJsonDbExists() {
     const defaultData = {
       users: [] as any[],
       orders: [] as any[],
-      added_fabrics: [...initialCatalogData.fabrics],
-      added_gallery: [...initialCatalogData.gallery],
-      added_styles: [...initialCatalogData.styles]
+      added_fabrics: [] as any[],
+      added_gallery: [] as any[],
+      added_styles: [] as any[]
     };
     fs.writeFileSync(DB_FILE, JSON.stringify(defaultData, null, 2));
   }
@@ -410,15 +380,15 @@ function readJsonDb() {
     }
 
     if (!parsed.added_fabrics) {
-      parsed.added_fabrics = [...initialCatalogData.fabrics];
+      parsed.added_fabrics = [];
       changed = true;
     }
     if (!parsed.added_gallery) {
-      parsed.added_gallery = [...initialCatalogData.gallery];
+      parsed.added_gallery = [];
       changed = true;
     }
     if (!parsed.added_styles) {
-      parsed.added_styles = [...initialCatalogData.styles];
+      parsed.added_styles = [];
       changed = true;
     }
 
@@ -431,9 +401,9 @@ function readJsonDb() {
     return { 
       users: [], 
       orders: [], 
-      added_fabrics: [...initialCatalogData.fabrics], 
-      added_gallery: [...initialCatalogData.gallery], 
-      added_styles: [...initialCatalogData.styles] 
+      added_fabrics: [], 
+      added_gallery: [], 
+      added_styles: [] 
     };
   }
 }
@@ -1007,7 +977,7 @@ export const DEFAULT_CONTACT_INFO: ContactInfo = {
   wingGalleryBgUrl: "https://images.unsplash.com/photo-1617137984095-74e4e5e3613f?auto=format&fit=crop&q=80&w=600",
   wingFabricsBgUrl: "https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17?auto=format&fit=crop&q=80&w=600",
   wingStylesBgUrl: "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&q=80&w=600",
-  wingOrderBgUrl: "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&q=80&w=600",
+  wingOrderBgUrl: "https://images.unsplash.com/photo-1598257006458-087169a1f08d?auto=format&fit=crop&q=80&w=600",
   wingContactBgUrl: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=600"
 };
 
@@ -1048,6 +1018,74 @@ export async function updateContactInfo(info: ContactInfo): Promise<boolean> {
   }
   const db = readJsonDb();
   db.contact_info = info;
+  writeJsonDb(db);
+  return true;
+}
+
+export async function seedDefaultCatalog(): Promise<boolean> {
+  if (pool) {
+    try {
+      await pool.query("DELETE FROM custom_fabrics");
+      await pool.query("DELETE FROM custom_gallery");
+      await pool.query("DELETE FROM custom_styles");
+
+      for (const f of initialCatalogData.fabrics) {
+        const colorsStr = JSON.stringify(f.availableColors || []);
+        const colorsHexStr = JSON.stringify(f.colorsHex || []);
+        await pool.query(
+          `INSERT INTO custom_fabrics (id, name, category, pricePerYard, availableColors, colorsHex, description, stockAvailability, imageUrl) 
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [f.id, f.name, f.category, f.pricePerYard, colorsStr, colorsHexStr, f.description, f.stockAvailability, f.imageUrl]
+        );
+      }
+
+      for (const item of initialCatalogData.gallery) {
+        await pool.query(
+          `INSERT INTO custom_gallery (id, title, category, description, imageUrl) 
+           VALUES (?, ?, ?, ?, ?)`,
+          [item.id, item.title, item.category, item.description, item.imageUrl]
+        );
+      }
+
+      for (const style of initialCatalogData.styles) {
+        await pool.query(
+          `INSERT INTO custom_styles (id, name, category, description, imageUrl, estimatedYardage) 
+           VALUES (?, ?, ?, ?, ?, ?)`,
+          [style.id, style.name, style.category, style.description, style.imageUrl, style.estimatedYardage]
+        );
+      }
+      return true;
+    } catch (err) {
+      console.error("MySQL seedDefaultCatalog error:", err);
+      return false;
+    }
+  }
+
+  const db = readJsonDb();
+  db.added_fabrics = JSON.parse(JSON.stringify(initialCatalogData.fabrics));
+  db.added_gallery = JSON.parse(JSON.stringify(initialCatalogData.gallery));
+  db.added_styles = JSON.parse(JSON.stringify(initialCatalogData.styles));
+  writeJsonDb(db);
+  return true;
+}
+
+export async function clearCatalogData(): Promise<boolean> {
+  if (pool) {
+    try {
+      await pool.query("DELETE FROM custom_fabrics");
+      await pool.query("DELETE FROM custom_gallery");
+      await pool.query("DELETE FROM custom_styles");
+      return true;
+    } catch (err) {
+      console.error("MySQL clearCatalogData error:", err);
+      return false;
+    }
+  }
+
+  const db = readJsonDb();
+  db.added_fabrics = [];
+  db.added_gallery = [];
+  db.added_styles = [];
   writeJsonDb(db);
   return true;
 }
