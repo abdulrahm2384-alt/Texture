@@ -28,8 +28,30 @@ function getResendClient(): Resend {
   return resendClient;
 }
 
-// Optional custom sender, fallback to onboarding@resend.dev
-const RESEND_FROM = process.env.RESEND_FROM?.trim() || "onboarding@resend.dev";
+/**
+ * Dynamically determine the Resend From address
+ */
+export function getResendFromAddress(): string {
+  // 1. Explicitly configured RESEND_FROM
+  if (process.env.RESEND_FROM?.trim()) {
+    return process.env.RESEND_FROM.trim();
+  }
+
+  // 2. Fallback to deriving from ADMIN_EMAIL if it is a custom domain
+  const domain = ADMIN_EMAIL.split("@")[1];
+  const genericDomains = [
+    "gmail.com", "yahoo.com", "outlook.com", "hotmail.com", 
+    "icloud.com", "aol.com", "zoho.com", "mail.com", "yandex.com",
+    "proton.me", "protonmail.com", "gmx.com", "mail.ru"
+  ];
+
+  if (domain && !genericDomains.includes(domain)) {
+    return `no-reply@${domain}`;
+  }
+
+  // 3. Absolute fallback to Resend's default sandbox sender
+  return "onboarding@resend.dev";
+}
 
 // In-Memory OTP store (lightweight, highly secure, automatic expiry)
 // Key: email -> Value: { otp: string, expiresAt: number }
@@ -70,14 +92,15 @@ export async function sendOtpEmail(toEmail: string, otpCode: string): Promise<{ 
   }
 
   try {
+    const fromAddress = getResendFromAddress();
     console.log(`[Resend Debug] Preparing email via Resend:`);
-    console.log(`  From Header: ${RESEND_FROM}`);
+    console.log(`  From Header: ${fromAddress}`);
     console.log(`  To Recipient: ${targetEmail}`);
 
     const resend = getResendClient();
     const currentYear = new Date().getFullYear();
 
-    const fromHeader = RESEND_FROM.includes("<") ? RESEND_FROM : `"Oluwashola Atelier" <${RESEND_FROM}>`;
+    const fromHeader = fromAddress.includes("<") ? fromAddress : `"Oluwashola Atelier" <${fromAddress}>`;
 
     // 2. Define html template
     const textContent = `Hello,\n\nYou requested a one-time verification code to access the Oluwashola Atelier administrative panel. Please enter this code to securely complete your login:\n\n${otpCode}\n\nThis verification code is valid for 5 minutes. It can only be used once.\n\nIf you did not make this request, please ignore this email.\n\nBest regards,\nOluwashola Atelier`;
