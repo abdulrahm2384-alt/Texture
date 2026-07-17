@@ -229,7 +229,8 @@ import {
   sendOtpEmail,
   storeOtp,
   verifyOtp,
-  ADMIN_EMAIL
+  ADMIN_EMAIL,
+  isAdminEmail
 } from "./serverOtp.js";
 
 // Helpers
@@ -603,8 +604,8 @@ app.post("/api/admin/request-otp", async (req, res) => {
     }
 
     const lowerEmail = email.toLowerCase().trim();
-    if (lowerEmail !== ADMIN_EMAIL) {
-      return res.status(401).json({ error: "Access denied: This email is not authorized for administrative entry." });
+    if (!isAdminEmail(lowerEmail)) {
+      return res.status(401).json({ error: "Incorrect credentials: This is not the authorized administrative email." });
     }
 
     const otp = generateOtp();
@@ -631,8 +632,8 @@ app.post("/api/admin/verify-otp", (req, res) => {
     }
 
     const lowerEmail = email.toLowerCase().trim();
-    if (lowerEmail !== ADMIN_EMAIL) {
-      return res.status(401).json({ error: "Access denied: Unauthorized administrative email" });
+    if (!isAdminEmail(lowerEmail)) {
+      return res.status(401).json({ error: "Incorrect credentials: This is not the authorized administrative email." });
     }
 
     const verifyResult = verifyOtp(lowerEmail, otp);

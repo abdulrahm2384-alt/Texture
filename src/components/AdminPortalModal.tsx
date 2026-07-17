@@ -887,6 +887,11 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
                               className="w-full bg-stone-50 border border-stone-200 hover:border-stone-300 focus:border-amber-600/50 rounded-xl py-3 pl-11 pr-4 text-xs text-stone-800 placeholder-stone-400 focus:outline-none transition font-sans"
                             />
                           </div>
+                          <div className="px-1">
+                            <p className="text-[9px] font-mono text-stone-400">
+                              Please enter the exact configured admin email to receive the secure OTP code.
+                            </p>
+                          </div>
                         </div>
 
                         <button

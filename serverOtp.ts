@@ -4,16 +4,42 @@ import crypto from "crypto";
 
 dotenv.config();
 
-// Load SMTP configurations
+// Load SMTP configurations safely
 const SMTP_HOST = process.env.SMTP_HOST?.trim();
-const SMTP_PORT = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT.trim(), 10) : 587;
+
+let parsedPort = 587;
+if (process.env.SMTP_PORT) {
+  const p = parseInt(process.env.SMTP_PORT.trim(), 10);
+  if (!isNaN(p)) {
+    parsedPort = p;
+  }
+}
+const SMTP_PORT = parsedPort;
+
 const SMTP_USER = process.env.SMTP_USER?.trim();
 const SMTP_PASS = process.env.SMTP_PASS?.trim();
-// Secure can be "true", "yes", or true
-const SMTP_SECURE = process.env.SMTP_SECURE?.trim().toLowerCase() === "true" || process.env.SMTP_SECURE?.trim().toLowerCase() === "yes";
+
+// Secure is true if explicitly configured, or defaults to true if port is 465
+const SMTP_SECURE = process.env.SMTP_SECURE?.trim().toLowerCase() === "true" || 
+                    process.env.SMTP_SECURE?.trim().toLowerCase() === "yes" || 
+                    SMTP_PORT === 465;
+
+// Optional custom sender, fallback to SMTP_USER if it is an email, otherwise ADMIN_EMAIL
+const SMTP_FROM = process.env.SMTP_FROM?.trim() || 
+                  (SMTP_USER && SMTP_USER.includes("@") ? SMTP_USER : null) || 
+                  (process.env.ADMIN_EMAIL?.trim()) || 
+                  "admin@oluwashola-atelier.com";
 
 // Secure Admin Email configured on DirectAdmin
 export const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "admin@oluwashola-atelier.com").toLowerCase().trim();
+
+/**
+ * Validate if an email has administrative privileges
+ */
+export function isAdminEmail(email: string): boolean {
+  const lower = email.toLowerCase().trim();
+  return lower === ADMIN_EMAIL;
+}
 
 // In-Memory OTP store (lightweight, highly secure, automatic expiry)
 // Key: email -> Value: { otp: string, expiresAt: number }
@@ -53,7 +79,15 @@ export async function sendOtpEmail(toEmail: string, otpCode: string): Promise<{ 
   }
 
   try {
-    // 2. Create SMTP transport
+    // 2. Create SMTP transport with debug capabilities and robust timeouts
+    console.log(`[SMTP Debug] Preparing SMTP connection:`);
+    console.log(`  Host: ${SMTP_HOST}`);
+    console.log(`  Port: ${SMTP_PORT}`);
+    console.log(`  Secure Mode: ${SMTP_SECURE}`);
+    console.log(`  Auth User: ${SMTP_USER}`);
+    console.log(`  From Header: ${SMTP_FROM}`);
+    console.log(`  To Recipient: ${targetEmail}`);
+
     const transporter = nodemailer.createTransport({
       host: SMTP_HOST,
       port: SMTP_PORT,
@@ -63,14 +97,19 @@ export async function sendOtpEmail(toEmail: string, otpCode: string): Promise<{ 
         pass: SMTP_PASS,
       },
       tls: {
-        // Essential to prevent self-signed certificate errors common in direct hosting
+        // Prevent self-signed certificate errors common in custom mail servers / DirectAdmin
         rejectUnauthorized: false,
       },
+      connectionTimeout: 15000, // 15 seconds connection timeout
+      greetingTimeout: 15000,   // 15 seconds greeting timeout
+      socketTimeout: 20000,     // 20 seconds socket timeout
+      debug: true,              // Enable Nodemailer internal SMTP handshake debug logs
+      logger: true,             // Log SMTP conversation trace to process stdout/console
     });
 
     // 3. Define luxurious rich-text email template matching Oluwashola style
     const mailOptions = {
-      from: `"Oluwashola Atelier" <${SMTP_USER}>`,
+      from: `"Oluwashola Atelier" <${SMTP_FROM}>`,
       to: targetEmail,
       subject: "🔒 Admin Access Verification - OLUWASHOLA ATELIER",
       text: `Your OLUWASHOLA ATELIER Admin Access OTP code is: ${otpCode}. It will expire in 5 minutes. If you did not request this, please secure your server credentials.`,
