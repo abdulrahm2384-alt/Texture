@@ -4,15 +4,18 @@ import crypto from "crypto";
 
 dotenv.config();
 
-// Secure Admin Email configured
-export const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "admin@oluwashola-atelier.com").toLowerCase().trim();
+// Secure Admin Email configured (supports single or comma-separated emails, e.g. "admin@domain.com,gloria@gmail.com")
+export const ADMIN_EMAILS = (process.env.ADMIN_EMAIL || "admin@oluwashola-atelier.com")
+  .toLowerCase()
+  .split(",")
+  .map(email => email.trim());
 
 /**
  * Validate if an email has administrative privileges
  */
 export function isAdminEmail(email: string): boolean {
   const lower = email.toLowerCase().trim();
-  return lower === ADMIN_EMAIL;
+  return ADMIN_EMAILS.includes(lower);
 }
 
 // Lazy initializer for Resend client to prevent crashes if key is initially absent
@@ -29,27 +32,59 @@ function getResendClient(): Resend {
 }
 
 /**
- * Dynamically determine the Resend From address
+ * Dynamically determine the Resend From address by checking verified domains
  */
-export function getResendFromAddress(): string {
-  // 1. Explicitly configured RESEND_FROM
+export async function getResendFromAddress(): Promise<string> {
+  // 1. Explicitly configured RESEND_FROM environment variable
   if (process.env.RESEND_FROM?.trim()) {
     return process.env.RESEND_FROM.trim();
   }
 
-  // 2. Fallback to deriving from ADMIN_EMAIL if it is a custom domain
-  const domain = ADMIN_EMAIL.split("@")[1];
+  // 2. Query Resend account at runtime to automatically detect verified custom domains
+  try {
+    const resend = getResendClient();
+    console.log("[Resend Dynamic] Querying Resend API for verified domains...");
+    const domainsResponse = await resend.domains.list();
+    if (domainsResponse && domainsResponse.data && Array.isArray(domainsResponse.data)) {
+      console.log("[Resend Dynamic] Domains registered in your Resend account:", JSON.stringify(domainsResponse.data));
+      
+      // Filter for verified or active domains
+      const verifiedDomains = domainsResponse.data.filter(
+        (d: any) => d.status === "verified" || d.status === "active"
+      );
+
+      if (verifiedDomains.length > 0) {
+        const domainName = verifiedDomains[0].name;
+        console.log(`[Resend Dynamic] Automatically selected verified domain: ${domainName}`);
+        return `no-reply@${domainName}`;
+      } else if (domainsResponse.data.length > 0) {
+        // Fallback to first domain if no domain is verified yet but some are listed
+        const domainName = domainsResponse.data[0].name;
+        console.log(`[Resend Dynamic] No verified domains found, using first registered domain: ${domainName}`);
+        return `no-reply@${domainName}`;
+      }
+    }
+  } catch (err: any) {
+    console.warn("[Resend Dynamic] Warning: Failed to fetch domains list from Resend API:", err.message || err);
+  }
+
+  // 3. Fallback to checking if any of the configured ADMIN_EMAILS has a custom domain
   const genericDomains = [
     "gmail.com", "yahoo.com", "outlook.com", "hotmail.com", 
     "icloud.com", "aol.com", "zoho.com", "mail.com", "yandex.com",
     "proton.me", "protonmail.com", "gmx.com", "mail.ru"
   ];
 
-  if (domain && !genericDomains.includes(domain)) {
-    return `no-reply@${domain}`;
+  for (const email of ADMIN_EMAILS) {
+    const domain = email.split("@")[1];
+    if (domain && !genericDomains.includes(domain)) {
+      console.log(`[Resend Dynamic] Automatically selected sender from admin domain list: no-reply@${domain}`);
+      return `no-reply@${domain}`;
+    }
   }
 
-  // 3. Absolute fallback to Resend's default sandbox sender
+  // 4. Absolute fallback to Resend's default sandbox sender
+  console.log("[Resend Dynamic] No verified domains detected in Resend account or admin list. Falling back to default onboarding@resend.dev");
   return "onboarding@resend.dev";
 }
 
@@ -92,7 +127,7 @@ export async function sendOtpEmail(toEmail: string, otpCode: string): Promise<{ 
   }
 
   try {
-    const fromAddress = getResendFromAddress();
+    const fromAddress = await getResendFromAddress();
     console.log(`[Resend Debug] Preparing email via Resend:`);
     console.log(`  From Header: ${fromAddress}`);
     console.log(`  To Recipient: ${targetEmail}`);

@@ -230,7 +230,6 @@ import {
   sendOtpEmail,
   storeOtp,
   verifyOtp,
-  ADMIN_EMAIL,
   isAdminEmail
 } from "./serverOtp.js";
 
