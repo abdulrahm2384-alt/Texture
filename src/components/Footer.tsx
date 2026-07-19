@@ -30,15 +30,15 @@ export default function Footer({ onOpenAdmin }: FooterProps) {
                 OLUWASHOLA
               </h2>
               <p className="text-[8px] font-mono tracking-[0.1em] text-stone-500 uppercase">
-                Textile Accessories & Tailoring
+                Textile Finishing & Accessories
               </p>
             </div>
           </div>
 
           <div className="flex flex-wrap justify-center gap-6 text-xs font-mono uppercase tracking-widest text-stone-500">
             <a href="#about" className="hover:text-amber-400 transition">About Us</a>
-            <a href="#gallery" className="hover:text-amber-400 transition">Bespoke Gallery</a>
-            <a href="#fabrics" className="hover:text-amber-400 transition">Fabrics</a>
+            <a href="#gallery" className="hover:text-amber-400 transition">Finishing Gallery</a>
+            <a href="#fabrics" className="hover:text-amber-400 transition">Accessories</a>
             <a href="#order" className="hover:text-amber-400 transition">Order Intake</a>
           </div>
 
@@ -54,7 +54,7 @@ export default function Footer({ onOpenAdmin }: FooterProps) {
 
         {/* Lower footer */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-8 text-[11px] text-stone-600">
-          <p>© {new Date().getFullYear()} OLUWASHOLA TEXTILE ACCESSORIES. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} OLUWASHOLA TEXTILES. All rights reserved.</p>
           <div className="flex items-center gap-4">
             <button
               onClick={onOpenAdmin}
@@ -64,7 +64,7 @@ export default function Footer({ onOpenAdmin }: FooterProps) {
               Admin Portal
             </button>
             <span>•</span>
-            <span>Bespoke African Couture</span>
+            <span>Industrial Finishing & Supplies</span>
           </div>
         </div>
 

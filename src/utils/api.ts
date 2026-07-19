@@ -225,6 +225,16 @@ export async function deleteFabricAdmin(id: string): Promise<{ success: boolean 
   return data;
 }
 
+export async function updateFabricAdmin(id: string, updates: any): Promise<{ success: boolean }> {
+  const res = await fetchWithAdminAuth(`${API_BASE}/api/admin/fabrics/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(updates),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Failed to update boutique product details");
+  return data;
+}
+
 export async function addGalleryAdmin(galleryItem: any): Promise<{ success: boolean; item: FashionWork }> {
   const res = await fetchWithAdminAuth(`${API_BASE}/api/admin/gallery`, {
     method: "POST",

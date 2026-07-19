@@ -33,7 +33,12 @@ export interface Fabric {
   id: string;
   name: string;
   category: string;
+  gender?: string; // male, female, both/all
+  ageGroup?: string; // young, elder, adult, teenagers, all
   pricePerYard: number;
+  pricingUnit?: string; // e.g. "Unit", "Yard", "Dozen", "3 Yards", "Pack", "Set"
+  minOrderQty?: number; // minimum order quantity
+  maxOrderQty?: number; // maximum order quantity
   availableColors: string[];
   colorsHex?: string[]; // hex codes for elegant UI preview
   description: string;
@@ -96,4 +101,15 @@ export interface ContactInfo {
   wingStylesBgUrl?: string;
   wingOrderBgUrl?: string;
   wingContactBgUrl?: string;
+  servicePrices?: {
+    monogramming?: number;
+    beading?: number;
+    stoning?: number;
+    sewing?: number;
+    laser_cut?: number;
+    cnc_router?: number;
+    weaving?: number;
+    i_let?: number;
+    button_holes?: number;
+  };
 }

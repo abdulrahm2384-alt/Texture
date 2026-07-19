@@ -18,64 +18,43 @@ interface GalleryProps {
 }
 
 export default function Gallery({ isOpen, onClose, works, onOpenOrder }: GalleryProps) {
-  const [filterGender, setFilterGender] = useState<string>("All");
-  const [filterAge, setFilterAge] = useState<string>("All");
-  const [filterType, setFilterType] = useState<string>("All");
+  const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [customSearch, setCustomSearch] = useState<string>("");
   
   const [lightboxItem, setLightboxItem] = useState<FashionWork | null>(null);
 
-  const genderOptions = ["All", "Male", "Female", "Unisex"];
-  const ageOptions = ["All", "Middle Age", "Elder", "Adult", "Kids"];
-  
-  // Extract unique specific custom style types dynamically from the loaded items
-  const dynamicCustomTypes = Array.from(new Set(
+  // Extract unique categories dynamically from works
+  const dynamicCategories = Array.from(new Set(
     works.map((w) => {
-      const parsed = parseCategory(w.category);
-      return parsed.styleType === "Custom" && parsed.custom ? parsed.custom : null;
+      if (!w.category) return null;
+      const trimmed = w.category.trim();
+      if (!trimmed.startsWith("{")) return trimmed;
+      const parsed = parseCategory(trimmed);
+      return parsed.custom || parsed.styleType || "General";
     }).filter(Boolean)
   )) as string[];
 
-  const typeOptions = [
-    "All",
-    "Traditional",
-    "Corporate",
-    "Casual",
-    "Wedding",
-    "Children",
-    ...dynamicCustomTypes
-  ];
-
   const filteredWorks = works.filter((w) => {
-    const parsed = parseCategory(w.category);
-
-    // Filter by Gender
-    if (filterGender !== "All" && parsed.gender !== filterGender) return false;
-
-    // Filter by Age
-    if (filterAge !== "All" && parsed.ageGroup !== filterAge) return false;
-
-    // Filter by Style Type
-    if (filterType !== "All") {
-      if (["Traditional", "Corporate", "Casual", "Wedding", "Children"].includes(filterType)) {
-        if (parsed.styleType !== filterType) return false;
-      } else {
-        // This is a dynamic specific custom style type
-        if (parsed.styleType !== "Custom" || parsed.custom !== filterType) return false;
-      }
+    // Filter by Category
+    if (selectedCategory !== "All") {
+      const trimmed = (w.category || "").trim();
+      const itemCat = trimmed.startsWith("{")
+        ? (parseCategory(trimmed).custom || parseCategory(trimmed).styleType || "General")
+        : trimmed;
+      if (itemCat !== selectedCategory) return false;
     }
 
-    // Filter by custom keywords (checks custom field, title, and description)
+    // Filter by custom keywords (checks title, description, and category)
     if (customSearch.trim() !== "") {
       const search = customSearch.toLowerCase();
-      const customField = (parsed.custom || "").toLowerCase();
       const title = w.title.toLowerCase();
       const desc = w.description.toLowerCase();
+      const cat = (w.category || "").toLowerCase();
       
       if (
-        !customField.includes(search) &&
         !title.includes(search) &&
-        !desc.includes(search)
+        !desc.includes(search) &&
+        !cat.includes(search)
       ) {
         return false;
       }
@@ -85,19 +64,17 @@ export default function Gallery({ isOpen, onClose, works, onOpenOrder }: Gallery
   });
 
   const resetFilters = () => {
-    setFilterGender("All");
-    setFilterAge("All");
-    setFilterType("All");
+    setSelectedCategory("All");
     setCustomSearch("");
   };
 
   if (!isOpen) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Our Completed Bespoke Works" subtitle="Digital Showroom">
+    <Modal isOpen={isOpen} onClose={onClose} title="Our Completed Works Showcase" subtitle="Digital Gallery">
       <div className="space-y-8">
         <p className="text-xs text-stone-600 leading-relaxed -mt-4">
-          Click on any completed work to inspect stitch details, view styling guidelines, or request a custom recreation tailoring order.
+          Browse through high-definition photos of real finished monogram embroidery, precise laser cut designs, metal eyelet fittings, and custom hot-fix stoning completed for our clients.
         </p>
 
         {works.length === 0 ? (
@@ -114,10 +91,10 @@ export default function Gallery({ isOpen, onClose, works, onOpenOrder }: Gallery
               </p>
             </div>
             <p className="text-xs text-stone-600 leading-relaxed max-w-md mx-auto">
-              Welcome to the Oluwashola digital showroom! This space is dedicated to displaying the elite bespoke creations crafted by our master tailors—featuring exquisite traditional wear, elegant custom suits, and luxury bridal garments.
+              Welcome to the digital showroom! This space is dedicated to displaying real completed commissions—featuring computerized embroidery, heavy brass eyelet settings, and luxury hot-fix crystal layouts.
             </p>
             <div className="border-t border-stone-200/60 pt-4 text-xs text-stone-550 leading-relaxed">
-              We are currently curating and uploading high-definition photos of our latest completed client orders. In the meantime, you can place a fully customized tailoring order or get in touch with our studio anytime!
+              We are currently curating and uploading photos of our latest completed client orders. In the meantime, you can place a customization order or get in touch with our Lagos desk!
             </div>
             <div className="pt-2">
               <button
@@ -127,7 +104,7 @@ export default function Gallery({ isOpen, onClose, works, onOpenOrder }: Gallery
                 }}
                 className="px-6 py-2.5 bg-amber-500 hover:bg-amber-400 text-stone-950 font-semibold text-xs uppercase tracking-widest rounded-xl transition cursor-pointer shadow-md shadow-amber-500/10"
               >
-                Place Custom Order
+                Inquire & Book Service
               </button>
             </div>
           </div>
@@ -137,9 +114,9 @@ export default function Gallery({ isOpen, onClose, works, onOpenOrder }: Gallery
             <div className="bg-stone-50 border border-stone-200 rounded-2xl p-4 space-y-4 shadow-sm" id="gallery-filter-panel">
               <div className="flex items-center justify-between border-b border-stone-200 pb-2">
                 <span className="text-xs font-mono font-bold text-stone-700 uppercase tracking-widest flex items-center gap-1.5">
-                  <Filter size={13} className="text-amber-600" /> Multi-Category Filter
+                  <Filter size={13} className="text-amber-600" /> Filter Completed Works
                 </span>
-                {(filterGender !== "All" || filterAge !== "All" || filterType !== "All" || customSearch !== "") && (
+                {(selectedCategory !== "All" || customSearch !== "") && (
                   <button
                     onClick={resetFilters}
                     className="text-[10px] font-mono font-bold text-amber-700 hover:text-amber-900 uppercase tracking-wider underline cursor-pointer"
@@ -149,72 +126,42 @@ export default function Gallery({ isOpen, onClose, works, onOpenOrder }: Gallery
                 )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Gender Filter */}
-                <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase font-mono font-semibold text-stone-550 block">Gender</label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                {/* Category Filter */}
+                <div className="space-y-1.5 md:col-span-1">
+                  <label className="text-[10px] uppercase font-mono font-semibold text-stone-550 block">Finishing Type</label>
                   <select
-                    value={filterGender}
-                    onChange={(e) => setFilterGender(e.target.value)}
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
                     className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs text-stone-800 outline-none focus:border-amber-500 font-medium transition"
-                    id="filter-gender-select"
+                    id="filter-category-select"
                   >
-                    {genderOptions.map((opt) => (
+                    <option value="All">All Categories</option>
+                    {dynamicCategories.map((opt) => (
                       <option key={opt} value={opt}>
-                        {opt === "All" ? "All Genders" : opt}
+                        {opt}
                       </option>
                     ))}
                   </select>
                 </div>
 
-                {/* Age Filter */}
-                <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase font-mono font-semibold text-stone-550 block">Age Group</label>
-                  <select
-                    value={filterAge}
-                    onChange={(e) => setFilterAge(e.target.value)}
-                    className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs text-stone-800 outline-none focus:border-amber-500 font-medium transition"
-                    id="filter-age-select"
-                  >
-                    {ageOptions.map((opt) => (
-                      <option key={opt} value={opt}>
-                        {opt === "All" ? "All Age Groups" : opt}
-                      </option>
-                    ))}
-                  </select>
+                {/* Search/Custom Keyword input */}
+                <div className="relative md:col-span-2">
+                  <label className="text-[10px] uppercase font-mono font-semibold text-stone-550 block mb-1.5">Search Keywords</label>
+                  <div className="relative">
+                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-stone-400 pointer-events-none">
+                      <Search size={14} />
+                    </span>
+                    <input
+                      type="text"
+                      placeholder="Search completed jobs, techniques, or descriptors..."
+                      value={customSearch}
+                      onChange={(e) => setCustomSearch(e.target.value)}
+                      className="w-full bg-white border border-stone-200 rounded-xl pl-9 pr-4 py-1.5 text-xs text-stone-800 outline-none focus:border-amber-500 placeholder-stone-400 font-medium transition shadow-inner"
+                      id="filter-custom-search"
+                    />
+                  </div>
                 </div>
-
-                {/* Type Filter */}
-                <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase font-mono font-semibold text-stone-550 block">Style Type</label>
-                  <select
-                    value={filterType}
-                    onChange={(e) => setFilterType(e.target.value)}
-                    className="w-full bg-white border border-stone-200 rounded-xl px-3 py-1.5 text-xs text-stone-800 outline-none focus:border-amber-500 font-medium transition"
-                    id="filter-type-select"
-                  >
-                    {typeOptions.map((opt) => (
-                      <option key={opt} value={opt}>
-                        {opt === "All" ? "All Style Types" : opt}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Search/Custom Keyword input */}
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-stone-400 pointer-events-none">
-                  <Search size={14} />
-                </span>
-                <input
-                  type="text"
-                  placeholder="Search by keywords, custom category, or design name..."
-                  value={customSearch}
-                  onChange={(e) => setCustomSearch(e.target.value)}
-                  className="w-full bg-white border border-stone-200 rounded-xl pl-9 pr-4 py-2 text-xs text-stone-800 outline-none focus:border-amber-500 placeholder-stone-400 font-medium transition shadow-inner"
-                  id="filter-custom-search"
-                />
               </div>
             </div>
 

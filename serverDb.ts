@@ -22,165 +22,154 @@ export const initialCatalogData = {
   fabrics: [
     {
       id: "fab-1",
-      name: "Gilded Gold Swiss Voile Lace",
-      category: "Lace",
-      pricePerYard: 50000,
-      availableColors: ["Gold & Emerald", "Ivory Gold", "Champagne Gold"],
-      colorsHex: ["#155e3b", "#fffff0", "#f1e9d2"],
-      description: "Intricately embroidered premium Swiss voile lace adorned with gold-threaded floral motifs and subtle sequin highlights. Ideal for Nigerian traditional weddings (Owambe) and luxury custom garments.",
+      name: "Designer Cashmere Senator Set",
+      category: "Ready-to-Wear",
+      gender: "Male",
+      ageGroup: "Adult",
+      pricePerYard: 45000,
+      pricingUnit: "Set",
+      minOrderQty: 1,
+      maxOrderQty: 10,
+      availableColors: ["Royal Navy", "Charcoal Grey", "Emerald Green", "Wine Burgundy"],
+      colorsHex: ["#1e3a8a", "#4b5563", "#047857", "#7f1d1d"],
+      description: "Impeccably tailored Cashmere wool Senator top and trousers. Features a clean, minimalist design with a smart breast pocket and matching trousers.",
       stockAvailability: "In Stock",
-      imageUrl: "https://images.unsplash.com/photo-1594224140980-6e9dd0223e38?auto=format&fit=crop&q=80&w=600"
+      imageUrl: "https://images.unsplash.com/photo-1617137984095-74e4e5e3613f?auto=format&fit=crop&q=80&w=600"
     },
     {
       id: "fab-2",
-      name: "Classic Vlisco Ankara (Vintage Sunburst)",
-      category: "Ankara",
-      pricePerYard: 15000,
-      availableColors: ["Royal Indigo", "Saffron Sunburst", "Crimson Wave"],
-      colorsHex: ["#1e3a8a", "#f59e0b", "#991b1b"],
-      description: "Genuine luxury grade Vlisco wax print, 100% fine cotton. Features premium heritage African motifs with rich, lightfast saturation that holds its structural form perfectly for traditional Senator, Kaftan, or custom gowns.",
+      name: "Professional Tailoring Shears (10-inch)",
+      category: "Tailoring Tools",
+      gender: "All",
+      ageGroup: "All",
+      pricePerYard: 18500,
+      pricingUnit: "Unit",
+      minOrderQty: 1,
+      maxOrderQty: 5,
+      availableColors: ["Classic Gold", "Mirror Silver", "Midnight Black"],
+      colorsHex: ["#ffd700", "#c0c0c0", "#09090b"],
+      description: "Ultra-sharp heavy-duty carbon steel scissors with ergonomic handles. Designed for clean cuts through denim, leather, and multiple layers of fabric.",
       stockAvailability: "In Stock",
-      imageUrl: "https://images.unsplash.com/photo-1584184924103-e310d9dc82fc?auto=format&fit=crop&q=80&w=600"
-    },
-    {
-      id: "fab-3",
-      name: "Handwoven Metallic Aso Oke (Luxe Thread)",
-      category: "Aso Oke",
-      pricePerYard: 65000,
-      availableColors: ["Crimson Gold", "Silver Onyx", "Champagne Bronze"],
-      colorsHex: ["#7f1d1d", "#374151", "#b45309"],
-      description: "Masterfully hand-loomed traditional Yoruba fabric interwoven with premium metallic lurex threads for an unmatched royal reflection. Ideal for majestic caps, geles, sashes, and luxury custom Agbada sets.",
-      stockAvailability: "Low Stock",
       imageUrl: "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&q=80&w=600"
     },
     {
-      id: "fab-4",
-      name: "Royal Damask Brocade (Imperial Silk)",
-      category: "Brocade",
-      pricePerYard: 35000,
-      availableColors: ["Midnight Blue", "Crimson Gold", "Imperial Teal"],
-      colorsHex: ["#1e3a8a", "#b45309", "#0f766e"],
-      description: "Heavyweight, luxurious jacquard-weave silk brocade featuring sophisticated regal damask patterns. Tailors beautifully into structured traditional men's Kaftans and corporate evening wears.",
+      id: "fab-3",
+      name: "Luxury Intricate Organza Lace",
+      category: "Bespoke Fabric",
+      gender: "Female",
+      ageGroup: "All",
+      pricePerYard: 25000,
+      pricingUnit: "Yard",
+      minOrderQty: 1,
+      maxOrderQty: 15,
+      availableColors: ["Ivory Cream", "Rose Gold", "Royal Blue", "Onyx Black"],
+      colorsHex: ["#fefcbf", "#fda4af", "#1d4ed8", "#000000"],
+      description: "Exquisite organza fabric adorned with delicate floral threadwork, sequins, and scalloped borders. Perfect for bridal and luxury Owambe garments.",
       stockAvailability: "In Stock",
       imageUrl: "https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17?auto=format&fit=crop&q=80&w=600"
     },
     {
+      id: "fab-4",
+      name: "Hand-Beaded Silk Kaftan Dress",
+      category: "Ready-to-Wear",
+      gender: "Female",
+      ageGroup: "Adult",
+      pricePerYard: 65000,
+      pricingUnit: "Unit",
+      minOrderQty: 1,
+      maxOrderQty: 10,
+      availableColors: ["Saffron Orange", "Teal Turquoise", "Magenta Pink"],
+      colorsHex: ["#ea580c", "#0d9488", "#db2777"],
+      description: "Luminous pure silk kaftan detailed with intricate hand-beading crystal stoning along the neckline and sleeves. Effortlessly elegant.",
+      stockAvailability: "In Stock",
+      imageUrl: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=600"
+    },
+    {
       id: "fab-5",
-      name: "Elysian Mulberry Silk (Heavy Satin)",
-      category: "Silk",
-      pricePerYard: 40000,
-      availableColors: ["Emerald Satin", "Rose Quartz", "Sapphire Silk"],
-      colorsHex: ["#064e3b", "#fda4af", "#1d4ed8"],
-      description: "Ultra-fluid 100% pure organic mulberry silk satin. Possesses a glossy, luminous outer finish and a liquid-soft touch that skims the silhouette elegantly, perfect for bridal reception gowns and luxury boubou styles.",
+      name: "Aso Oke Traditional Cap & Capes Set",
+      category: "Fashion Accessories",
+      gender: "All",
+      ageGroup: "Adult",
+      pricePerYard: 15000,
+      pricingUnit: "Set",
+      minOrderQty: 1,
+      maxOrderQty: 10,
+      availableColors: ["Vintage Gold/Burgundy", "Silver/Navy", "Magenta/Gold"],
+      colorsHex: ["#b45309", "#3b82f6", "#be185d"],
+      description: "Authentic hand-woven Yoruba Aso Oke accessories. Includes a pre-folded statement cap (Fila) and matching shoulder sash (Apele).",
       stockAvailability: "In Stock",
-      imageUrl: "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?auto=format&fit=crop&q=80&w=600"
-    },
-    {
-      id: "fab-6",
-      name: "Midnight Velvet Crush (Luxury Stretch)",
-      category: "Velvet",
-      pricePerYard: 25000,
-      availableColors: ["Deep Burgundy", "Forest Green", "Obsidian Black"],
-      colorsHex: ["#4c0519", "#064e3b", "#0f172a"],
-      description: "Thick plush pile velvet with a rich multi-toned deep crush effect. Supple, comfortable stretch, excellent for opulent evening gowns, traditional wrappers, or custom embroidery accents.",
-      stockAvailability: "In Stock",
-      imageUrl: "https://images.unsplash.com/photo-1571242337471-70529d89196b?auto=format&fit=crop&q=80&w=600"
-    },
-    {
-      id: "fab-7",
-      name: "Super 140s Italian Cashmere Wool",
-      category: "Cashmere",
-      pricePerYard: 60000,
-      availableColors: ["Classic Charcoal", "Camel Luxe", "Deep Navy"],
-      colorsHex: ["#4b5563", "#d97706", "#1e3a8a"],
-      description: "Exquisite, lightweight superfine wool mixed with high-grade Italian cashmere fibers. Highly breathable, soft, and designed specifically for bespoke Senator wear, high-end Kaftans, and traditional executive styles.",
-      stockAvailability: "Low Stock",
-      imageUrl: "https://images.unsplash.com/photo-1582298538104-fe2e74c27f59?auto=format&fit=crop&q=80&w=600"
+      imageUrl: "https://images.unsplash.com/photo-1593030142662-01566a7b3a82?auto=format&fit=crop&q=80&w=600"
     }
   ],
   gallery: [
     {
       id: "work-1",
-      title: "The Majestic Royal Agbada Set",
-      category: "Traditional",
-      imageUrl: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=600",
-      description: "A breathtaking 4-piece traditional Nigerian Agbada tailored in hand-loomed Royal Aso Oke. Features geometric hand-embroided patterns in metallic gold thread."
+      title: "Precision Eyelet & Button Hole Installation",
+      category: "Eyelets & Buttons",
+      imageUrl: "https://images.unsplash.com/photo-1598257006458-087169a1f08d?auto=format&fit=crop&q=80&w=600",
+      description: "Flawless heavy-gauge brass eyelet installation and clean industrial button hole stitches on structured traditional kaftans."
     },
     {
       id: "work-2",
-      title: "Imperial Damask Kaftan with Crest",
-      category: "Male",
-      imageUrl: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&q=80&w=600",
-      description: "An elegant, structurally tailored ivory and navy senator outfit. Designed using luxury Italian cashmere and features a minimalist modern embroidered breast seal."
+      title: "Intricate Monogram School Crest",
+      category: "Embroidery",
+      imageUrl: "https://images.unsplash.com/photo-1558486012-817176f84c6d?auto=format&fit=crop&q=80&w=600",
+      description: "High-definition custom school crest monogramming executed with premium gold and navy threading on school blazers."
     },
     {
       id: "work-3",
-      title: "Gilded Ivory Mermaid Lace Gown",
-      category: "Female",
+      title: "Premium Hand Beading & Stoning",
+      category: "Beading & Stoning",
       imageUrl: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=600",
-      description: "Stunning custom wedding gown designed in double-lined Swiss voile lace. Tailored to perfection with a hand-stitched beaded corset bodice and trailing train."
+      description: "Luminous dress embellishment completed with hand-stitched bugle beads and multi-faceted hotfix glass crystals."
     },
     {
       id: "work-4",
-      title: "Vibrant Ankara Ruffled Ballgown",
-      category: "Children",
-      imageUrl: "https://images.unsplash.com/photo-1621184455862-c163dfb30e0f?auto=format&fit=crop&q=80&w=600",
-      description: "High-contrast tiered children's party gown designed with combined vintage sunburst Ankara and soft satin underlays."
+      title: "Precision Laser Cut Fabric Panel",
+      category: "Laser Cutting",
+      imageUrl: "https://images.unsplash.com/photo-1618090584126-129cd1f3fbaa?auto=format&fit=crop&q=80&w=600",
+      description: "Intricately detailed geometric cuts on royal velvet fabrics, designed with high-energy laser engraving cutters."
     },
     {
       id: "work-5",
-      title: "Contemporary Adire Resort Jumpsuit",
-      category: "Casual",
-      imageUrl: "https://images.unsplash.com/photo-1561932690-f98b9cd64221?auto=format&fit=crop&q=80&w=600",
-      description: "Lightweight, fluid casual wear designed in premium indigo-dyed adire cotton. High-waisted belt design suited for everyday luxury."
-    },
-    {
-      id: "work-6",
-      title: "Classic Bespoke Corporate Suit",
-      category: "Corporate",
-      imageUrl: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&q=80&w=600",
-      description: "Sharp corporate menswear piece tailored with Italian superfine cashmere wool, featuring structured lapels and customized inner satin lining."
-    },
-    {
-      id: "work-7",
-      title: "Bridal Reception Lace Wrap Dress",
-      category: "Wedding",
-      imageUrl: "https://images.unsplash.com/photo-1566174053879-31528523f8ae?auto=format&fit=crop&q=80&w=600",
-      description: "Luxurious reception dress for brides, combining fluid Elysian mulberry silk draping and premium French embroidered lace accents."
+      title: "Custom School & Corporate Patches",
+      category: "Patches",
+      imageUrl: "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&q=80&w=600",
+      description: "A bulk shipment of high-density embroidered brand logo patches prepared with iron-on heat adhesive backing."
     }
   ],
   styles: [
     {
       id: "style-1",
-      name: "The Majestic Agbada (4-Piece Outfit)",
-      category: "Traditional",
-      description: "A supreme traditional attire representing power and heritage, featuring the large flowing agbada gown, matching long sleeve kaftan, tapered trousers, and standard embroidered cap.",
-      imageUrl: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=600",
-      estimatedYardage: "7-8 Yards (Fabric) + 2 Yards (Aso Oke for Cap/Accents)"
+      name: "Eyelet Installation & Button Holes",
+      category: "Unisex • Adult • Finishing",
+      description: "Flawless industrial machine eyelets and neat satin-stitch button holes tailored to any custom garment specifications.",
+      imageUrl: "https://images.unsplash.com/photo-1598257006458-087169a1f08d?auto=format&fit=crop&q=80&w=600",
+      estimatedYardage: "1-2 Business Days"
     },
     {
       id: "style-2",
-      name: "Corset Mermaid Lace Silhouette",
-      category: "Female",
-      description: "A tailored-to-fit evening and wedding design. Built on a sturdy boned corset foundation, cascading into a sweeping flare that highlights the fabrics' lace pattern beautifully.",
-      imageUrl: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=600",
-      estimatedYardage: "5-6 Yards"
+      name: "Computerized Monogram Embroidery",
+      category: "Unisex • Adult • Embroidery",
+      description: "High-fidelity digital embroidery of logos, family crests, or monograms on school blazers, caps, shirts, and towels.",
+      imageUrl: "https://images.unsplash.com/photo-1558486012-817176f84c6d?auto=format&fit=crop&q=80&w=600",
+      estimatedYardage: "2-3 Business Days"
     },
     {
       id: "style-3",
-      name: "Minimalist Senator Suit",
-      category: "Male",
-      description: "A sleek modern African formal alternative. Structured collar, dynamic custom embroidery or contrast piping, complete with tailored straight-cut trousers.",
-      imageUrl: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&q=80&w=600",
-      estimatedYardage: "4 Yards"
+      name: "Precision Laser & CNC Fabric Cutting",
+      category: "Unisex • Adult • Machine Cutting",
+      description: "High-speed intricate engraving and edge-sealed cuts on synthetic, velvet, leather, and cotton textile panels.",
+      imageUrl: "https://images.unsplash.com/photo-1618090584126-129cd1f3fbaa?auto=format&fit=crop&q=80&w=600",
+      estimatedYardage: "2-4 Business Days"
     },
     {
       id: "style-4",
-      name: "Premium Buba & Iro Wrapper Set",
-      category: "Traditional",
-      description: "Classic Yoruba traditional elegance. Beautifully draped long sleeve top (Buba) paired with a wrapper skirt (Iro) and matching shoulder sash (Ipele). Highlighted by custom lace or Aso Oke border.",
-      imageUrl: "https://images.unsplash.com/photo-1566174053879-31528523f8ae?auto=format&fit=crop&q=80&w=600",
-      estimatedYardage: "5-6 Yards"
+      name: "Garment Beading, Stoning & Sequins",
+      category: "Female • Adult • Hand Craft",
+      description: "Artisanal hand-crafted beading overlays and heat-pressed crystal stoning designed to elevate Owambe garments and bridal trains.",
+      imageUrl: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=600",
+      estimatedYardage: "4-6 Business Days"
     }
   ]
 };
@@ -266,6 +255,11 @@ export async function initializeDatabase(): Promise<boolean> {
         \`description\` TEXT NULL,
         \`stockAvailability\` VARCHAR(30) NOT NULL DEFAULT 'In Stock',
         \`imageUrl\` TEXT NOT NULL,
+        \`gender\` VARCHAR(50) NULL DEFAULT 'All',
+        \`ageGroup\` VARCHAR(50) NULL DEFAULT 'All',
+        \`pricingUnit\` VARCHAR(50) NULL DEFAULT 'Yard',
+        \`minOrderQty\` INT NULL DEFAULT 1,
+        \`maxOrderQty\` INT NULL DEFAULT 10,
         \`createdAt\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (\`id\`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -304,6 +298,22 @@ export async function initializeDatabase(): Promise<boolean> {
     } catch (alterErr) {
       console.log("Database table modifications (ALTER) already applied or not needed:", alterErr);
     }
+
+    try {
+      await connection.query("ALTER TABLE `custom_fabrics` ADD COLUMN `gender` VARCHAR(50) NULL DEFAULT 'All'");
+    } catch (e) {}
+    try {
+      await connection.query("ALTER TABLE `custom_fabrics` ADD COLUMN `ageGroup` VARCHAR(50) NULL DEFAULT 'All'");
+    } catch (e) {}
+    try {
+      await connection.query("ALTER TABLE `custom_fabrics` ADD COLUMN `pricingUnit` VARCHAR(50) NULL DEFAULT 'Yard'");
+    } catch (e) {}
+    try {
+      await connection.query("ALTER TABLE `custom_fabrics` ADD COLUMN `minOrderQty` INT NULL DEFAULT 1");
+    } catch (e) {}
+    try {
+      await connection.query("ALTER TABLE `custom_fabrics` ADD COLUMN `maxOrderQty` INT NULL DEFAULT 10");
+    } catch (e) {}
 
     // Create system_config table to track database seeding status
     await connection.query(`
@@ -379,17 +389,55 @@ function readJsonDb() {
       changed = true;
     }
 
-    if (!parsed.added_fabrics) {
-      parsed.added_fabrics = [];
+    if (!parsed.added_fabrics || parsed.added_fabrics.length === 0) {
+      parsed.added_fabrics = JSON.parse(JSON.stringify(initialCatalogData.fabrics));
       changed = true;
     }
-    if (!parsed.added_gallery) {
-      parsed.added_gallery = [];
+    if (!parsed.added_gallery || parsed.added_gallery.length === 0) {
+      parsed.added_gallery = JSON.parse(JSON.stringify(initialCatalogData.gallery));
       changed = true;
     }
-    if (!parsed.added_styles) {
-      parsed.added_styles = [];
+    if (!parsed.added_styles || parsed.added_styles.length === 0) {
+      parsed.added_styles = JSON.parse(JSON.stringify(initialCatalogData.styles));
       changed = true;
+    }
+
+    // Smart migration for existing old data (Agbada / Kaftan / Lace fashion items)
+    const hasOldData = 
+      (parsed.added_fabrics && parsed.added_fabrics.some((f: any) => f.category === "Lace" || f.category === "Ankara" || f.name?.includes("Swiss Voile"))) ||
+      (parsed.added_gallery && parsed.added_gallery.some((g: any) => g.title?.includes("Agbada") || g.title?.includes("Kaftan") || g.title?.includes("Gown") || g.title?.includes("Suit"))) ||
+      (parsed.added_styles && parsed.added_styles.some((s: any) => s.name?.includes("Agbada") || s.name?.includes("Senator") || s.name?.includes("Kaftan")));
+
+    if (hasOldData) {
+      console.log("Old fashion design catalog detected on disk. Migrating database to professional industrial finishing and raw accessories schema...");
+      parsed.added_fabrics = JSON.parse(JSON.stringify(initialCatalogData.fabrics));
+      parsed.added_gallery = JSON.parse(JSON.stringify(initialCatalogData.gallery));
+      parsed.added_styles = JSON.parse(JSON.stringify(initialCatalogData.styles));
+      changed = true;
+    }
+
+    // Force migration of contact_info layout images to professional non-industrial, non-dog variants
+    if (parsed.contact_info) {
+      if (
+        !parsed.contact_info.wingAboutBgUrl || 
+        parsed.contact_info.wingAboutBgUrl.includes("1520038410233") || // old dog image
+        parsed.contact_info.wingAboutBgUrl.includes("monogram_machine") || // old machine
+        parsed.contact_info.wingContactBgUrl?.includes("cnc_desktop_router") || // old machine
+        parsed.contact_info.wingOrderBgUrl?.includes("clothe_beading_machine") || // old machine
+        parsed.contact_info.wingGalleryBgUrl?.includes("1558486012-817176f84c6d") || // old monogram/school crest image
+        parsed.contact_info.wingFabricsBgUrl?.includes("1598257006458-087169a1f08d") // force upgrade shears back to fabric
+      ) {
+        console.log("Upgrading saved contact_info styling imagery to point directly to beautiful, customer-facing matching photos...");
+        parsed.contact_info.logoUrl = DEFAULT_CONTACT_INFO.logoUrl;
+        parsed.contact_info.heroBgUrl = DEFAULT_CONTACT_INFO.heroBgUrl;
+        parsed.contact_info.wingAboutBgUrl = DEFAULT_CONTACT_INFO.wingAboutBgUrl;
+        parsed.contact_info.wingGalleryBgUrl = DEFAULT_CONTACT_INFO.wingGalleryBgUrl;
+        parsed.contact_info.wingFabricsBgUrl = DEFAULT_CONTACT_INFO.wingFabricsBgUrl;
+        parsed.contact_info.wingStylesBgUrl = DEFAULT_CONTACT_INFO.wingStylesBgUrl;
+        parsed.contact_info.wingOrderBgUrl = DEFAULT_CONTACT_INFO.wingOrderBgUrl;
+        parsed.contact_info.wingContactBgUrl = DEFAULT_CONTACT_INFO.wingContactBgUrl;
+        changed = true;
+      }
     }
 
     if (changed) {
@@ -806,9 +854,9 @@ export async function addCustomFabric(f: any): Promise<boolean> {
   if (pool) {
     try {
       await pool.query(
-        `INSERT INTO custom_fabrics (id, name, category, pricePerYard, availableColors, colorsHex, description, stockAvailability, imageUrl) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [f.id, f.name, f.category, f.pricePerYard, colorsStr, colorsHexStr, f.description, f.stockAvailability, f.imageUrl]
+        `INSERT INTO custom_fabrics (id, name, category, pricePerYard, availableColors, colorsHex, description, stockAvailability, imageUrl, gender, ageGroup, pricingUnit, minOrderQty, maxOrderQty) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [f.id, f.name, f.category, f.pricePerYard, colorsStr, colorsHexStr, f.description, f.stockAvailability, f.imageUrl, f.gender || 'All', f.ageGroup || 'All', f.pricingUnit || 'Yard', f.minOrderQty || 1, f.maxOrderQty || 10]
       );
       return true;
     } catch (err) {
@@ -834,6 +882,43 @@ export async function deleteCustomFabric(id: string): Promise<boolean> {
   }
   const db = readJsonDb();
   db.added_fabrics = (db.added_fabrics || []).filter((f: any) => f.id !== id);
+  writeJsonDb(db);
+  return true;
+}
+
+// 12b. Update Custom Fabric Price / Details
+export async function updateCustomFabric(id: string, updates: any): Promise<boolean> {
+  if (pool) {
+    try {
+      const fields = [];
+      const values = [];
+      for (const [key, val] of Object.entries(updates)) {
+        fields.push(`\`${key}\` = ?`);
+        if (typeof val === 'object' && val !== null) {
+          values.push(JSON.stringify(val));
+        } else {
+          values.push(val);
+        }
+      }
+      if (fields.length > 0) {
+        values.push(id);
+        await pool.query(
+          `UPDATE custom_fabrics SET ${fields.join(", ")} WHERE id = ?`,
+          values
+        );
+        return true;
+      }
+    } catch (err) {
+      console.error("MySQL updateCustomFabric error:", err);
+    }
+  }
+  const db = readJsonDb();
+  db.added_fabrics = (db.added_fabrics || []).map((f: any) => {
+    if (f.id === id) {
+      return { ...f, ...updates };
+    }
+    return f;
+  });
   writeJsonDb(db);
   return true;
 }
@@ -959,6 +1044,17 @@ export interface ContactInfo {
   wingStylesBgUrl?: string;
   wingOrderBgUrl?: string;
   wingContactBgUrl?: string;
+  servicePrices?: {
+    monogramming?: number;
+    beading?: number;
+    stoning?: number;
+    sewing?: number;
+    laser_cut?: number;
+    cnc_router?: number;
+    weaving?: number;
+    i_let?: number;
+    button_holes?: number;
+  };
 }
 
 export const DEFAULT_CONTACT_INFO: ContactInfo = {
@@ -975,10 +1071,21 @@ export const DEFAULT_CONTACT_INFO: ContactInfo = {
   heroBgUrl: "/src/assets/images/textile_hero_1784138693639.jpg",
   wingAboutBgUrl: "https://images.unsplash.com/photo-1593032465175-481ac7f401a0?auto=format&fit=crop&q=80&w=600",
   wingGalleryBgUrl: "https://images.unsplash.com/photo-1617137984095-74e4e5e3613f?auto=format&fit=crop&q=80&w=600",
-  wingFabricsBgUrl: "https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17?auto=format&fit=crop&q=80&w=600",
-  wingStylesBgUrl: "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&q=80&w=600",
+  wingFabricsBgUrl: "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&q=80&w=600",
+  wingStylesBgUrl: "https://images.unsplash.com/photo-1618090584126-129cd1f3fbaa?auto=format&fit=crop&q=80&w=600",
   wingOrderBgUrl: "https://images.unsplash.com/photo-1598257006458-087169a1f08d?auto=format&fit=crop&q=80&w=600",
-  wingContactBgUrl: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=600"
+  wingContactBgUrl: "https://images.unsplash.com/photo-1423666639041-f56000c27a9a?auto=format&fit=crop&q=80&w=600",
+  servicePrices: {
+    monogramming: 15000,
+    beading: 45000,
+    stoning: 30000,
+    sewing: 40000,
+    laser_cut: 25000,
+    cnc_router: 35000,
+    weaving: 50000,
+    i_let: 10000,
+    button_holes: 5000,
+  }
 };
 
 export async function getContactInfo(): Promise<ContactInfo> {
@@ -1033,9 +1140,9 @@ export async function seedDefaultCatalog(): Promise<boolean> {
         const colorsStr = JSON.stringify(f.availableColors || []);
         const colorsHexStr = JSON.stringify(f.colorsHex || []);
         await pool.query(
-          `INSERT INTO custom_fabrics (id, name, category, pricePerYard, availableColors, colorsHex, description, stockAvailability, imageUrl) 
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [f.id, f.name, f.category, f.pricePerYard, colorsStr, colorsHexStr, f.description, f.stockAvailability, f.imageUrl]
+          `INSERT INTO custom_fabrics (id, name, category, pricePerYard, availableColors, colorsHex, description, stockAvailability, imageUrl, gender, ageGroup, pricingUnit, minOrderQty, maxOrderQty) 
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [f.id, f.name, f.category, f.pricePerYard, colorsStr, colorsHexStr, f.description, f.stockAvailability, f.imageUrl, f.gender || 'All', f.ageGroup || 'All', f.pricingUnit || 'Yard', f.minOrderQty || 1, f.maxOrderQty || 10]
         );
       }
 

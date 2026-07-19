@@ -25,7 +25,9 @@ import {
   Upload,
   Plus,
   Scissors,
-  Award
+  Award,
+  Edit2,
+  Check
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { ContactInfo } from "../types";
@@ -37,6 +39,7 @@ import {
   fetchCatalog,
   addFabricAdmin,
   deleteFabricAdmin,
+  updateFabricAdmin,
   addGalleryAdmin,
   deleteGalleryAdmin,
   addStyleAdmin,
@@ -115,6 +118,15 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
   });
   const [loadingCatalog, setLoadingCatalog] = useState(false);
 
+  // Fabric Inline Edit State
+  const [editingFabricId, setEditingFabricId] = useState<string | null>(null);
+  const [editPrice, setEditPrice] = useState<string>("");
+  const [editPricingUnit, setEditPricingUnit] = useState<string>("Yard");
+  const [editMinQty, setEditMinQty] = useState<string>("1");
+  const [editMaxQty, setEditMaxQty] = useState<string>("10");
+  const [editStock, setEditStock] = useState<string>("In Stock");
+  const [updatingFabric, setUpdatingFabric] = useState<boolean>(false);
+
   // Fabric Form State
   const [fabName, setFabName] = useState("");
   const [fabCategory, setFabCategory] = useState("Lace");
@@ -125,6 +137,11 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
   const [fabDesc, setFabDesc] = useState("");
   const [fabImageType, setFabImageType] = useState<"default" | "upload">("default");
   const [fabImageFile, setFabImageFile] = useState<string | null>(null);
+  const [fabGender, setFabGender] = useState("All");
+  const [fabAgeGroup, setFabAgeGroup] = useState("All");
+  const [fabPricingUnit, setFabPricingUnit] = useState("Yard");
+  const [fabMinOrderQty, setFabMinOrderQty] = useState("1");
+  const [fabMaxOrderQty, setFabMaxOrderQty] = useState("10");
 
   // Gallery (Showcase) Form State
   const [galTitle, setGalTitle] = useState("");
@@ -344,7 +361,12 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
     const fabricData = {
       name: fabName,
       category: finalCategory,
+      gender: fabGender,
+      ageGroup: fabAgeGroup,
       pricePerYard: Number(fabPrice),
+      pricingUnit: fabPricingUnit,
+      minOrderQty: Number(fabMinOrderQty) || 1,
+      maxOrderQty: Number(fabMaxOrderQty) || 10,
       availableColors: colorsArr,
       colorsHex: colorsHexArr,
       description: fabDesc || `${fabName} premium visual styling.`,
@@ -365,6 +387,11 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
       setFabColors("");
       setFabDesc("");
       setFabImageFile(null);
+      setFabGender("All");
+      setFabAgeGroup("All");
+      setFabPricingUnit("Yard");
+      setFabMinOrderQty("1");
+      setFabMaxOrderQty("10");
       if (onCatalogChanged) onCatalogChanged();
     } catch (err: any) {
       if (isTestingMode()) {
@@ -384,6 +411,11 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
         setFabColors("");
         setFabDesc("");
         setFabImageFile(null);
+        setFabGender("All");
+        setFabAgeGroup("All");
+        setFabPricingUnit("Yard");
+        setFabMinOrderQty("1");
+        setFabMaxOrderQty("10");
         if (onCatalogChanged) onCatalogChanged();
       } else {
         triggerToast(err.message || "Failed to add fabric.", "info");
@@ -556,6 +588,53 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
       }
     } finally {
       setAddingItem(false);
+    }
+  };
+
+  const handleStartFabricEdit = (fab: any) => {
+    setEditingFabricId(fab.id);
+    setEditPrice(String(fab.pricePerYard || ""));
+    setEditPricingUnit(fab.pricingUnit || "Yard");
+    setEditMinQty(String(fab.minOrderQty || "1"));
+    setEditMaxQty(String(fab.maxOrderQty || "10"));
+    setEditStock(fab.stockAvailability || "In Stock");
+  };
+
+  const handleSaveFabricEdit = async (id: string) => {
+    if (!editPrice || isNaN(Number(editPrice))) {
+      triggerToast("Please enter a valid numeric price", "info");
+      return;
+    }
+    setUpdatingFabric(true);
+    const updates = {
+      pricePerYard: Number(editPrice),
+      pricingUnit: editPricingUnit,
+      minOrderQty: Number(editMinQty),
+      maxOrderQty: Number(editMaxQty),
+      stockAvailability: editStock
+    };
+    try {
+      if (isTestingMode()) {
+        const updatedFabrics = (catalog.fabrics || []).map(f => {
+          if (f.id === id) {
+            return { ...f, ...updates };
+          }
+          return f;
+        });
+        setCatalog({ ...catalog, fabrics: updatedFabrics });
+        triggerToast("Testing Mode: Fabric updated locally in current session.");
+        if (onCatalogChanged) onCatalogChanged();
+      } else {
+        await updateFabricAdmin(id, updates);
+        triggerToast("Boutique item updated successfully!");
+        await loadCatalog();
+        if (onCatalogChanged) onCatalogChanged();
+      }
+      setEditingFabricId(null);
+    } catch (err: any) {
+      triggerToast(err.message || "Failed to update boutique item details.", "info");
+    } finally {
+      setUpdatingFabric(false);
     }
   };
 
@@ -1017,7 +1096,7 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
                               required
                               value={adminEmail}
                               onChange={(e) => setAdminEmail(e.target.value)}
-                              placeholder="e.g. admin@oluwashola-atelier.com"
+                              placeholder="e.g. admin@yourdomain.com"
                               className="w-full bg-stone-50 border border-stone-200 hover:border-stone-300 focus:border-amber-600/50 rounded-xl py-3 pl-11 pr-4 text-xs text-stone-800 placeholder-stone-400 focus:outline-none transition font-sans"
                             />
                           </div>
@@ -1109,7 +1188,7 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
             {/* AUTHENTICATED: SHOW ADMIN DASHBOARD */}
             {isAdmin && (
               <div className="flex-1 flex flex-col gap-6 overflow-hidden">
-                               {/* Tab Navigation Bar */}
+                {/* Tab Navigation Bar */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-stone-200 shrink-0 gap-4 mb-2 pb-1">
                   <div className="flex gap-1 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
                     <button
@@ -1126,15 +1205,7 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
                         activeTab === "fabrics" ? "border-amber-600 text-amber-800 font-bold" : "border-transparent text-stone-500 hover:text-stone-800"
                       }`}
                     >
-                      Fabrics Catalog
-                    </button>
-                    <button
-                      onClick={() => setActiveTab("styles")}
-                      className={`pb-3 px-4 font-serif text-xs tracking-wider uppercase border-b-2 transition shrink-0 ${
-                        activeTab === "styles" ? "border-amber-600 text-amber-800 font-bold" : "border-transparent text-stone-500 hover:text-stone-800"
-                      }`}
-                    >
-                      Style Inspiration
+                      Boutique & Shop Inventory
                     </button>
                     <button
                       onClick={() => setActiveTab("contact")}
@@ -1209,8 +1280,8 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
                 <div className="space-y-3 bg-white p-5 rounded-2xl border border-stone-200 shadow-sm shrink-0">
                   <div className="flex justify-between items-center pb-2 border-b border-stone-100">
                     <div>
-                      <h3 className="font-serif text-xs text-stone-805 font-bold uppercase tracking-wider">Existing Fabrics</h3>
-                      <p className="text-[10px] text-stone-500 font-mono mt-0.5">Total: {catalog.fabrics?.length || 0} fabrics listed</p>
+                      <h3 className="font-serif text-xs text-stone-800 font-bold uppercase tracking-wider">Existing Boutique & Shop Inventory</h3>
+                      <p className="text-[10px] text-stone-500 font-mono mt-0.5">Total: {catalog.fabrics?.length || 0} items listed</p>
                     </div>
                     {loadingCatalog && <Loader2 size={12} className="animate-spin text-amber-700" />}
                   </div>
@@ -1219,30 +1290,112 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
                   <div className="max-h-[360px] overflow-y-auto pr-1">
                     {catalog.fabrics?.length === 0 ? (
                       <div className="text-center py-12 text-stone-400 text-xs">
-                        No fabrics found in catalog.
+                        No items found in boutique inventory.
                       </div>
                     ) : (
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pb-2 pt-1">
-                        {catalog.fabrics?.map((fab: any) => (
-                          <div key={fab.id} className="bg-stone-50/50 border border-stone-200 rounded-xl p-3 flex gap-3 items-center relative group shadow-sm hover:border-amber-600/30 hover:bg-stone-50 transition duration-300 animate-fadeIn">
-                            <img src={fab.imageUrl} alt={fab.name} className="h-14 w-14 rounded-lg object-cover bg-white border border-stone-200 shrink-0" />
-                            <div className="flex-1 min-w-0 text-left">
-                              <span className="text-[9px] font-mono text-amber-800 uppercase tracking-wide block font-semibold">{fab.category}</span>
-                              <h4 className="font-sans text-stone-900 font-semibold text-xs truncate">{fab.name}</h4>
-                              <p className="text-[10px] text-stone-500 font-mono mt-0.5">₦{fab.pricePerYard?.toLocaleString()} / Yard</p>
-                              <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono inline-block mt-1 ${fab.stockAvailability === "In Stock" ? "bg-emerald-50 text-emerald-800 border border-emerald-200" : "bg-rose-50 text-rose-800 border border-rose-200"}`}>
-                                {fab.stockAvailability}
-                              </span>
+                        {catalog.fabrics?.map((fab: any) => {
+                          const isEditing = editingFabricId === fab.id;
+                          return (
+                            <div key={fab.id} className="bg-stone-50/50 border border-stone-200 rounded-xl p-3 flex gap-3 items-center relative group shadow-sm hover:border-amber-600/30 hover:bg-stone-50 transition duration-300 animate-fadeIn">
+                              <img src={fab.imageUrl} alt={fab.name} className="h-14 w-14 rounded-lg object-cover bg-white border border-stone-200 shrink-0" />
+                              <div className="flex-1 min-w-0 text-left">
+                                <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                                  <span className="text-[9px] font-mono text-amber-800 uppercase tracking-wide font-semibold bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200/50">{fab.category}</span>
+                                  {fab.gender && fab.gender !== "All" && (
+                                    <span className="text-[8px] font-mono bg-stone-100 text-stone-600 px-1 rounded uppercase font-semibold">{fab.gender}</span>
+                                  )}
+                                  {fab.ageGroup && fab.ageGroup !== "All" && (
+                                    <span className="text-[8px] font-mono bg-stone-100 text-stone-600 px-1 rounded uppercase font-semibold">{fab.ageGroup}</span>
+                                  )}
+                                </div>
+                                <h4 className="font-sans text-stone-900 font-semibold text-xs truncate">{fab.name}</h4>
+                                
+                                {isEditing ? (
+                                  <div className="space-y-1.5 mt-1.5 bg-stone-100 p-1.5 rounded-lg border border-stone-200">
+                                    <div className="flex items-center gap-1">
+                                      <span className="text-[9px] text-stone-500 font-mono">₦</span>
+                                      <input
+                                        type="number"
+                                        value={editPrice}
+                                        onChange={(e) => setEditPrice(e.target.value)}
+                                        className="w-full bg-white border border-stone-200 rounded px-1.5 py-0.5 font-mono text-[10px]"
+                                        placeholder="Price"
+                                      />
+                                      <select
+                                        value={editPricingUnit}
+                                        onChange={(e) => setEditPricingUnit(e.target.value)}
+                                        className="bg-white border border-stone-200 rounded px-1 py-0.5 text-[9px] font-mono"
+                                      >
+                                        <option value="Yard">Yard</option>
+                                        <option value="Dozen">Dozen</option>
+                                        <option value="Unit">Unit</option>
+                                        <option value="3 Yard">3 Yard</option>
+                                        <option value="4 Yard">4 Yard</option>
+                                        <option value="Pack">Pack</option>
+                                        <option value="Fixed">Fixed Price</option>
+                                      </select>
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                      <select
+                                        value={editStock}
+                                        onChange={(e) => setEditStock(e.target.value)}
+                                        className="w-full bg-white border border-stone-200 rounded px-1 py-0.5 text-[9px] font-mono"
+                                      >
+                                        <option value="In Stock">In Stock</option>
+                                        <option value="Out of Stock">Out of Stock</option>
+                                      </select>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleSaveFabricEdit(fab.id)}
+                                        disabled={updatingFabric}
+                                        className="p-1 bg-amber-700 text-white rounded hover:bg-amber-800 transition"
+                                        title="Save Edits"
+                                      >
+                                        <Check size={10} />
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => setEditingFabricId(null)}
+                                        className="p-1 bg-stone-300 text-stone-700 rounded hover:bg-stone-400 transition"
+                                        title="Cancel"
+                                      >
+                                        <X size={10} />
+                                      </button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <>
+                                    <p className="text-[10px] text-stone-500 font-mono mt-0.5 flex items-center gap-1.5">
+                                      <span>₦{fab.pricePerYard?.toLocaleString()} / {fab.pricingUnit || "Yard"}</span>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleStartFabricEdit(fab)}
+                                        className="p-0.5 text-stone-400 hover:text-amber-800 rounded transition"
+                                        title="Edit Price/Unit"
+                                      >
+                                        <Edit2 size={10} />
+                                      </button>
+                                    </p>
+                                    <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono inline-block mt-1 ${fab.stockAvailability === "In Stock" ? "bg-emerald-50 text-emerald-800 border border-emerald-200" : "bg-rose-50 text-rose-800 border border-rose-200"}`}>
+                                      {fab.stockAvailability}
+                                    </span>
+                                  </>
+                                )}
+                              </div>
+                              
+                              {!isEditing && (
+                                <button
+                                  onClick={() => handleDeleteFabric(fab.id)}
+                                  className="absolute top-2 right-2 p-1.5 bg-white hover:bg-rose-50 text-stone-500 hover:text-rose-700 rounded-lg border border-stone-100 hover:border-rose-200 transition"
+                                  title="Delete item"
+                                >
+                                  <Trash2 size={12} />
+                                </button>
+                              )}
                             </div>
-                            <button
-                              onClick={() => handleDeleteFabric(fab.id)}
-                              className="absolute top-2 right-2 p-1.5 bg-white hover:bg-rose-50 text-stone-500 hover:text-rose-700 rounded-lg border border-stone-100 hover:border-rose-200 transition"
-                              title="Delete fabric"
-                            >
-                              <Trash2 size={12} />
-                            </button>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
                   </div>
@@ -1252,18 +1405,18 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
                 <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm space-y-4 shrink-0">
                   <div className="flex items-center gap-2 pb-2 border-b border-stone-100">
                     <Plus size={14} className="text-amber-800" />
-                    <h3 className="font-serif text-xs uppercase tracking-wider text-amber-850 font-bold">Add Premium Fabric to Showroom</h3>
+                    <h3 className="font-serif text-xs uppercase tracking-wider text-amber-850 font-bold">Add Boutique Product / Supplies to Store</h3>
                   </div>
                   <form onSubmit={handleAddFabric} className="space-y-4 text-xs">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1">
-                        <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Fabric Name</label>
+                        <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Product / Item Name</label>
                         <input
                           type="text"
                           required
                           value={fabName}
                           onChange={(e) => setFabName(e.target.value)}
-                          placeholder="e.g. Royal Silk Velvet"
+                          placeholder="e.g. Royal Silk Velvet or Premium Tailoring Shears"
                           className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 placeholder-stone-400"
                         />
                       </div>
@@ -1273,20 +1426,20 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
                           <select
                             value={fabCategory}
                             onChange={(e) => setFabCategory(e.target.value)}
-                            className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800"
+                            className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 font-semibold"
                           >
-                            <option value="Lace">Lace</option>
-                            <option value="Ankara">Ankara</option>
-                            <option value="Aso Oke">Aso Oke</option>
-                            <option value="Brocade">Brocade</option>
-                            <option value="Silk">Silk</option>
-                            <option value="Velvet">Velvet</option>
-                            <option value="Cashmere">Cashmere</option>
+                            <option value="Ready-to-Wear">Ready-to-Wear</option>
+                            <option value="Tailoring Tools">Tailoring Tools</option>
+                            <option value="Fashion Accessories">Fashion Accessories</option>
+                            <option value="Bespoke Fabric">Bespoke Fabric</option>
+                            <option value="Luxury Lace">Luxury Lace</option>
+                            <option value="Ankara Bulk">Ankara Bulk</option>
+                            <option value="Other Supplies">Other Supplies</option>
                             <option value="Custom">Custom (Specify below)</option>
                           </select>
                         </div>
                         <div className="space-y-1">
-                          <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Price per Yard (₦)</label>
+                          <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Price per Unit / Pack (₦)</label>
                           <input
                             type="number"
                             required
@@ -1301,13 +1454,13 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
 
                     {fabCategory === "Custom" && (
                       <div className="space-y-1 bg-amber-500/5 border border-amber-500/15 p-3.5 rounded-xl animate-fadeIn">
-                        <label className="text-amber-800 font-mono text-[9px] uppercase tracking-wider block font-semibold">Custom Fabric Category Name</label>
+                        <label className="text-amber-800 font-mono text-[9px] uppercase tracking-wider block font-semibold">Custom Product Category Name</label>
                         <input
                           type="text"
                           required
                           value={customFabCategory}
                           onChange={(e) => setCustomFabCategory(e.target.value)}
-                          placeholder="e.g. Crepe, Chiffon, Adire, Organza"
+                          placeholder="e.g. Designer Pins, Sewing Machines, Thread Set"
                           className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 placeholder-stone-400"
                         />
                       </div>
@@ -1315,12 +1468,41 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1">
-                        <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Available Colors (Comma Separated)</label>
+                        <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Target Gender / Category</label>
+                        <select
+                          value={fabGender}
+                          onChange={(e) => setFabGender(e.target.value)}
+                          className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 font-semibold text-xs"
+                        >
+                          <option value="All">All / Works for Both</option>
+                          <option value="Male">Male</option>
+                          <option value="Female">Female</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Target Age Group</label>
+                        <select
+                          value={fabAgeGroup}
+                          onChange={(e) => setFabAgeGroup(e.target.value)}
+                          className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 font-semibold text-xs"
+                        >
+                          <option value="All">All / Works for All Ages</option>
+                          <option value="Young">Young</option>
+                          <option value="Teenagers">Teenagers</option>
+                          <option value="Adult">Adult</option>
+                          <option value="Elder">Elder</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Available Colors/Styles (Comma Separated)</label>
                         <input
                           type="text"
                           value={fabColors}
                           onChange={(e) => setFabColors(e.target.value)}
-                          placeholder="e.g. Red, Blue, Gold"
+                          placeholder="e.g. Red, Blue, Gold, Classic Silver"
                           className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 placeholder-stone-400"
                         />
                       </div>
@@ -1334,6 +1516,46 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
                           <option value="In Stock">In Stock</option>
                           <option value="Out of Stock">Out of Stock</option>
                         </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3 bg-stone-100/50 p-3.5 border border-stone-200 rounded-xl">
+                      <div className="space-y-1 col-span-1">
+                        <label className="text-stone-600 font-mono text-[9px] uppercase tracking-wider block font-bold">Pricing Unit</label>
+                        <select
+                          value={fabPricingUnit}
+                          onChange={(e) => setFabPricingUnit(e.target.value)}
+                          className="w-full bg-white border border-stone-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-amber-600/50 text-stone-800 font-semibold text-xs"
+                        >
+                          <option value="Yard">Yard</option>
+                          <option value="Unit">Unit (Piece)</option>
+                          <option value="Dozen">Dozen</option>
+                          <option value="3 Yards">3 Yards</option>
+                          <option value="Pack">Pack</option>
+                          <option value="Set">Set</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1 col-span-1">
+                        <label className="text-stone-600 font-mono text-[9px] uppercase tracking-wider block font-bold">Min Order Qty</label>
+                        <input
+                          type="number"
+                          min="1"
+                          required
+                          value={fabMinOrderQty}
+                          onChange={(e) => setFabMinOrderQty(e.target.value)}
+                          className="w-full bg-white border border-stone-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-amber-600/50 text-stone-800 text-xs"
+                        />
+                      </div>
+                      <div className="space-y-1 col-span-1">
+                        <label className="text-stone-600 font-mono text-[9px] uppercase tracking-wider block font-bold">Max Order Qty</label>
+                        <input
+                          type="number"
+                          min="1"
+                          required
+                          value={fabMaxOrderQty}
+                          onChange={(e) => setFabMaxOrderQty(e.target.value)}
+                          className="w-full bg-white border border-stone-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-amber-600/50 text-stone-800 text-xs"
+                        />
                       </div>
                     </div>
 
@@ -2454,6 +2676,152 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
                             onChange={(e) => setContactInfo({ ...contactInfo, youtubeUrl: e.target.value })}
                             placeholder="https://www.youtube.com/@..."
                             className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 text-[11px]"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Dynamic Services & Supplies Pricing Configuration */}
+                    <div className="space-y-3 bg-stone-50 p-4 border border-stone-200 rounded-2xl">
+                      <h4 className="font-serif text-[10px] font-bold uppercase tracking-wider text-stone-700">Dynamic Finishing & Supplies Prices (₦)</h4>
+                      <p className="text-[10px] text-stone-500 font-sans leading-normal">
+                        Configure dynamic, professional finishing service fees that will apply during user order calculation. Set custom rates below.
+                      </p>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Monogramming</label>
+                          <input
+                            type="number"
+                            value={contactInfo.servicePrices?.monogramming ?? 15000}
+                            onChange={(e) => setContactInfo({
+                              ...contactInfo,
+                              servicePrices: {
+                                ...(contactInfo.servicePrices || {}),
+                                monogramming: Number(e.target.value)
+                              }
+                            })}
+                            className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 font-mono text-[11px]"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Beading & Embroidery</label>
+                          <input
+                            type="number"
+                            value={contactInfo.servicePrices?.beading ?? 45000}
+                            onChange={(e) => setContactInfo({
+                              ...contactInfo,
+                              servicePrices: {
+                                ...(contactInfo.servicePrices || {}),
+                                beading: Number(e.target.value)
+                              }
+                            })}
+                            className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 font-mono text-[11px]"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Crystal Stoning</label>
+                          <input
+                            type="number"
+                            value={contactInfo.servicePrices?.stoning ?? 30000}
+                            onChange={(e) => setContactInfo({
+                              ...contactInfo,
+                              servicePrices: {
+                                ...(contactInfo.servicePrices || {}),
+                                stoning: Number(e.target.value)
+                              }
+                            })}
+                            className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 font-mono text-[11px]"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Classic Sewing</label>
+                          <input
+                            type="number"
+                            value={contactInfo.servicePrices?.sewing ?? 40000}
+                            onChange={(e) => setContactInfo({
+                              ...contactInfo,
+                              servicePrices: {
+                                ...(contactInfo.servicePrices || {}),
+                                sewing: Number(e.target.value)
+                              }
+                            })}
+                            className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 font-mono text-[11px]"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Laser Fabric Cutting</label>
+                          <input
+                            type="number"
+                            value={contactInfo.servicePrices?.laser_cut ?? 25000}
+                            onChange={(e) => setContactInfo({
+                              ...contactInfo,
+                              servicePrices: {
+                                ...(contactInfo.servicePrices || {}),
+                                laser_cut: Number(e.target.value)
+                              }
+                            })}
+                            className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 font-mono text-[11px]"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">CNC Pattern Routing</label>
+                          <input
+                            type="number"
+                            value={contactInfo.servicePrices?.cnc_router ?? 35000}
+                            onChange={(e) => setContactInfo({
+                              ...contactInfo,
+                              servicePrices: {
+                                ...(contactInfo.servicePrices || {}),
+                                cnc_router: Number(e.target.value)
+                              }
+                            })}
+                            className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 font-mono text-[11px]"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Traditional Weaving</label>
+                          <input
+                            type="number"
+                            value={contactInfo.servicePrices?.weaving ?? 50000}
+                            onChange={(e) => setContactInfo({
+                              ...contactInfo,
+                              servicePrices: {
+                                ...(contactInfo.servicePrices || {}),
+                                weaving: Number(e.target.value)
+                              }
+                            })}
+                            className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 font-mono text-[11px]"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Premium I-Let Rings</label>
+                          <input
+                            type="number"
+                            value={contactInfo.servicePrices?.i_let ?? 10000}
+                            onChange={(e) => setContactInfo({
+                              ...contactInfo,
+                              servicePrices: {
+                                ...(contactInfo.servicePrices || {}),
+                                i_let: Number(e.target.value)
+                              }
+                            })}
+                            className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 font-mono text-[11px]"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Machine Button-Holes</label>
+                          <input
+                            type="number"
+                            value={contactInfo.servicePrices?.button_holes ?? 5000}
+                            onChange={(e) => setContactInfo({
+                              ...contactInfo,
+                              servicePrices: {
+                                ...(contactInfo.servicePrices || {}),
+                                button_holes: Number(e.target.value)
+                              }
+                            })}
+                            className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 font-mono text-[11px]"
                           />
                         </div>
                       </div>

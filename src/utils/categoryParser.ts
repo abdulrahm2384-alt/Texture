@@ -77,11 +77,17 @@ export function formatCategory(structured: StructuredCategory): string {
 
 // Display-friendly version of a structured category string
 export function getCategoryDisplayLabel(categoryStr: string): string {
-  const parsed = parseCategory(categoryStr);
+  if (!categoryStr) return "Uncategorized";
+  const trimmed = categoryStr.trim();
+  if (!trimmed.startsWith("{")) {
+    return trimmed;
+  }
+
+  const parsed = parseCategory(trimmed);
   const parts: string[] = [];
 
-  if (parsed.gender) parts.push(parsed.gender);
-  if (parsed.ageGroup) parts.push(parsed.ageGroup);
+  if (parsed.gender && parsed.gender !== "Unisex") parts.push(parsed.gender);
+  if (parsed.ageGroup && parsed.ageGroup !== "Adult") parts.push(parsed.ageGroup);
   if (parsed.styleType) parts.push(parsed.styleType);
   if (parsed.custom) parts.push(parsed.custom);
 

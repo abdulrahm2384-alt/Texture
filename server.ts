@@ -35,165 +35,154 @@ const initialData = {
   fabrics: [
     {
       id: "fab-1",
-      name: "Gilded Gold Swiss Voile Lace",
-      category: "Lace",
-      pricePerYard: 50000,
-      availableColors: ["Gold & Emerald", "Ivory Gold", "Champagne Gold"],
-      colorsHex: ["#155e3b", "#fffff0", "#f1e9d2"],
-      description: "Intricately embroidered premium Swiss voile lace adorned with gold-threaded floral motifs and subtle sequin highlights. Ideal for Nigerian traditional weddings (Owambe) and luxury custom garments.",
+      name: "Premium Brass Eyelets & Washers (12mm)",
+      category: "Eyelets & Washers",
+      pricePerYard: 15000,
+      pricingUnit: "Pack (50 Pcs)",
+      minOrderQty: 1,
+      maxOrderQty: 10,
+      gender: "All",
+      ageGroup: "All",
+      availableColors: ["Shiny Gold", "Classic Brass", "Antique Bronze", "Gunmetal Black"],
+      colorsHex: ["#ffd700", "#c5a059", "#8b5a2b", "#2c3539"],
+      description: "Industrial-grade heavy brass eyelets designed for leather, denim, canvas, and heavy fashion drapery. Extreme rust-resistance and highly durable.",
+      stockAvailability: "In Stock",
+      imageUrl: "https://images.unsplash.com/photo-1598257006458-087169a1f08d?auto=format&fit=crop&q=80&w=600"
+    },
+    {
+      id: "fab-2",
+      name: "Luxury Shell Button Blanks",
+      category: "Buttons",
+      pricePerYard: 12000,
+      pricingUnit: "Dozen (12 Pcs)",
+      minOrderQty: 1,
+      maxOrderQty: 20,
+      gender: "All",
+      ageGroup: "All",
+      availableColors: ["Iridescent Pearl", "Smoky Grey", "Golden Amber"],
+      colorsHex: ["#eae6df", "#5a5d64", "#d4a373"],
+      description: "Natural mother-of-pearl buttons with high-density premium structures. Perfect for Senator wear, corporate dress shirts, and luxury kaftans.",
       stockAvailability: "In Stock",
       imageUrl: "https://images.unsplash.com/photo-1594224140980-6e9dd0223e38?auto=format&fit=crop&q=80&w=600"
     },
     {
-      id: "fab-2",
-      name: "Classic Vlisco Ankara (Vintage Sunburst)",
-      category: "Ankara",
-      pricePerYard: 15000,
-      availableColors: ["Royal Indigo", "Saffron Sunburst", "Crimson Wave"],
-      colorsHex: ["#1e3a8a", "#f59e0b", "#991b1b"],
-      description: "Genuine luxury grade Vlisco wax print, 100% fine cotton. Features premium heritage African motifs with rich, lightfast saturation that holds its structural form perfectly for traditional Senator, Kaftan, or custom gowns.",
-      stockAvailability: "In Stock",
-      imageUrl: "https://images.unsplash.com/photo-1584184924103-e310d9dc82fc?auto=format&fit=crop&q=80&w=600"
-    },
-    {
       id: "fab-3",
-      name: "Handwoven Metallic Aso Oke (Luxe Thread)",
-      category: "Aso Oke",
-      pricePerYard: 65000,
-      availableColors: ["Crimson Gold", "Silver Onyx", "Champagne Bronze"],
-      colorsHex: ["#7f1d1d", "#374151", "#b45309"],
-      description: "Masterfully hand-loomed traditional Yoruba fabric interwoven with premium metallic lurex threads for an unmatched royal reflection. Ideal for majestic caps, geles, sashes, and luxury custom Agbada sets.",
-      stockAvailability: "Low Stock",
+      name: "Ultra-Brilliant Hotfix Glass Crystals",
+      category: "Rhinestones & Crystals",
+      pricePerYard: 25000,
+      pricingUnit: "Pack",
+      minOrderQty: 1,
+      maxOrderQty: 10,
+      gender: "All",
+      ageGroup: "All",
+      availableColors: ["Crystal Clear", "Aurora Borealis", "Emerald Green", "Royal Blue"],
+      colorsHex: ["#ffffff", "#e0f2fe", "#047857", "#1d4ed8"],
+      description: "Premium glass rhinestones featuring highly reflective facets and strong heat-activated adhesive backing. Ideal for stoning lace and velvet.",
+      stockAvailability: "In Stock",
       imageUrl: "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&q=80&w=600"
     },
     {
       id: "fab-4",
-      name: "Royal Damask Brocade (Imperial Silk)",
-      category: "Brocade",
-      pricePerYard: 35000,
-      availableColors: ["Midnight Blue", "Crimson Gold", "Imperial Teal"],
-      colorsHex: ["#1e3a8a", "#b45309", "#0f766e"],
-      description: "Heavyweight, luxurious jacquard-weave silk brocade featuring sophisticated regal damask patterns. Tailors beautifully into structured traditional men's Kaftans and corporate evening wears.",
+      name: "Heavy-Duty YKK-Type Metal Zippers",
+      category: "Zippers & Fasteners",
+      pricePerYard: 8000,
+      pricingUnit: "Dozen (12 Pcs)",
+      minOrderQty: 1,
+      maxOrderQty: 10,
+      gender: "All",
+      ageGroup: "All",
+      availableColors: ["Midnight Black", "Deep Navy", "Forest Olive"],
+      colorsHex: ["#09090b", "#172554", "#14532d"],
+      description: "Professional smooth-gliding brass zipper teeth with sturdy locking sliders. Recommended for high-use garments, school blazers, and bags.",
       stockAvailability: "In Stock",
-      imageUrl: "https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17?auto=format&fit=crop&q=80&w=600"
+      imageUrl: "https://images.unsplash.com/photo-1584184924103-e310d9dc82fc?auto=format&fit=crop&q=80&w=600"
     },
     {
       id: "fab-5",
-      name: "Elysian Mulberry Silk (Heavy Satin)",
-      category: "Silk",
-      pricePerYard: 40000,
-      availableColors: ["Emerald Satin", "Rose Quartz", "Sapphire Silk"],
-      colorsHex: ["#064e3b", "#fda4af", "#1d4ed8"],
-      description: "Ultra-fluid 100% pure organic mulberry silk satin. Possesses a glossy, luminous outer finish and a liquid-soft touch that skims the silhouette elegantly, perfect for bridal reception gowns and luxury boubou styles.",
+      name: "High-Density Metallic Embroidery Threads",
+      category: "Embroidery Supplies",
+      pricePerYard: 18000,
+      pricingUnit: "Spool",
+      minOrderQty: 1,
+      maxOrderQty: 20,
+      gender: "All",
+      ageGroup: "All",
+      availableColors: ["Metallic Gold", "Metallic Silver", "Copper Bronze"],
+      colorsHex: ["#d4af37", "#c0c0c0", "#b45309"],
+      description: "Highly lustrous, breakage-resistant embroidery thread designed for computerized monogramming machines and high-density logo stitching.",
       stockAvailability: "In Stock",
       imageUrl: "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?auto=format&fit=crop&q=80&w=600"
-    },
-    {
-      id: "fab-6",
-      name: "Midnight Velvet Crush (Luxury Stretch)",
-      category: "Velvet",
-      pricePerYard: 25000,
-      availableColors: ["Deep Burgundy", "Forest Green", "Obsidian Black"],
-      colorsHex: ["#4c0519", "#064e3b", "#0f172a"],
-      description: "Thick plush pile velvet with a rich multi-toned deep crush effect. Supple, comfortable stretch, excellent for opulent evening gowns, traditional wrappers, or custom embroidery accents.",
-      stockAvailability: "In Stock",
-      imageUrl: "https://images.unsplash.com/photo-1571242337471-70529d89196b?auto=format&fit=crop&q=80&w=600"
-    },
-    {
-      id: "fab-7",
-      name: "Super 140s Italian Cashmere Wool",
-      category: "Cashmere",
-      pricePerYard: 60000,
-      availableColors: ["Classic Charcoal", "Camel Luxe", "Deep Navy"],
-      colorsHex: ["#4b5563", "#d97706", "#1e3a8a"],
-      description: "Exquisite, lightweight superfine wool mixed with high-grade Italian cashmere fibers. Highly breathable, soft, and designed specifically for bespoke Senator wear, high-end Kaftans, and traditional executive styles.",
-      stockAvailability: "Low Stock",
-      imageUrl: "https://images.unsplash.com/photo-1582298538104-fe2e74c27f59?auto=format&fit=crop&q=80&w=600"
     }
   ],
   gallery: [
     {
       id: "work-1",
-      title: "The Majestic Royal Agbada Set",
-      category: "Traditional",
-      imageUrl: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=600",
-      description: "A breathtaking 4-piece traditional Nigerian Agbada tailored in hand-loomed Royal Aso Oke. Features geometric hand-embroided patterns in metallic gold thread."
+      title: "Precision Eyelet & Button Hole Installation",
+      category: "Eyelets & Buttons",
+      imageUrl: "https://images.unsplash.com/photo-1598257006458-087169a1f08d?auto=format&fit=crop&q=80&w=600",
+      description: "Flawless heavy-gauge brass eyelet installation and clean industrial button hole stitches on structured traditional kaftans."
     },
     {
       id: "work-2",
-      title: "Imperial Damask Kaftan with Crest",
-      category: "Male",
-      imageUrl: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&q=80&w=600",
-      description: "An elegant, structurally tailored ivory and navy senator outfit. Designed using luxury Italian cashmere and features a minimalist modern embroidered breast seal."
+      title: "Intricate Monogram School Crest",
+      category: "Embroidery",
+      imageUrl: "https://images.unsplash.com/photo-1558486012-817176f84c6d?auto=format&fit=crop&q=80&w=600",
+      description: "High-definition custom school crest monogramming executed with premium gold and navy threading on school blazers."
     },
     {
       id: "work-3",
-      title: "Gilded Ivory Mermaid Lace Gown",
-      category: "Female",
+      title: "Premium Hand Beading & Stoning",
+      category: "Beading & Stoning",
       imageUrl: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=600",
-      description: "Stunning custom wedding gown designed in double-lined Swiss voile lace. Tailored to perfection with a hand-stitched beaded corset bodice and trailing train."
+      description: "Luminous dress embellishment completed with hand-stitched bugle beads and multi-faceted hotfix glass crystals."
     },
     {
       id: "work-4",
-      title: "Vibrant Ankara Ruffled Ballgown",
-      category: "Children",
-      imageUrl: "https://images.unsplash.com/photo-1621184455862-c163dfb30e0f?auto=format&fit=crop&q=80&w=600",
-      description: "High-contrast tiered children's party gown designed with combined vintage sunburst Ankara and soft satin underlays."
+      title: "Precision Laser Cut Fabric Panel",
+      category: "Laser Cutting",
+      imageUrl: "https://images.unsplash.com/photo-1618090584126-129cd1f3fbaa?auto=format&fit=crop&q=80&w=600",
+      description: "Intricately detailed geometric cuts on royal velvet fabrics, designed with high-energy laser engraving cutters."
     },
     {
       id: "work-5",
-      title: "Contemporary Adire Resort Jumpsuit",
-      category: "Casual",
-      imageUrl: "https://images.unsplash.com/photo-1561932690-f98b9cd64221?auto=format&fit=crop&q=80&w=600",
-      description: "Lightweight, fluid casual wear designed in premium indigo-dyed adire cotton. High-waisted belt design suited for everyday luxury."
-    },
-    {
-      id: "work-6",
-      title: "Classic Bespoke Corporate Suit",
-      category: "Corporate",
-      imageUrl: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&q=80&w=600",
-      description: "Sharp corporate menswear piece tailored with Italian superfine cashmere wool, featuring structured lapels and customized inner satin lining."
-    },
-    {
-      id: "work-7",
-      title: "Bridal Reception Lace Wrap Dress",
-      category: "Wedding",
-      imageUrl: "https://images.unsplash.com/photo-1566174053879-31528523f8ae?auto=format&fit=crop&q=80&w=600",
-      description: "Luxurious reception dress for brides, combining fluid Elysian mulberry silk draping and premium French embroidered lace accents."
+      title: "Custom School & Corporate Patches",
+      category: "Patches",
+      imageUrl: "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&q=80&w=600",
+      description: "A bulk shipment of high-density embroidered brand logo patches prepared with iron-on heat adhesive backing."
     }
   ],
   styles: [
     {
       id: "style-1",
-      name: "The Majestic Agbada (4-Piece Outfit)",
-      category: "Traditional",
-      description: "A supreme traditional attire representing power and heritage, featuring the large flowing agbada gown, matching long sleeve kaftan, tapered trousers, and standard embroidered cap.",
-      imageUrl: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=600",
-      estimatedYardage: "7-8 Yards (Fabric) + 2 Yards (Aso Oke for Cap/Accents)"
+      name: "Eyelet Installation & Button Holes",
+      category: "Unisex • Adult • Finishing",
+      description: "Flawless industrial machine eyelets and neat satin-stitch button holes tailored to any custom garment specifications.",
+      imageUrl: "https://images.unsplash.com/photo-1598257006458-087169a1f08d?auto=format&fit=crop&q=80&w=600",
+      estimatedYardage: "1-2 Business Days"
     },
     {
       id: "style-2",
-      name: "Corset Mermaid Lace Silhouette",
-      category: "Female",
-      description: "A tailored-to-fit evening and wedding design. Built on a sturdy boned corset foundation, cascading into a sweeping flare that highlights the fabrics' lace pattern beautifully.",
-      imageUrl: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=600",
-      estimatedYardage: "5-6 Yards"
+      name: "Computerized Monogram Embroidery",
+      category: "Unisex • Adult • Embroidery",
+      description: "High-fidelity digital embroidery of logos, family crests, or monograms on school blazers, caps, shirts, and towels.",
+      imageUrl: "https://images.unsplash.com/photo-1558486012-817176f84c6d?auto=format&fit=crop&q=80&w=600",
+      estimatedYardage: "2-3 Business Days"
     },
     {
       id: "style-3",
-      name: "Minimalist Senator Suit",
-      category: "Male",
-      description: "A sleek modern African formal alternative. Structured collar, dynamic custom embroidery or contrast piping, complete with tailored straight-cut trousers.",
-      imageUrl: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&q=80&w=600",
-      estimatedYardage: "4 Yards"
+      name: "Precision Laser & CNC Fabric Cutting",
+      category: "Unisex • Adult • Machine Cutting",
+      description: "High-speed intricate engraving and edge-sealed cuts on synthetic, velvet, leather, and cotton textile panels.",
+      imageUrl: "https://images.unsplash.com/photo-1618090584126-129cd1f3fbaa?auto=format&fit=crop&q=80&w=600",
+      estimatedYardage: "2-4 Business Days"
     },
     {
       id: "style-4",
-      name: "Premium Buba & Iro Wrapper Set",
-      category: "Traditional",
-      description: "Classic Yoruba traditional elegance. Beautifully draped long sleeve top (Buba) paired with a wrapper skirt (Iro) and matching shoulder sash (Ipele). Highlighted by custom lace or Aso Oke border.",
-      imageUrl: "https://images.unsplash.com/photo-1566174053879-31528523f8ae?auto=format&fit=crop&q=80&w=600",
-      estimatedYardage: "5-6 Yards"
+      name: "Garment Beading, Stoning & Sequins",
+      category: "Female • Adult • Hand Craft",
+      description: "Artisanal hand-crafted beading overlays and heat-pressed crystal stoning designed to elevate Owambe garments and bridal trains.",
+      imageUrl: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=600",
+      estimatedYardage: "4-6 Business Days"
     }
   ]
 };
@@ -213,6 +202,7 @@ import {
   getAddedFabrics,
   addCustomFabric,
   deleteCustomFabric,
+  updateCustomFabric,
   getAddedGallery,
   addCustomGalleryItem,
   deleteCustomGalleryItem,
@@ -666,12 +656,42 @@ app.post("/api/admin/fabrics", async (req, res) => {
     if (!adminRole) {
       return res.status(401).json({ error: "Access denied: Invalid or expired admin session token" });
     }
-    const { name, category, pricePerYard, availableColors, colorsHex, description, stockAvailability, imageUrl } = req.body;
+    const { 
+      name, 
+      category, 
+      pricePerYard, 
+      availableColors, 
+      colorsHex, 
+      description, 
+      stockAvailability, 
+      imageUrl, 
+      gender, 
+      ageGroup, 
+      pricingUnit, 
+      minOrderQty, 
+      maxOrderQty 
+    } = req.body;
+    
     if (!name || !category || !pricePerYard || !imageUrl) {
       return res.status(400).json({ error: "Missing required fabric parameters" });
     }
     const id = "fab-" + crypto.randomBytes(4).toString("hex");
-    const newFabric = { id, name, category, pricePerYard: Number(pricePerYard), availableColors, colorsHex, description, stockAvailability, imageUrl };
+    const newFabric = { 
+      id, 
+      name, 
+      category, 
+      pricePerYard: Number(pricePerYard), 
+      availableColors, 
+      colorsHex, 
+      description, 
+      stockAvailability, 
+      imageUrl,
+      gender: gender || "All",
+      ageGroup: ageGroup || "All",
+      pricingUnit: pricingUnit || "Yard",
+      minOrderQty: minOrderQty ? Number(minOrderQty) : 1,
+      maxOrderQty: maxOrderQty ? Number(maxOrderQty) : 10
+    };
     await addCustomFabric(newFabric);
     res.status(201).json({ success: true, fabric: newFabric });
   } catch (err) {
@@ -690,6 +710,23 @@ app.delete("/api/admin/fabrics/:id", async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     console.error("Admin delete fabric error:", err);
+    res.status(500).json({ error: "An unexpected error occurred" });
+  }
+});
+
+app.put("/api/admin/fabrics/:id", async (req, res) => {
+  try {
+    const adminRole = getAdminFromAuthHeader(req.headers.authorization);
+    if (!adminRole) {
+      return res.status(401).json({ error: "Access denied" });
+    }
+    const { id } = req.params;
+    const updates = { ...req.body };
+    delete updates.id;
+    await updateCustomFabric(id, updates);
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Admin update fabric error:", err);
     res.status(500).json({ error: "An unexpected error occurred" });
   }
 });
@@ -904,22 +941,18 @@ app.post("/api/admin/seed-section", async (req, res) => {
 
       if (ai) {
         try {
-          const prompt = `You are an expert luxury textile curator for Oluwashola Textile Accessories in Lagos, Nigeria.
-Generate exactly 3 premium, highly realistic, and unique luxury fabrics for our high-end showroom catalog.
-For each fabric, select the best matching image ID from this curated list of Unsplash IDs of high-quality textiles:
-- "1594224140980-6e9dd0223e38" for category Lace (Gold/Emerald Voile Lace pattern)
-- "1528459801416-a9e53bbf4e17" for category Lace (White/Beaded Swiss Voile Lace)
-- "1584184924103-e310d9dc82fc" for category Ankara (Vibrant, complex African wax print)
-- "1574169208507-84376144848b" for category Ankara (Vibrant patterned luxury silk Ankara)
-- "1544816155-12df9643f363" for category Aso Oke (Royal traditional hand-loomed metallic Yoruba cloth)
-- "1606144042614-b2417e99c4e3" for category Silk (Luminous organic mulberry silk satin)
-- "1571242337471-70529d89196b" for category Velvet (Deep wine/burgundy plush crushed velvet)
-- "1582298538104-fe2e74c27f59" for category Cashmere (Superfine charcoal/camel executive cashmere wool)
-- "1544441893-675973e31985" for category Brocade (Imperial damask brocade / clothing rolls)
+          const prompt = `You are an expert luxury textile accessories supplier for Oluwashola Textile Accessories in Lagos, Nigeria.
+Generate exactly 3 premium, highly realistic, and unique raw tailor accessories and supply products for our showroom catalog.
+For each item, select the best matching image ID from this curated list of Unsplash IDs of high-quality accessories:
+- "1598257006458-087169a1f08d" for category "Eyelets & Washers" (Premium brass eyelets and heavy hardware)
+- "1594224140980-6e9dd0223e38" for category "Buttons" (Mother-of-pearl premium button blanks)
+- "1544816155-12df9643f363" for category "Rhinestones & Crystals" (Ultra-brilliant glass hotfix crystals)
+- "1584184924103-e310d9dc82fc" for category "Zippers & Fasteners" (Heavy-duty brass zippers / tailoring accessories)
+- "1606144042614-b2417e99c4e3" for category "Embroidery Supplies" (Metallic high-density embroidery threads)
 
-For each generated fabric, choose one corresponding image ID from the above list, and set the imageUrl field to "https://images.unsplash.com/photo-" + chosen_id + "?auto=format&fit=crop&q=80&w=600".
+For each generated accessory product, choose one corresponding image ID from the above list, and set the imageUrl field to "https://images.unsplash.com/photo-" + chosen_id + "?auto=format&fit=crop&q=80&w=600".
 
-Generate realistic, high-end, elegant fashion fabric details in English. Return the fabrics array in JSON format.`;
+Generate realistic, high-end, premium garment accessories details in English. Return the fabrics array in JSON format.`;
 
           const response = await ai.models.generateContent({
             model: "gemini-3.5-flash",
@@ -965,32 +998,32 @@ Generate realistic, high-end, elegant fashion fabric details in English. Return 
       if (generatedFabrics.length === 0) {
         generatedFabrics = [
           {
-            name: "Royal Emerald Beaded Voile Lace",
-            category: "Lace",
-            pricePerYard: 55000,
-            availableColors: ["Emerald Green", "Champagne Gold"],
-            colorsHex: ["#064e3b", "#f1e9d2"],
-            description: "Luxury Swiss voile lace intricately beaded with royal emerald green sequins and high-quality gold lurex thread details. Exquisite weight and drape, ideal for bridal owambe and high society events.",
+            name: "Premium Brass Eyelets & Washers (12mm)",
+            category: "Eyelets & Washers",
+            pricePerYard: 15000,
+            availableColors: ["Shiny Gold", "Classic Brass", "Antique Bronze"],
+            colorsHex: ["#ffd700", "#c5a059", "#8b5a2b"],
+            description: "Industrial-grade heavy brass eyelets designed for leather, denim, canvas, and heavy fashion drapery. Extreme rust-resistance and highly durable.",
+            stockAvailability: "In Stock",
+            imageUrl: "https://images.unsplash.com/photo-1598257006458-087169a1f08d?auto=format&fit=crop&q=80&w=600"
+          },
+          {
+            name: "Luxury Shell Button Blanks",
+            category: "Buttons",
+            pricePerYard: 12000,
+            availableColors: ["Iridescent Pearl", "Smoky Grey"],
+            colorsHex: ["#eae6df", "#5a5d64"],
+            description: "Natural mother-of-pearl buttons with high-density premium structures. Perfect for Senator wear, corporate dress shirts, and luxury kaftans.",
             stockAvailability: "In Stock",
             imageUrl: "https://images.unsplash.com/photo-1594224140980-6e9dd0223e38?auto=format&fit=crop&q=80&w=600"
           },
           {
-            name: "Sunset Imperial Ankara Wax",
-            category: "Ankara",
-            pricePerYard: 18000,
-            availableColors: ["Saffron Orange", "Teal Waves", "Indigo Blue"],
-            colorsHex: ["#ea580c", "#0d9488", "#1e3a8a"],
-            description: "Exclusive high-grade Vlisco Ankara cotton wax print with a stunning vintage sunburst sunset pattern. Features rich, colorfast dyes and structured handfeel perfect for traditional Senator, Kaftan, or custom gowns.",
-            stockAvailability: "In Stock",
-            imageUrl: "https://images.unsplash.com/photo-1584184924103-e310d9dc82fc?auto=format&fit=crop&q=80&w=600"
-          },
-          {
-            name: "Crimson Gold Handloomed Aso Oke",
-            category: "Aso Oke",
-            pricePerYard: 70000,
-            availableColors: ["Crimson Wine", "Bronze Gold"],
-            colorsHex: ["#7f1d1d", "#b45309"],
-            description: "Masterfully hand-loomed traditional Yoruba fabric interwoven with premium metallic bronze and crimson gold threads for an unmatched royal reflection. Ideal for majestic caps, geles, sashes, and luxury custom Agbada sets.",
+            name: "Ultra-Brilliant Hotfix Glass Crystals",
+            category: "Rhinestones & Crystals",
+            pricePerYard: 25000,
+            availableColors: ["Crystal Clear", "Aurora Borealis"],
+            colorsHex: ["#ffffff", "#e0f2fe"],
+            description: "Premium glass rhinestones featuring highly reflective facets and strong heat-activated adhesive backing. Ideal for stoning lace and velvet.",
             stockAvailability: "Low Stock",
             imageUrl: "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&q=80&w=600"
           }
@@ -1016,21 +1049,18 @@ Generate realistic, high-end, elegant fashion fabric details in English. Return 
 
       if (ai) {
         try {
-          const prompt = `You are an elite bespoke fashion designer for Oluwashola Textile Accessories in Lagos, Nigeria.
-Generate exactly 3 premium, highly realistic, custom-tailored bespoke garments for our showcase showroom.
-For each garment, select the best matching image ID from this curated list of Unsplash IDs of high-quality finished clothing:
-- "1610030469983-98e550d6193c" for category Traditional (A magnificent hand-embroidered royal blue Agbada set)
-- "1611591437281-460bfbe1220a" for category Male (A sharp royal ivory/navy Senator suit or Kaftan with breast crest)
-- "1595777457583-95e059d581b8" for category Female (A stunning emerald green mermaid corset lace wedding gown)
-- "1529139574466-a303027c1d8b" for category Female (A luxurious designer custom couture dress)
-- "1566174053879-31528523f8ae" for category Wedding (An elegant Yoruba Buba and Iro bridal wrapper set with geles)
-- "1621184455862-c163dfb30e0f" for category Children (A cute custom tiered Ankara ruffled ballgown)
-- "1561932690-f98b9cd64221" for category Casual (Contemporary adire print indigo resort jumpsuit)
-- "1507679799987-c73779587ccf" for category Corporate (A classic bespoke 3-piece corporate Italian wool suit)
+          const prompt = `You are a high-end textile finishing specialist for Oluwashola Textile Accessories in Lagos, Nigeria.
+Generate exactly 3 premium, highly realistic completed jobs for our showcase gallery.
+For each completed job, select the best matching image ID from this curated list of Unsplash IDs of high-quality finished work:
+- "1598257006458-087169a1f08d" for category "Eyelets & Buttons" (Heavy metal eyelet setting and industrial button holes)
+- "1558486012-817176f84c6d" for category "Embroidery" (High-density monogram embroidery on corporate uniforms)
+- "1595777457583-95e059d581b8" for category "Beading & Stoning" (Luxurious crystal stoning patterns on bridal lace)
+- "1618090584126-129cd1f3fbaa" for category "Laser Cutting" (Laser-engraved intricate garment templates)
+- "1544816155-12df9643f363" for category "Patches" (Custom embroidered iron-on brand patches)
 
-For each generated garment, choose one corresponding image ID from the above list, and set the imageUrl field to "https://images.unsplash.com/photo-" + chosen_id + "?auto=format&fit=crop&q=80&w=600".
+For each generated job, choose one corresponding image ID from the above list, and set the imageUrl field to "https://images.unsplash.com/photo-" + chosen_id + "?auto=format&fit=crop&q=80&w=600".
 
-Generate realistic, high-end, elegant fashion details in English. Return the gallery items array in JSON format.`;
+Generate realistic, high-end finishing results in English. Return the gallery items array in JSON format.`;
 
           const response = await ai.models.generateContent({
             model: "gemini-3.5-flash",
@@ -1064,22 +1094,22 @@ Generate realistic, high-end, elegant fashion details in English. Return the gal
       if (generatedGallery.length === 0) {
         generatedGallery = [
           {
-            title: "The Sovereign Sapphire Agbada Masterpiece",
-            category: "Traditional",
-            description: "A majestic 4-piece flowing traditional Nigerian Agbada tailored to absolute perfection in luxury royal blue Aso Oke. Features complex golden hand embroidery on the breastplate and sleeves, designed for standard-set traditional events.",
-            imageUrl: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=600"
+            title: "Precision Eyelet & Button Hole Installation",
+            category: "Eyelets & Buttons",
+            description: "Flawless installation of heavy-gauge brass eyelets and tidy button hole satin-stitches completed on classic native senator tunics for a luxury atelier.",
+            imageUrl: "https://images.unsplash.com/photo-1598257006458-087169a1f08d?auto=format&fit=crop&q=80&w=600"
           },
           {
-            title: "Gilded Emerald Mermaid Lace Corset",
-            category: "Female",
-            description: "A breathtaking bespoke floor-length mermaid bridal reception dress tailored in fine Swiss beaded lace. Finished with a sturdy hand-boned corset structure and elegant emerald satin underlays.",
+            title: "Intricate Monogram School Crest Embroidery",
+            category: "Embroidery",
+            description: "High-definition corporate and school blazer crest embroidery, computerized with metallic gold and royal navy threads for maximum durability.",
+            imageUrl: "https://images.unsplash.com/photo-1558486012-817176f84c6d?auto=format&fit=crop&q=80&w=600"
+          },
+          {
+            title: "Premium Hand Beading & Hotfix Stoning",
+            category: "Beading & Stoning",
+            description: "Breathtaking dress enhancement completed with multi-faceted hotfix glass crystals and hand-set bugle beads on formal reception gowns.",
             imageUrl: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=600"
-          },
-          {
-            title: "Imperial Ivory Senator Kaftan",
-            category: "Male",
-            description: "Premium tailored ivory-white senator suit with minimalist asymmetric navy piping and a custom monogrammed chest seal. Crafted in superfine breathable Italian wool-cashmere blend.",
-            imageUrl: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&q=80&w=600"
           }
         ];
       }
@@ -1103,19 +1133,17 @@ Generate realistic, high-end, elegant fashion details in English. Return the gal
 
       if (ai) {
         try {
-          const prompt = `You are an expert style consultant for Oluwashola Textile Accessories in Lagos, Nigeria.
-Generate exactly 3 luxury tailoring style inspirations for our lookbook catalog.
-For each style, select the best matching image ID from this curated list of Unsplash IDs of high-quality styled models:
-- "1610030469983-98e550d6193c" for traditional regal Agbada styling (Traditional / Male)
-- "1595777457583-95e059d581b8" for corset mermaid lace or evening gown silhouette styling (Female / Traditional)
-- "1611591437281-460bfbe1220a" for modern custom senator or tailored Kaftan style (Male / Traditional)
-- "1566174053879-31528523f8ae" for premium Buba & Iro wrapper set with matching sashes (Traditional / Female)
-- "1507679799987-c73779587ccf" for bespoke executive suit or corporate styling (Corporate / Male)
-- "1529139574466-a303027c1d8b" for contemporary luxury ladies gown style (Female / Casual)
+          const prompt = `You are an expert finishing specialist for Oluwashola Textile Accessories in Lagos, Nigeria.
+Generate exactly 3 professional textile finishing and machine services for our capabilities catalog.
+For each service, select the best matching image ID from this curated list of Unsplash IDs of technical finishing processes:
+- "1598257006458-087169a1f08d" for "Eyelet Installation & Button Holes" (Industrial finishing services)
+- "1558486012-817176f84c6d" for "Computerized Monogram Embroidery" (Multi-needle digital monogramming)
+- "1618090584126-129cd1f3fbaa" for "Precision Laser & CNC Fabric Cutting" (Intricate heat-sealed fabric cuts)
+- "1595777457583-95e059d581b8" for "Garment Beading, Stoning & Sequins" (Automated rhinestone templates and handcrafts)
 
-For each generated style, choose one corresponding image ID from the above list, and set the imageUrl field to "https://images.unsplash.com/photo-" + chosen_id + "?auto=format&fit=crop&q=80&w=600".
+For each generated service, choose one corresponding image ID from the above list, and set the imageUrl field to "https://images.unsplash.com/photo-" + chosen_id + "?auto=format&fit=crop&q=80&w=600".
 
-Generate realistic, high-end style inspiration details in English. Return the styles array in JSON format.`;
+Generate realistic, high-end technical finishing capability details in English. Return the styles array in JSON format.`;
 
           const response = await ai.models.generateContent({
             model: "gemini-3.5-flash",
@@ -1150,25 +1178,25 @@ Generate realistic, high-end style inspiration details in English. Return the st
       if (generatedStyles.length === 0) {
         generatedStyles = [
           {
-            name: "Regal Sovereign Agbada Style",
-            category: "Traditional",
-            description: "A majestic flowing traditional Nigerian 4-piece Agbada ensemble including the grand outer gown, matching long-sleeve Kaftan undergarment, slim straight-leg trousers, and custom matching cap. Exudes leadership and absolute status.",
-            estimatedYardage: "7-8 Yards of Fabric (e.g. Cashmere, Brocade) + 2 Yards of Accent Aso Oke",
-            imageUrl: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=600"
+            name: "Eyelet Installation & Button Holes",
+            category: "Unisex • Adult • Finishing",
+            description: "Perfect industrial machine metal eyelets and tidy satin-stitched button holes suited for premium native wears, canvas bags, and high-fashion coats.",
+            estimatedYardage: "1-2 Business Days",
+            imageUrl: "https://images.unsplash.com/photo-1598257006458-087169a1f08d?auto=format&fit=crop&q=80&w=600"
           },
           {
-            name: "Corset Mermaid Lace Silhouette",
-            category: "Female",
-            description: "A tailored-to-fit evening and wedding design. Built on a sturdy boned corset foundation, cascading into a sweeping flare that highlights the fabrics' lace pattern beautifully.",
-            estimatedYardage: "5-6 Yards of Luxury Swiss Lace/Satin",
-            imageUrl: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=600"
+            name: "Computerized Monogram Embroidery",
+            category: "Unisex • Adult • Embroidery",
+            description: "High-density digital monogramming of corporate brands, school crests, or custom names on caps, towels, corporate blazers, and shirts.",
+            estimatedYardage: "2-3 Business Days",
+            imageUrl: "https://images.unsplash.com/photo-1558486012-817176f84c6d?auto=format&fit=crop&q=80&w=600"
           },
           {
-            name: "Crisp Senator Kaftan Style",
-            category: "Male",
-            description: "Modern formal African elegance. High band collar, slim tapered sleeves, straight straight-cut trousers, highlighted by structured geometric embroidery or high-contrast side piping.",
-            estimatedYardage: "4 Yards of Superfine Cashmere or Wool",
-            imageUrl: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&q=80&w=600"
+            name: "Precision Laser & CNC Fabric Cutting",
+            category: "Unisex • Adult • Machine Cutting",
+            description: "High-speed precise custom shape cutting with edge-sealing technology to prevent fraying on lace, velvet, and leather garment templates.",
+            estimatedYardage: "2-4 Business Days",
+            imageUrl: "https://images.unsplash.com/photo-1618090584126-129cd1f3fbaa?auto=format&fit=crop&q=80&w=600"
           }
         ];
       }

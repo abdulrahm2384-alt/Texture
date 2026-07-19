@@ -5,15 +5,20 @@ import crypto from "crypto";
 dotenv.config();
 
 // Secure Admin Email configured (supports single or comma-separated emails, e.g. "admin@domain.com,gloria@gmail.com")
-export const ADMIN_EMAILS = (process.env.ADMIN_EMAIL || "admin@oluwashola-atelier.com")
+export const ADMIN_EMAILS = (process.env.ADMIN_EMAIL || "")
   .toLowerCase()
   .split(",")
-  .map(email => email.trim());
+  .map(email => email.trim())
+  .filter(email => email !== "");
 
 /**
  * Validate if an email has administrative privileges
  */
 export function isAdminEmail(email: string): boolean {
+  if (ADMIN_EMAILS.length === 0) {
+    console.error("[OTP Config Error] ADMIN_EMAIL is not configured in your environment variables (.env). Administrative login cannot proceed.");
+    return false;
+  }
   const lower = email.toLowerCase().trim();
   return ADMIN_EMAILS.includes(lower);
 }
@@ -45,27 +50,51 @@ export async function getResendFromAddress(): Promise<string> {
     const resend = getResendClient();
     console.log("[Resend Dynamic] Querying Resend API for verified domains...");
     const domainsResponse = await resend.domains.list();
-    if (domainsResponse && domainsResponse.data && Array.isArray(domainsResponse.data)) {
-      console.log("[Resend Dynamic] Domains registered in your Resend account:", JSON.stringify(domainsResponse.data));
+    
+    let domainsList: any[] = [];
+    if (domainsResponse) {
+      if (Array.isArray(domainsResponse)) {
+        domainsList = domainsResponse;
+      } else if (domainsResponse.data && Array.isArray(domainsResponse.data)) {
+        domainsList = domainsResponse.data;
+      } else if (typeof domainsResponse === "object") {
+        // Look for any property on the object that contains an array
+        for (const val of Object.values(domainsResponse)) {
+          if (Array.isArray(val)) {
+            domainsList = val;
+            break;
+          }
+        }
+      }
+    }
+
+    if (domainsList && domainsList.length > 0) {
+      console.log("[Resend Dynamic] Domains registered in your Resend account:", JSON.stringify(domainsList));
       
-      // Filter for verified or active domains
-      const verifiedDomains = domainsResponse.data.filter(
-        (d: any) => d.status === "verified" || d.status === "active"
+      // Filter for verified, active, or true verified domains
+      const verifiedDomains = domainsList.filter(
+        (d: any) => d && (d.status === "verified" || d.status === "active" || d.verified === true)
       );
 
       if (verifiedDomains.length > 0) {
-        const domainName = verifiedDomains[0].name;
-        console.log(`[Resend Dynamic] Automatically selected verified domain: ${domainName}`);
-        return `no-reply@${domainName}`;
-      } else if (domainsResponse.data.length > 0) {
-        // Fallback to first domain if no domain is verified yet but some are listed
-        const domainName = domainsResponse.data[0].name;
-        console.log(`[Resend Dynamic] No verified domains found, using first registered domain: ${domainName}`);
-        return `no-reply@${domainName}`;
+        const d = verifiedDomains[0];
+        const domainName = d.name || d.domain;
+        if (domainName) {
+          console.log(`[Resend Dynamic] Automatically selected verified domain: ${domainName}`);
+          return `no-reply@${domainName}`;
+        }
+      } else {
+        // Fallback to the first domain in the registered list if none are strictly marked verified
+        const d = domainsList[0];
+        const domainName = d.name || d.domain;
+        if (domainName) {
+          console.log(`[Resend Dynamic] No verified status domains found, using first registered domain: ${domainName}`);
+          return `no-reply@${domainName}`;
+        }
       }
     }
   } catch (err: any) {
-    console.warn("[Resend Dynamic] Warning: Failed to fetch domains list from Resend API:", err.message || err);
+    console.warn("[Resend Dynamic] Warning: Failed to fetch domains list from Resend API (restricted API key might lack domains:list access):", err.message || err);
   }
 
   // 3. Fallback to checking if any of the configured ADMIN_EMAILS has a custom domain

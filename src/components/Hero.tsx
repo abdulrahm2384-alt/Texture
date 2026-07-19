@@ -44,50 +44,36 @@ export default function Hero({
   const showroomWings = [
     {
       title: "Our Legacy",
-      description: "Read our journey of tailoring luxury and sourcing authentic premium Swiss lace, Ankara and cashmere.",
+      description: "Read our journey of providing professional textile finishing services and garment accessories in Lagos.",
       icon: <BookOpen className="text-amber-500" size={18} />,
-      badge: "Heritage",
+      badge: "Our Story",
       image: wingAboutBgUrl || "https://images.unsplash.com/photo-1593032465175-481ac7f401a0?auto=format&fit=crop&q=80&w=600",
       action: onOpenAbout,
     },
     {
-      title: "Bespoke Showcase",
-      description: "Browse completed wedding, custom senator wears, and ceremonial agbadas on real clients.",
+      title: "Completed Jobs Showcase",
+      description: "Browse actual completed monogram embroidery, laser cut fabrics, eyelets, and hand stoning commissions done for top designers.",
       icon: <Eye className="text-amber-500" size={18} />,
-      badge: "Completed fits",
+      badge: "Finished Works",
       image: wingGalleryBgUrl || "https://images.unsplash.com/photo-1617137984095-74e4e5e3613f?auto=format&fit=crop&q=80&w=600",
       action: onOpenGallery,
     },
     {
-      title: "Luxury Fabrics",
-      description: "Enter yardages and inspect genuine premium imported lace, damask, and cashmere textile rolls.",
+      title: "Bespoke Boutique & Supplies",
+      description: "Browse and buy ready-to-wear fashion outfits, premium tailoring shears, designer fabrics, and boutique supplies.",
       icon: <Palette className="text-amber-500" size={18} />,
-      badge: "100+ Catalogues",
-      image: wingFabricsBgUrl || "https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17?auto=format&fit=crop&q=80&w=600",
+      badge: "Available Now",
+      image: (wingFabricsBgUrl && !wingFabricsBgUrl.includes("1598257006458")) 
+        ? wingFabricsBgUrl 
+        : "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&q=80&w=600",
       action: onOpenFabrics,
     },
     {
-      title: "Style Inspirations",
-      description: "Review premium cuts, neck silhouette trends, and customized patterns curated for Nigerian occasions.",
-      icon: <Shirt className="text-amber-500" size={18} />,
-      badge: "Bespoke cuts",
-      image: wingStylesBgUrl || "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&q=80&w=600",
-      action: onOpenStyles,
-    },
-    {
-      title: "Book Tailoring Fit",
-      description: "Initiate custom measurements, choose sizes, and book tailoring orders for your upcoming Owambe.",
-      icon: <ShoppingBag className="text-amber-500" size={18} />,
-      badge: "Submit intake",
-      image: wingOrderBgUrl || "https://images.unsplash.com/photo-1598257006458-087169a1f08d?auto=format&fit=crop&q=80&w=600",
-      action: onOpenOrder,
-    },
-    {
-      title: "Contact Marina Studio",
-      description: "Get physical studio coordinates, digital maps, and launch our live interactive WhatsApp desk.",
+      title: "Contact Lagos Desk",
+      description: "Get physical factory coordinates at Bamgbose Street, digital maps, and launch our live interactive WhatsApp support desk.",
       icon: <MapPin className="text-amber-500" size={18} />,
-      badge: "Open desk",
-      image: wingContactBgUrl || "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=600",
+      badge: "Factory Desk",
+      image: wingContactBgUrl || "https://images.unsplash.com/photo-1423666639041-f56000c27a9a?auto=format&fit=crop&q=80&w=600",
       action: onOpenContact,
     }
   ];
@@ -127,7 +113,7 @@ export default function Hero({
             className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full border border-amber-500/20 bg-amber-500/5 text-[10px] uppercase tracking-widest font-mono text-amber-400 mb-6"
           >
             <Sparkles size={11} className="text-amber-500 animate-spin" />
-            Bespoke Couture & Textiles
+            Lagos Textile Finishing & Supplies
           </motion.div>
 
           {/* Brand Crest */}
@@ -160,7 +146,7 @@ export default function Hero({
           >
             OLUWASHOLA
             <span className="block font-sans text-xs md:text-sm lg:text-base font-light tracking-[0.35em] text-amber-400 uppercase mt-3">
-              Textile Accessories & Tailoring Studio
+              TEXTILE FINISHING & GARMENT ACCESSORIES
             </span>
           </motion.h2>
 
@@ -172,7 +158,7 @@ export default function Hero({
             className="text-stone-300 text-xs md:text-sm max-w-2xl mx-auto mt-6 leading-relaxed font-light"
             id="hero-intro-text"
           >
-            Importers of royal textiles, high-density Swiss laces, master-loomed Yoruba Aso Oke, and custom ceremonial agbada & senator tailoring. Welcome to the elite Lagos atelier.
+            Lagos’ choice for industrial-grade eyelet installation, computerized monogram embroidery, laser cutting, CNC router fabric design, and direct bulk supply of garment accessories.
           </motion.p>
 
           {/* Quick Primary CTAs */}
@@ -184,17 +170,10 @@ export default function Hero({
             id="hero-cta-buttons"
           >
             <button
-              onClick={onOpenFabrics}
+              onClick={onOpenGallery}
               className="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-stone-950 text-xs uppercase tracking-widest font-bold rounded-full transition-all duration-300 shadow-xl shadow-amber-500/10 active:scale-95 cursor-pointer"
             >
-              Browse Fabrics
-            </button>
-            <button
-              onClick={onOpenOrder}
-              className="w-full sm:w-auto px-8 py-3 border border-stone-700 bg-stone-950/40 hover:bg-stone-900 hover:border-amber-500/40 text-stone-200 text-xs uppercase tracking-widest font-bold rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
-            >
-              <Scissors size={13} className="text-amber-500" />
-              Order Tailoring
+              Explore Showcase
             </button>
           </motion.div>
         </div>

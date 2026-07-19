@@ -42,8 +42,7 @@ export default function Navbar({
     { name: "Home", action: () => window.scrollTo({ top: 0, behavior: "smooth" }) },
     { name: "About", action: onOpenAbout },
     { name: "Showcase", action: onOpenGallery },
-    { name: "Fabrics", action: onOpenFabrics },
-    { name: "Styles", action: onOpenStyles },
+    { name: "Bespoke Shop", action: onOpenFabrics },
     { name: "Place Order", action: onOpenOrder },
     { name: "Contact", action: onOpenContact },
   ];

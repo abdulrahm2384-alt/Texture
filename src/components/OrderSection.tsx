@@ -6,7 +6,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Lock, Scissors, ShoppingBag, Ruler, FileText, Upload, MapPin, Sparkles, Loader2, CalendarCheck, Check, ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { User, Fabric, ClothingStyle, Measurements } from "../types";
+import { User, Fabric, ClothingStyle, Measurements, ContactInfo } from "../types";
 import { submitOrder, fetchContactInfo } from "../utils/api";
 import Modal from "./Modal";
 
@@ -35,7 +35,7 @@ export default function OrderSection({
   const [clientName, setClientName] = useState("");
   const [orderType, setOrderType] = useState<'fabric_only' | 'custom_tailoring' | 'both'>('fabric_only');
   const [fabricId, setFabricId] = useState<string>("");
-  const [yardsOrdered, setYardsOrdered] = useState<number>(4);
+  const [yardsOrdered, setYardsOrdered] = useState<number>(1);
   const [selectedFabrics, setSelectedFabrics] = useState<{ fabricId: string; yards: number }[]>([]);
   const [customStyleId, setCustomStyleId] = useState<string>("");
   const [fittingCategory, setFittingCategory] = useState<'female' | 'male' | 'elder' | 'younger'>('female');
@@ -64,15 +64,19 @@ export default function OrderSection({
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [whatsappUrl, setWhatsappUrl] = useState("");
   const [whatsappNumber, setWhatsappNumber] = useState("234705378152");
+  const [contact, setContact] = useState<ContactInfo | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       fetchContactInfo()
         .then((data) => {
-          if (data && data.phoneNumber) {
-            const cleaned = data.phoneNumber.replace(/\D/g, "");
-            if (cleaned) {
-              setWhatsappNumber(cleaned);
+          if (data) {
+            setContact(data);
+            if (data.phoneNumber) {
+              const cleaned = data.phoneNumber.replace(/\D/g, "");
+              if (cleaned) {
+                setWhatsappNumber(cleaned);
+              }
             }
           }
         })
@@ -83,15 +87,15 @@ export default function OrderSection({
   }, [isOpen]);
 
   const flyerServicesConfig = [
-    { id: "monogramming", name: "Monogramming", price: 15000, desc: "Custom monograms that make a statement." },
-    { id: "beading", name: "Beading", price: 45000, desc: "Exquisite beading for a luxurious look." },
-    { id: "stoning", name: "Stoning", price: 30000, desc: "Premium stoning that adds brilliance." },
-    { id: "sewing", name: "Sewing", price: 40000, desc: "Professional sewing with quality finishing." },
-    { id: "laser_cut", name: "Laser Cut Design", price: 25000, desc: "Precision laser cutting for unique designs." },
-    { id: "cnc_router", name: "CNC Router Design", price: 35000, desc: "High-precision CNC routing for perfect detail." },
-    { id: "weaving", name: "Weaving", price: 50000, desc: "Expert weaving for durable and beautiful fabrics." },
-    { id: "i_let", name: "I LET Stitching", price: 10000, desc: "Neat and durable eyelet stitching for a perfect finish." },
-    { id: "button_holes", name: "Button Holes", price: 5000, desc: "Precision button holes stitched to perfection." },
+    { id: "monogramming", name: "Monogramming", price: contact?.servicePrices?.monogramming ?? 15000, desc: "Custom monograms that make a statement." },
+    { id: "beading", name: "Beading", price: contact?.servicePrices?.beading ?? 45000, desc: "Exquisite beading for a luxurious look." },
+    { id: "stoning", name: "Stoning", price: contact?.servicePrices?.stoning ?? 30000, desc: "Premium stoning that adds brilliance." },
+    { id: "sewing", name: "Sewing", price: contact?.servicePrices?.sewing ?? 40000, desc: "Professional sewing with quality finishing." },
+    { id: "laser_cut", name: "Laser Cut Design", price: contact?.servicePrices?.laser_cut ?? 25000, desc: "Precision laser cutting for unique designs." },
+    { id: "cnc_router", name: "CNC Router Design", price: contact?.servicePrices?.cnc_router ?? 35000, desc: "High-precision CNC routing for perfect detail." },
+    { id: "weaving", name: "Weaving", price: contact?.servicePrices?.weaving ?? 50000, desc: "Expert weaving for durable and beautiful fabrics." },
+    { id: "i_let", name: "I LET Stitching", price: contact?.servicePrices?.i_let ?? 10000, desc: "Neat and durable eyelet stitching for a perfect finish." },
+    { id: "button_holes", name: "Button Holes", price: contact?.servicePrices?.button_holes ?? 5000, desc: "Precision button holes stitched to perfection." },
   ];
 
   const toggleService = (id: string) => {
@@ -107,7 +111,7 @@ export default function OrderSection({
       const alreadySelected = selectedFabrics.map((item) => item.fabricId);
       const remaining = fabrics.find((f) => !alreadySelected.includes(f.id));
       const nextId = remaining ? remaining.id : fabrics[0].id;
-      setSelectedFabrics([...selectedFabrics, { fabricId: nextId, yards: 4 }]);
+      setSelectedFabrics([...selectedFabrics, { fabricId: nextId, yards: 1 }]);
     }
   };
 
@@ -136,16 +140,29 @@ export default function OrderSection({
   // Setup listeners for prefill events
   useEffect(() => {
     const handlePrefillFabric = (e: Event) => {
-      const { fabricId: fId, yards, color } = (e as CustomEvent).detail;
+      const { fabricId: fId, yards, color, gender, ageGroup } = (e as CustomEvent).detail;
       setOrderType("fabric_only");
       setFabricId(fId);
-      const computedYards = yards || 4;
+      const computedYards = yards || 1;
       setYardsOrdered(computedYards);
       setSelectedFabrics([{ fabricId: fId, yards: computedYards }]);
+      
+      let prefillNotes = "";
       if (color) {
-        setSpecialInstructions((prev) => 
-          prev.includes(`Color choice:`) ? prev : `Requested Color choice: ${color}. ` + prev
-        );
+        prefillNotes += `Requested Style/Color: ${color}. `;
+      }
+      if (gender && gender !== "All") {
+        prefillNotes += `Target Gender: ${gender}. `;
+      }
+      if (ageGroup && ageGroup !== "All") {
+        prefillNotes += `Target Age Group: ${ageGroup}. `;
+      }
+
+      if (prefillNotes) {
+        setSpecialInstructions((prev) => {
+          if (prev.includes(prefillNotes)) return prev;
+          return prefillNotes + prev;
+        });
       }
     };
 
@@ -178,7 +195,7 @@ export default function OrderSection({
   // Sync selectedFabrics initial entry when fabrics loaded
   useEffect(() => {
     if (fabrics.length > 0 && selectedFabrics.length === 0) {
-      setSelectedFabrics([{ fabricId: fabricId || fabrics[0].id, yards: yardsOrdered || 4 }]);
+      setSelectedFabrics([{ fabricId: fabricId || fabrics[0].id, yards: yardsOrdered || 1 }]);
     }
   }, [fabrics, fabricId, yardsOrdered, selectedFabrics]);
 
@@ -324,35 +341,35 @@ export default function OrderSection({
       const phoneNumber = whatsappNumber;
 
       // Format a high-fidelity, structured WhatsApp inquiry specification
-      let msg = `🇳🇬 *OLUWASHOLA ATELIER ORDER INTAKE* 🇳🇬\n`;
+      let msg = `🇳🇬 *OLUWASHOLA TEXTILES INQUIRY INTAKE* 🇳🇬\n`;
       msg += `========================================\n\n`;
       msg += `👤 *CUSTOMER DETAILS*\n`;
       msg += `• *Name:* ${clientName.trim()}\n\n`;
 
       let orderTypeLabel = "";
-      if (orderType === "fabric_only") orderTypeLabel = "Buy Fabric Only (Multiple)";
-      else if (orderType === "custom_tailoring") orderTypeLabel = "Request Tailoring Only";
-      else orderTypeLabel = "Fabric + Custom Tailoring";
-      msg += `🛍️ *ORDER TYPE:* ${orderTypeLabel}\n\n`;
+      if (orderType === "fabric_only") orderTypeLabel = "Bulk Accessories Supply Only";
+      else if (orderType === "custom_tailoring") orderTypeLabel = "Request Professional Finishing Only";
+      else orderTypeLabel = "Accessories + Professional Finishing";
+      msg += `🛍️ *INQUIRY TYPE:* ${orderTypeLabel}\n\n`;
 
       if (orderType !== "custom_tailoring") {
         if (orderType === "fabric_only") {
-          msg += `📦 *LUXURY TEXTILES (MULTIPLE ITEMS)*\n`;
+          msg += `📦 *GARMENT ACCESSORIES & SUPPLIES*\n`;
           selectedFabrics.forEach((item, idx) => {
             const fObj = fabrics.find((f) => f.id === item.fabricId);
             if (fObj) {
-              msg += `*Fabric #${idx + 1}:* ${fObj.name}\n`;
-              msg += `• *Yards:* ${item.yards} Yards\n`;
+              msg += `*Accessory #${idx + 1}:* ${fObj.name}\n`;
+              msg += `• *Packs:* ${item.yards} Packs/Units\n`;
               msg += `• *Cost:* ₦${(fObj.pricePerYard * item.yards).toLocaleString()}\n\n`;
             }
           });
         } else {
           const selectedFabric = fabrics.find((f) => f.id === fabricId);
-          msg += `📦 *LUXURY TEXTILE*\n`;
-          msg += `• *Fabric Choice:* ${selectedFabric ? selectedFabric.name : "Custom Fabric"}\n`;
-          msg += `• *Yards Ordered:* ${yardsOrdered} Yards\n`;
+          msg += `📦 *GARMENT ACCESSORY*\n`;
+          msg += `• *Accessory Choice:* ${selectedFabric ? selectedFabric.name : "Custom Accessory"}\n`;
+          msg += `• *Packs Ordered:* ${yardsOrdered} Packs/Units\n`;
           if (selectedFabric) {
-            msg += `• *Estimated Fabric Cost:* ₦${(selectedFabric.pricePerYard * yardsOrdered).toLocaleString()}\n`;
+            msg += `• *Estimated Supply Cost:* ₦${(selectedFabric.pricePerYard * yardsOrdered).toLocaleString()}\n`;
           }
           msg += `\n`;
         }
@@ -360,16 +377,16 @@ export default function OrderSection({
 
       if (orderType !== "fabric_only") {
         const selectedStyle = styles.find((s) => s.id === customStyleId);
-        msg += `✂️ *BESPOKE GARMENT STYLE*\n`;
-        msg += `• *Design Style:* ${selectedStyle ? selectedStyle.name : (customStyleId === "bespoke-custom" ? "Bespoke Custom Sketch / Image" : "Custom Design")}\n`;
+        msg += `⚙️ *TEXTILE FINISHING SERVICE*\n`;
+        msg += `• *Finishing Service:* ${selectedStyle ? selectedStyle.name : (customStyleId === "bespoke-custom" ? "Custom Finishing Design Sketch" : "Custom Finishing")}\n`;
         
         let fitLabel = "";
-        if (fittingCategory === "female") fitLabel = "Female (Adult)";
-        else if (fittingCategory === "male") fitLabel = "Male (Adult)";
-        else if (fittingCategory === "elder") fitLabel = "Elder (Senior Fitting)";
-        else if (fittingCategory === "younger") fitLabel = "Younger / Kids (Under 15)";
+        if (fittingCategory === "female") fitLabel = "Standard Batch";
+        else if (fittingCategory === "male") fitLabel = "Urgent / Express Setup";
+        else if (fittingCategory === "elder") fitLabel = "Bulk Contract Basis";
+        else if (fittingCategory === "younger") fitLabel = "Small Craft / Designer Custom";
         
-        msg += `• *Fitting Category:* ${fitLabel}\n\n`;
+        msg += `• *Project Volume & Urgency:* ${fitLabel}\n\n`;
       }
 
       if (selectedServices.length > 0) {
@@ -534,7 +551,7 @@ export default function OrderSection({
               {/* Section 2: Order Categories */}
               <div className="space-y-3">
                 <label className="block text-[11px] font-bold uppercase tracking-widest text-amber-800">
-                  Step 2: Choose Showroom Intakes
+                  Step 2: Choose Inquiry Categories
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <button
@@ -548,8 +565,8 @@ export default function OrderSection({
                   >
                     <ShoppingBag size={20} className="shrink-0 mt-0.5 text-amber-700" />
                     <div>
-                      <span className="text-xs font-bold block uppercase tracking-wide text-stone-900">Buy Fabric Only</span>
-                      <span className="text-[10px] text-stone-500 block leading-tight mt-1">Get authentic fabric bolts directly.</span>
+                      <span className="text-xs font-bold block uppercase tracking-wide text-stone-900">Bulk Accessories</span>
+                      <span className="text-[10px] text-stone-500 block leading-tight mt-1">Order eyelets, buttons, and supplies.</span>
                     </div>
                   </button>
 
@@ -564,8 +581,8 @@ export default function OrderSection({
                   >
                     <Scissors size={20} className="shrink-0 mt-0.5 text-amber-700" />
                     <div>
-                      <span className="text-xs font-bold block uppercase tracking-wide text-stone-900">Request Tailoring</span>
-                      <span className="text-[10px] text-stone-500 block leading-tight mt-1">Supply own fabrics, hire our sewing salon.</span>
+                      <span className="text-xs font-bold block uppercase tracking-wide text-stone-900">Finishing Services</span>
+                      <span className="text-[10px] text-stone-500 block leading-tight mt-1">Computerized monograms and CNC cuts.</span>
                     </div>
                   </button>
 
@@ -580,8 +597,8 @@ export default function OrderSection({
                   >
                     <Sparkles size={20} className="shrink-0 mt-0.5 text-amber-700" />
                     <div>
-                      <span className="text-xs font-bold block uppercase tracking-wide text-stone-900">Fabric + Tailoring</span>
-                      <span className="text-[10px] text-stone-500 block leading-tight mt-1">Acquire fabric from us & tailor bespoke style.</span>
+                      <span className="text-xs font-bold block uppercase tracking-wide text-stone-900">Supplies + Finishing</span>
+                      <span className="text-[10px] text-stone-500 block leading-tight mt-1">Acquire bulk accessories with finishing set.</span>
                     </div>
                   </button>
                 </div>
@@ -720,7 +737,7 @@ export default function OrderSection({
                   <div className="space-y-4 bg-white p-4.5 rounded-2xl border border-stone-200 shadow-sm flex flex-col justify-between">
                     <div>
                       <label className="block text-xs font-bold uppercase tracking-wider text-stone-800 mb-2">
-                        Select Bespoke Garment Style
+                        Select Finishing Service
                       </label>
                       <select
                         required
@@ -728,13 +745,13 @@ export default function OrderSection({
                         onChange={(e) => setCustomStyleId(e.target.value)}
                         className="w-full rounded-xl bg-stone-50 border border-stone-200 text-sm p-3 text-stone-800 outline-none focus:border-amber-600 focus:bg-white transition"
                       >
-                        <option value="">-- Choose Design Style --</option>
+                        <option value="">-- Choose Finishing Service --</option>
                         {styles.map((s) => (
                           <option key={s.id} value={s.id}>
                             {s.name}
                           </option>
                         ))}
-                        <option value="bespoke-custom">Supply own design sketch</option>
+                        <option value="bespoke-custom">Custom Finishing Design Sketch</option>
                       </select>
                     </div>
 
@@ -742,18 +759,18 @@ export default function OrderSection({
                       <div className="pt-3 border-t border-stone-100 space-y-2 animate-fade-in">
                         <div className="flex justify-between items-center">
                           <label className="block text-[10px] font-bold uppercase tracking-widest text-amber-800">
-                            Fitting Category / Age Group
+                            Project Volume & Urgency
                           </label>
                           <span className="text-[9px] text-stone-400 font-mono">
-                            Tailoring rates adjust accordingly
+                            Setup fees adjust accordingly
                           </span>
                         </div>
                         <div className="grid grid-cols-2 gap-2">
                           {[
-                            { id: "female", label: "Female (Adult)", desc: "Darts & intricate corsetry", priceTag: "Standard Fit" },
-                            { id: "male", label: "Male (Adult)", desc: "Structured bespoke fitting", priceTag: "Standard Fit" },
-                            { id: "elder", label: "Elder (Senior)", desc: "Comfort traditional ease", priceTag: "+₦15,000" },
-                            { id: "younger", label: "Younger / Kids", desc: "Petite (Under 15)", priceTag: "-35% off" },
+                            { id: "female", label: "Standard Batch", desc: "Standard turnaround specs", priceTag: "Standard Setup" },
+                            { id: "male", label: "Urgent / Express", desc: "Fast-tracked factory setup", priceTag: "Standard Setup" },
+                            { id: "elder", label: "Bulk Contract", desc: "Commercial & schools", priceTag: "+₦15,000 Setup" },
+                            { id: "younger", label: "Small Craft", desc: "Individual boutique custom", priceTag: "-35% off Setup" },
                           ].map((cat) => (
                             <button
                               key={cat.id}
@@ -789,7 +806,7 @@ export default function OrderSection({
                     )}
 
                     <p className="text-[10px] text-stone-500 leading-normal mt-2 md:mt-0">
-                      Choosing a design style pre-configures basic pattern templates.
+                      Selecting a service configures standard high-precision machinery.
                     </p>
                   </div>
                 )}
@@ -1051,17 +1068,17 @@ export default function OrderSection({
               {/* Checkout Cost Summary Block */}
               <div className="border-t border-stone-200 pt-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-stone-100/60 p-4.5 rounded-2xl border border-stone-200 shadow-sm">
                 <div>
-                  <p className="text-[10px] uppercase font-mono text-stone-500 tracking-wider">Showroom Cost Specification</p>
+                  <p className="text-[10px] uppercase font-mono text-stone-500 tracking-wider">Inquiry Cost Estimate</p>
                   <p className="font-serif text-2xl font-bold text-amber-800 mt-0.5">
                     ₦{getCalculatedPrice().toLocaleString()}
                   </p>
                   <p className="text-[10px] text-stone-500 font-mono mt-0.5">
                     {orderType !== "fabric_only" && customStyleId ? (
-                      <span>Includes chosen style (<strong>{fittingCategory === "female" ? "Female Adult" : fittingCategory === "male" ? "Male Adult" : fittingCategory === "elder" ? "Elderly Senior" : "Younger/Kids"} fit</strong>), premium textiles, pattern cuts & logistics</span>
+                      <span>Includes chosen service (<strong>{fittingCategory === "female" ? "Standard Batch" : fittingCategory === "male" ? "Express Urgent" : fittingCategory === "elder" ? "Bulk Contract" : "Small Craft"} setup</strong>), supplies, precision templates & logistics</span>
                     ) : orderType === "fabric_only" && selectedFabrics.length > 1 ? (
-                      <span>Includes <strong>{selectedFabrics.length} premium fabrics</strong> & showroom logistics</span>
+                      <span>Includes <strong>{selectedFabrics.length} selected accessory supplies</strong> & logistics</span>
                     ) : (
-                      "Includes selected luxury textiles & premium showroom logistics"
+                      "Includes selected accessories supplies & premium logistics"
                     )}
                   </p>
                 </div>
@@ -1077,7 +1094,7 @@ export default function OrderSection({
                   ) : (
                     <CalendarCheck size={16} />
                   )}
-                  Submit Atelier Request
+                  Submit Inquiry Specs
                 </button>
               </div>
             </form>
