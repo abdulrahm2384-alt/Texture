@@ -34,6 +34,7 @@ export default function OrderSection({
   // Form state
   const [clientName, setClientName] = useState("");
   const [orderType, setOrderType] = useState<'fabric_only' | 'custom_tailoring' | 'both'>('fabric_only');
+  const [recreationItemName, setRecreationItemName] = useState("");
   const [fabricId, setFabricId] = useState<string>("");
   const [yardsOrdered, setYardsOrdered] = useState<number>(1);
   const [selectedFabrics, setSelectedFabrics] = useState<{ fabricId: string; yards: number }[]>([]);
@@ -168,11 +169,13 @@ export default function OrderSection({
 
     const handlePrefillStyle = (e: Event) => {
       const { styleId, styleName } = (e as CustomEvent).detail;
-      setOrderType("both");
-      setCustomStyleId(styleId || "");
-      // Auto-set a fabric if none is selected
-      if (!fabricId && fabrics.length > 0) {
-        setFabricId(fabrics[0].id);
+      setOrderType("custom_tailoring");
+      if (styleId) {
+        setCustomStyleId(styleId);
+        setRecreationItemName("");
+      } else {
+        setCustomStyleId("gallery-recreation");
+        setRecreationItemName(styleName || "");
       }
     };
 
@@ -310,28 +313,23 @@ export default function OrderSection({
     }
     if (orderType === "fabric_only") {
       if (selectedFabrics.length === 0) {
-        setFormError("Please select at least one fabric");
+        setFormError("Please select at least one accessory/supply item");
         setIsLoading(false);
         return;
       }
       const hasEmptyFabric = selectedFabrics.some((item) => !item.fabricId);
       if (hasEmptyFabric) {
-        setFormError("Please select a valid fabric for each entry");
+        setFormError("Please select a valid item for each entry");
         setIsLoading(false);
         return;
       }
     }
-    if (orderType === "both" && (!fabricId || !customStyleId)) {
-      setFormError("Please select both fabric and design style");
-      setIsLoading(false);
-      return;
-    }
     if (orderType === "custom_tailoring" && !customStyleId) {
-      setFormError("Please select a design style for tailoring");
+      setFormError("Please select a design style to recreate");
       setIsLoading(false);
       return;
     }
-    if (deliveryType === "delivery" && !deliveryAddress.trim()) {
+    if (deliveryType === "delivery" && !deliveryAddress.trim() && orderType === "fabric_only") {
       setFormError("Please provide shipping details");
       setIsLoading(false);
       return;
@@ -339,123 +337,86 @@ export default function OrderSection({
 
     try {
       const phoneNumber = whatsappNumber;
+      let msg = "";
 
-      // Format a high-fidelity, structured WhatsApp inquiry specification
-      let msg = `🇳🇬 *OLUWASHOLA TEXTILES INQUIRY INTAKE* 🇳🇬\n`;
-      msg += `========================================\n\n`;
-      msg += `👤 *CUSTOMER DETAILS*\n`;
-      msg += `• *Name:* ${clientName.trim()}\n\n`;
+      if (orderType === "custom_tailoring") {
+        msg = `🇳🇬 *OLUWASHOLA TEXTILES SHOWCASE INQUIRY* 🇳🇬\n`;
+        msg += `========================================\n\n`;
+        msg += `👤 *CUSTOMER DETAILS*\n`;
+        msg += `• *Name:* ${clientName.trim()}\n\n`;
 
-      let orderTypeLabel = "";
-      if (orderType === "fabric_only") orderTypeLabel = "Bulk Accessories Supply Only";
-      else if (orderType === "custom_tailoring") orderTypeLabel = "Request Professional Finishing Only";
-      else orderTypeLabel = "Accessories + Professional Finishing";
-      msg += `🛍️ *INQUIRY TYPE:* ${orderTypeLabel}\n\n`;
-
-      if (orderType !== "custom_tailoring") {
-        if (orderType === "fabric_only") {
-          msg += `📦 *GARMENT ACCESSORIES & SUPPLIES*\n`;
-          selectedFabrics.forEach((item, idx) => {
-            const fObj = fabrics.find((f) => f.id === item.fabricId);
-            if (fObj) {
-              msg += `*Accessory #${idx + 1}:* ${fObj.name}\n`;
-              msg += `• *Packs:* ${item.yards} Packs/Units\n`;
-              msg += `• *Cost:* ₦${(fObj.pricePerYard * item.yards).toLocaleString()}\n\n`;
-            }
-          });
-        } else {
-          const selectedFabric = fabrics.find((f) => f.id === fabricId);
-          msg += `📦 *GARMENT ACCESSORY*\n`;
-          msg += `• *Accessory Choice:* ${selectedFabric ? selectedFabric.name : "Custom Accessory"}\n`;
-          msg += `• *Packs Ordered:* ${yardsOrdered} Packs/Units\n`;
-          if (selectedFabric) {
-            msg += `• *Estimated Supply Cost:* ₦${(selectedFabric.pricePerYard * yardsOrdered).toLocaleString()}\n`;
-          }
-          msg += `\n`;
-        }
-      }
-
-      if (orderType !== "fabric_only") {
         const selectedStyle = styles.find((s) => s.id === customStyleId);
-        msg += `⚙️ *TEXTILE FINISHING SERVICE*\n`;
-        msg += `• *Finishing Service:* ${selectedStyle ? selectedStyle.name : (customStyleId === "bespoke-custom" ? "Custom Finishing Design Sketch" : "Custom Finishing")}\n`;
-        
-        let fitLabel = "";
-        if (fittingCategory === "female") fitLabel = "Standard Batch";
-        else if (fittingCategory === "male") fitLabel = "Urgent / Express Setup";
-        else if (fittingCategory === "elder") fitLabel = "Bulk Contract Basis";
-        else if (fittingCategory === "younger") fitLabel = "Small Craft / Designer Custom";
-        
-        msg += `• *Project Volume & Urgency:* ${fitLabel}\n\n`;
-      }
+        const styleName = customStyleId === "gallery-recreation" 
+          ? recreationItemName 
+          : (selectedStyle ? selectedStyle.name : "Custom Design");
 
-      if (selectedServices.length > 0) {
-        msg += `✨ *PREMIUM EMBELLISHMENT ADD-ONS*\n`;
-        selectedServices.forEach((serviceId) => {
-          const sConf = flyerServicesConfig.find((s) => s.id === serviceId);
-          if (sConf) {
-            msg += `• ${sConf.name} (+₦${sConf.price.toLocaleString()})\n`;
+        msg += `🎨 *REQUESTED DESIGN RECREATION*\n`;
+        msg += `• *Design Style:* ${styleName}\n\n`;
+
+        msg += `💬 *INQUIRY MESSAGE*\n`;
+        msg += `Hello! I saw this completed work in your showcase and I would love to create a similar design on my own fabric or clothing.\n`;
+        msg += `• How much will you charge me to create a similar stuff on my fabric/clothing?\n`;
+        msg += `• How long will it take to complete?\n\n`;
+
+        if (specialInstructions.trim()) {
+          msg += `📝 *SPECIAL DESIGN INSTRUCTIONS*\n`;
+          msg += `• ${specialInstructions.trim()}\n\n`;
+        }
+
+        msg += `========================================\n`;
+        msg += `Please let me know how to proceed. Thank you!`;
+      } else {
+        // "fabric_only" / Boutique supplies flow
+        msg = `🇳🇬 *OLUWASHOLA TEXTILES INQUIRY INTAKE* 🇳🇬\n`;
+        msg += `========================================\n\n`;
+        msg += `👤 *CUSTOMER DETAILS*\n`;
+        msg += `• *Name:* ${clientName.trim()}\n\n`;
+        msg += `🛍️ *INQUIRY TYPE:* Boutique Supplies & Accessories\n\n`;
+
+        msg += `📦 *GARMENT ACCESSORIES & SUPPLIES*\n`;
+        selectedFabrics.forEach((item, idx) => {
+          const fObj = fabrics.find((f) => f.id === item.fabricId);
+          if (fObj) {
+            msg += `*Accessory #${idx + 1}:* ${fObj.name}\n`;
+            msg += `• *Quantity:* ${item.yards} ${fObj.pricingUnit || "Unit"}${item.yards > 1 ? "s" : ""}\n`;
+            msg += `• *Cost:* ₦${(fObj.pricePerYard * item.yards).toLocaleString()}\n\n`;
           }
         });
-        msg += `\n`;
-      }
 
-      if (orderType !== "fabric_only") {
-        msg += `📐 *MEASUREMENTS SPECIFICATION*\n`;
-        let mType = "";
-        if (measurementsType === "manual") mType = "Manual Entry";
-        else mType = "Uploaded Design Sketch / Photo";
-        
-        msg += `• *Method:* ${mType}\n`;
-        if (measurementsType === "manual") {
-          if (manualSpecs.neck) msg += `  - *Neck:* ${manualSpecs.neck} inches\n`;
-          if (manualSpecs.chest) msg += `  - *Chest:* ${manualSpecs.chest} inches\n`;
-          if (manualSpecs.shoulder) msg += `  - *Shoulder:* ${manualSpecs.shoulder} inches\n`;
-          if (manualSpecs.sleeveLength) msg += `  - *Sleeve Length:* ${manualSpecs.sleeveLength} inches\n`;
-          if (manualSpecs.waist) msg += `  - *Waist:* ${manualSpecs.waist} inches\n`;
-          if (manualSpecs.hip) msg += `  - *Hip:* ${manualSpecs.hip} inches\n`;
-          if (manualSpecs.gownLength) msg += `  - *Gown Length:* ${manualSpecs.gownLength} inches\n`;
-          if (manualSpecs.trouserLength) msg += `  - *Trouser Length:* ${manualSpecs.trouserLength} inches\n`;
-          if (manualSpecs.additionalNotes) msg += `  - *Body Fit Notes:* ${manualSpecs.additionalNotes}\n`;
-        } else if (measurementsType === "file_upload") {
-          msg += `  - *Sketch/Specs Image:* Attached (Filename: ${uploadedFileName || "Yes"})\n`;
+        msg += `🚚 *DELIVERY LOGISTICS*\n`;
+        msg += `• *Logistics Method:* ${deliveryType === "pickup" ? "Self Pickup (Marina, Lagos - Free)" : "Secure Courier Shipping (+₦5,000)"}\n`;
+        if (deliveryType === "delivery" && deliveryAddress.trim()) {
+          msg += `• *Destination Address:* ${deliveryAddress.trim()}\n`;
         }
         msg += `\n`;
-      }
 
-      msg += `🚚 *DELIVERY LOGISTICS*\n`;
-      msg += `• *Logistics Method:* ${deliveryType === "pickup" ? "Self Pickup (Marina, Lagos - Free)" : "Secure Courier Shipping (+₦5,000)"}\n`;
-      if (deliveryType === "delivery" && deliveryAddress.trim()) {
-        msg += `• *Destination Address:* ${deliveryAddress.trim()}\n`;
-      }
-      msg += `\n`;
+        if (specialInstructions.trim()) {
+          msg += `📝 *SPECIAL DESIGN INSTRUCTIONS*\n`;
+          msg += `• ${specialInstructions.trim()}\n\n`;
+        }
 
-      if (specialInstructions.trim()) {
-        msg += `📝 *SPECIAL DESIGN INSTRUCTIONS*\n`;
-        msg += `• ${specialInstructions.trim()}\n\n`;
+        msg += `========================================\n`;
+        msg += `💰 *TOTAL ESTIMATED COST:* ₦${getCalculatedPrice().toLocaleString()}\n`;
+        msg += `========================================\n\n`;
+        msg += `Please review these details and let me know the next steps for my order. Thank you!`;
       }
-
-      msg += `========================================\n`;
-      msg += `💰 *ESTIMATED COST SPECIFICATION:* ₦${getCalculatedPrice().toLocaleString()}\n`;
-      msg += `========================================\n\n`;
-      msg += `Please review these details and let me know the next steps for my customized tailoring order. Thank you!`;
 
       // Also save the order to db if user is logged in
       if (user) {
         try {
           await submitOrder({
             orderType,
-            fabricId: orderType !== "custom_tailoring" && orderType !== "fabric_only" ? fabricId : undefined,
-            yardsOrdered: orderType !== "custom_tailoring" && orderType !== "fabric_only" ? yardsOrdered : undefined,
-            customStyleId: orderType !== "fabric_only" ? customStyleId : undefined,
-            selectedServices,
-            measurementsType,
-            measurements: measurementsType === "manual" ? manualSpecs : undefined,
-            measurementFile: measurementsType === "file_upload" ? uploadedBase64 : undefined,
+            fabricId: undefined,
+            yardsOrdered: undefined,
+            customStyleId: orderType === "custom_tailoring" ? customStyleId : undefined,
+            selectedServices: [],
+            measurementsType: "manual",
+            measurements: undefined,
+            measurementFile: undefined,
             deliveryType,
             deliveryAddress: deliveryType === "delivery" ? deliveryAddress : undefined,
             specialInstructions,
-            totalPrice: getCalculatedPrice(),
+            totalPrice: orderType === "custom_tailoring" ? 0 : getCalculatedPrice(),
             selectedFabrics: orderType === "fabric_only" ? selectedFabrics : undefined,
           });
         } catch (apiErr) {
@@ -530,6 +491,22 @@ export default function OrderSection({
                 </div>
               )}
 
+              {/* Customer Direct WhatsApp Chat Banner */}
+              <div className="bg-amber-50 border border-amber-200/60 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+                <div>
+                  <h4 className="text-xs font-bold text-amber-900 uppercase tracking-wide">Prefer to chat directly?</h4>
+                  <p className="text-[10px] text-amber-800 mt-0.5">Skip the form entirely and discuss your design, pricing, and fabric directly with our tailors on WhatsApp.</p>
+                </div>
+                <a
+                  href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent("Hello Oluwashola Textiles, I'd like to chat with you directly about a custom design or tailoring request!")}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2.5 text-[10px] uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-sm text-center min-h-[36px] hover:scale-[1.02] active:scale-95 shrink-0"
+                >
+                  Chat Direct
+                </a>
+              </div>
+
               {/* Customer Contact Details */}
               <div className="space-y-3 bg-stone-50 p-4.5 rounded-2xl border border-stone-200 shadow-sm">
                 <label className="block text-[11px] font-bold uppercase tracking-widest text-amber-800">
@@ -553,7 +530,7 @@ export default function OrderSection({
                 <label className="block text-[11px] font-bold uppercase tracking-widest text-amber-800">
                   Step 2: Choose Inquiry Categories
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <button
                     type="button"
                     onClick={() => setOrderType("fabric_only")}
@@ -565,8 +542,8 @@ export default function OrderSection({
                   >
                     <ShoppingBag size={20} className="shrink-0 mt-0.5 text-amber-700" />
                     <div>
-                      <span className="text-xs font-bold block uppercase tracking-wide text-stone-900">Bulk Accessories</span>
-                      <span className="text-[10px] text-stone-500 block leading-tight mt-1">Order eyelets, buttons, and supplies.</span>
+                      <span className="text-xs font-bold block uppercase tracking-wide text-stone-900">Boutique Supplies</span>
+                      <span className="text-[10px] text-stone-500 block leading-tight mt-1">Order accessories and tools per listed prices.</span>
                     </div>
                   </button>
 
@@ -581,171 +558,117 @@ export default function OrderSection({
                   >
                     <Scissors size={20} className="shrink-0 mt-0.5 text-amber-700" />
                     <div>
-                      <span className="text-xs font-bold block uppercase tracking-wide text-stone-900">Finishing Services</span>
-                      <span className="text-[10px] text-stone-500 block leading-tight mt-1">Computerized monograms and CNC cuts.</span>
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setOrderType("both")}
-                    className={`p-4 rounded-xl border text-left flex items-start gap-3 transition cursor-pointer min-h-[48px] ${
-                      orderType === "both"
-                        ? "border-amber-600 bg-amber-500/5 text-amber-800 font-semibold"
-                        : "border-stone-200 bg-white text-stone-500 hover:border-stone-400 hover:text-stone-850"
-                    }`}
-                  >
-                    <Sparkles size={20} className="shrink-0 mt-0.5 text-amber-700" />
-                    <div>
-                      <span className="text-xs font-bold block uppercase tracking-wide text-stone-900">Supplies + Finishing</span>
-                      <span className="text-[10px] text-stone-500 block leading-tight mt-1">Acquire bulk accessories with finishing set.</span>
+                      <span className="text-xs font-bold block uppercase tracking-wide text-stone-900">Showcase Designs</span>
+                      <span className="text-[10px] text-stone-500 block leading-tight mt-1">Inquire about recreating any showcase style.</span>
                     </div>
                   </button>
                 </div>
               </div>
 
               {/* Section 2: Items Configuration */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 {/* Fabric selection */}
-                {orderType !== "custom_tailoring" && (
+                {orderType === "fabric_only" && (
                   <div className="space-y-4 bg-white p-4.5 rounded-2xl border border-stone-200 shadow-sm">
-                    {orderType === "fabric_only" ? (
-                      // Multi-Fabric Builder for buying fabric alone
-                      <div className="space-y-4">
-                        <div className="flex justify-between items-center pb-2 border-b border-stone-100">
-                          <div>
-                            <label className="block text-xs font-bold uppercase tracking-wider text-stone-800">
-                              Selected Textiles ({selectedFabrics.length})
-                            </label>
-                            <span className="text-[10px] text-stone-400">Specify fabrics & length (yards)</span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={addFabricItem}
-                            className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-stone-950 text-[10px] font-bold uppercase tracking-wider rounded-lg transition active:scale-95 shadow-sm cursor-pointer"
-                          >
-                            + Add Fabric
-                          </button>
+                    {/* Multi-Fabric Builder for buying fabric alone */}
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center pb-2 border-b border-stone-100">
+                        <div>
+                          <label className="block text-xs font-bold uppercase tracking-wider text-stone-800">
+                            Selected Supplies/Accessories ({selectedFabrics.length})
+                          </label>
+                          <span className="text-[10px] text-stone-400">Specify boutique items & quantity</span>
                         </div>
+                        <button
+                          type="button"
+                          onClick={addFabricItem}
+                          className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-stone-950 text-[10px] font-bold uppercase tracking-wider rounded-lg transition active:scale-95 shadow-sm cursor-pointer font-semibold"
+                        >
+                          + Add Item
+                        </button>
+                      </div>
 
-                        <div className="space-y-4 max-h-[350px] overflow-y-auto pr-1">
-                          {selectedFabrics.map((item, index) => (
-                            <div key={index} className="p-3 bg-stone-50 rounded-xl border border-stone-200/80 space-y-3 relative">
-                              <div className="flex justify-between items-center">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800">
-                                  Fabric Choice #{index + 1}
-                                </span>
-                                {selectedFabrics.length > 1 && (
-                                  <button
-                                    type="button"
-                                    onClick={() => removeFabricItem(index)}
-                                    className="text-[10px] font-bold uppercase tracking-wider text-red-600 hover:text-red-700 transition cursor-pointer"
-                                    title="Remove this fabric"
-                                  >
-                                    Remove
-                                  </button>
-                                )}
-                              </div>
-
-                              <div className="space-y-2">
-                                <select
-                                  required
-                                  value={item.fabricId}
-                                  onChange={(e) => updateFabricItem(index, 'fabricId', e.target.value)}
-                                  className="w-full rounded-xl bg-white border border-stone-200 text-xs p-2.5 text-stone-800 outline-none focus:border-amber-600 transition"
+                      <div className="space-y-4 max-h-[350px] overflow-y-auto pr-1">
+                        {selectedFabrics.map((item, index) => (
+                          <div key={index} className="p-3 bg-stone-50 rounded-xl border border-stone-200/80 space-y-3 relative">
+                            <div className="flex justify-between items-center">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800">
+                                Item Selection #{index + 1}
+                              </span>
+                              {selectedFabrics.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => removeFabricItem(index)}
+                                  className="text-[10px] font-bold uppercase tracking-wider text-red-600 hover:text-red-700 transition cursor-pointer"
+                                  title="Remove this item"
                                 >
-                                  <option value="">-- Choose Fabric --</option>
-                                  {fabrics.map((f) => (
-                                    <option key={f.id} value={f.id}>
-                                      {f.name} (₦{f.pricePerYard.toLocaleString()}/yard)
-                                    </option>
-                                  ))}
-                                </select>
+                                  Remove
+                                </button>
+                              )}
+                            </div>
 
-                                {/* Yards Selector */}
-                                <div>
-                                  <div className="flex justify-between items-center mb-1">
-                                    <label className="block text-[9px] font-bold uppercase tracking-wider text-stone-500">
-                                      Length Required
-                                    </label>
-                                    <span className="font-mono text-[10px] font-bold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200/50">
-                                      {item.yards} Yards
-                                    </span>
-                                  </div>
-                                  <input
-                                    type="range"
-                                    min="1"
-                                    max="20"
-                                    step="1"
-                                    value={item.yards}
-                                    onChange={(e) => updateFabricItem(index, 'yards', parseInt(e.target.value) || 4)}
-                                    className="w-full accent-amber-600 h-1 bg-stone-200 rounded-lg outline-none cursor-pointer"
-                                  />
+                            <div className="space-y-2">
+                              <select
+                                required
+                                value={item.fabricId}
+                                onChange={(e) => updateFabricItem(index, 'fabricId', e.target.value)}
+                                className="w-full rounded-xl bg-white border border-stone-200 text-xs p-2.5 text-stone-800 outline-none focus:border-amber-600 transition font-medium"
+                              >
+                                <option value="">-- Choose Boutique Item --</option>
+                                {fabrics.map((f) => (
+                                  <option key={f.id} value={f.id}>
+                                    {f.name} (₦{f.pricePerYard.toLocaleString()}/{f.pricingUnit || "unit"})
+                                  </option>
+                                ))}
+                              </select>
+
+                              {/* Yards Selector */}
+                              <div>
+                                <div className="flex justify-between items-center mb-1">
+                                  <label className="block text-[9px] font-bold uppercase tracking-wider text-stone-500">
+                                    Quantity
+                                  </label>
+                                  <span className="font-mono text-[10px] font-bold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200/50">
+                                    {item.yards} {item.fabricId && fabrics.find(f => f.id === item.fabricId)?.pricingUnit ? fabrics.find(f => f.id === item.fabricId)?.pricingUnit : "Unit"}{item.yards > 1 ? "s" : ""}
+                                  </span>
                                 </div>
+                                <input
+                                  type="range"
+                                  min="1"
+                                  max="50"
+                                  step="1"
+                                  value={item.yards}
+                                  onChange={(e) => updateFabricItem(index, 'yards', parseInt(e.target.value) || 1)}
+                                  className="w-full accent-amber-600 h-1 bg-stone-200 rounded-lg outline-none cursor-pointer"
+                                />
                               </div>
                             </div>
-                          ))}
-                        </div>
-                      </div>
-                    ) : (
-                      // Single fabric choice for Fabric + Tailoring ("both")
-                      <div className="space-y-2">
-                        <label className="block text-xs font-bold uppercase tracking-wider text-stone-800">
-                          Select Luxury Textile
-                        </label>
-                        <select
-                          required
-                          value={fabricId}
-                          onChange={(e) => setFabricId(e.target.value)}
-                          className="w-full rounded-xl bg-stone-50 border border-stone-200 text-sm p-3 text-stone-800 outline-none focus:border-amber-600 focus:bg-white transition"
-                        >
-                          <option value="">-- Choose Fabric --</option>
-                          {fabrics.map((f) => (
-                            <option key={f.id} value={f.id}>
-                              {f.name} (₦{f.pricePerYard.toLocaleString()}/yard)
-                            </option>
-                          ))}
-                        </select>
-
-                        {/* Yards Selector */}
-                        <div className="pt-2">
-                          <div className="flex justify-between items-center mb-1">
-                            <label className="block text-[10px] font-bold uppercase tracking-wider text-stone-500">
-                              Length Required
-                            </label>
-                            <span className="font-mono text-xs font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200/50">
-                              {yardsOrdered} Yards
-                            </span>
                           </div>
-                          <input
-                            type="range"
-                            min="1"
-                            max="20"
-                            step="1"
-                            value={yardsOrdered}
-                            onChange={(e) => setYardsOrdered(parseInt(e.target.value) || 4)}
-                            className="w-full accent-amber-600 h-1.5 bg-stone-200 rounded-lg outline-none cursor-pointer"
-                          />
-                        </div>
+                        ))}
                       </div>
-                    )}
+                    </div>
                   </div>
                 )}
 
                 {/* Style Selection */}
-                {orderType !== "fabric_only" && (
+                {orderType === "custom_tailoring" && (
                   <div className="space-y-4 bg-white p-4.5 rounded-2xl border border-stone-200 shadow-sm flex flex-col justify-between">
                     <div>
                       <label className="block text-xs font-bold uppercase tracking-wider text-stone-800 mb-2">
-                        Select Finishing Service
+                        Select Design / Finishing Style
                       </label>
                       <select
                         required
                         value={customStyleId}
                         onChange={(e) => setCustomStyleId(e.target.value)}
-                        className="w-full rounded-xl bg-stone-50 border border-stone-200 text-sm p-3 text-stone-800 outline-none focus:border-amber-600 focus:bg-white transition"
+                        className="w-full rounded-xl bg-stone-50 border border-stone-200 text-sm p-3 text-stone-800 outline-none focus:border-amber-600 focus:bg-white transition font-medium"
                       >
-                        <option value="">-- Choose Finishing Service --</option>
+                        <option value="">-- Choose Finishing Style --</option>
+                        {recreationItemName && (
+                          <option value="gallery-recreation">
+                            Recreate Showcase Design: {recreationItemName}
+                          </option>
+                        )}
                         {styles.map((s) => (
                           <option key={s.id} value={s.id}>
                             {s.name}
@@ -755,249 +678,17 @@ export default function OrderSection({
                       </select>
                     </div>
 
-                    {customStyleId && (
-                      <div className="pt-3 border-t border-stone-100 space-y-2 animate-fade-in">
-                        <div className="flex justify-between items-center">
-                          <label className="block text-[10px] font-bold uppercase tracking-widest text-amber-800">
-                            Project Volume & Urgency
-                          </label>
-                          <span className="text-[9px] text-stone-400 font-mono">
-                            Setup fees adjust accordingly
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2">
-                          {[
-                            { id: "female", label: "Standard Batch", desc: "Standard turnaround specs", priceTag: "Standard Setup" },
-                            { id: "male", label: "Urgent / Express", desc: "Fast-tracked factory setup", priceTag: "Standard Setup" },
-                            { id: "elder", label: "Bulk Contract", desc: "Commercial & schools", priceTag: "+₦15,000 Setup" },
-                            { id: "younger", label: "Small Craft", desc: "Individual boutique custom", priceTag: "-35% off Setup" },
-                          ].map((cat) => (
-                            <button
-                              key={cat.id}
-                              type="button"
-                              onClick={() => setFittingCategory(cat.id as any)}
-                              className={`p-2.5 rounded-xl border text-left flex flex-col justify-between transition cursor-pointer min-h-[64px] ${
-                                fittingCategory === cat.id
-                                  ? "border-amber-600 bg-amber-500/5 ring-1 ring-amber-500/20"
-                                  : "border-stone-200 hover:border-stone-300 hover:bg-stone-50"
-                              }`}
-                            >
-                              <div className="flex justify-between items-start w-full gap-1">
-                                <span className={`text-[11px] font-bold ${fittingCategory === cat.id ? "text-amber-900" : "text-stone-800"}`}>
-                                  {cat.label}
-                                </span>
-                                <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded shrink-0 ${
-                                  cat.id === "younger"
-                                    ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
-                                    : cat.id === "elder"
-                                    ? "bg-amber-50 text-amber-700 border border-amber-100"
-                                    : "bg-stone-100 text-stone-600"
-                                }`}>
-                                  {cat.priceTag}
-                                </span>
-                              </div>
-                              <span className="text-[9px] text-stone-400 mt-1 leading-tight">
-                                {cat.desc}
-                              </span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    <p className="text-[10px] text-stone-500 leading-normal mt-2 md:mt-0">
-                      Selecting a service configures standard high-precision machinery.
+                    <p className="text-[10px] text-stone-500 leading-normal mt-2">
+                      Our tailors specialize in computerized embroidery, monograms, neat stone setting, and laser cut craft. No measurements or uploads are collected here since we will coordinate the perfect fit and fabric specifications with you directly on WhatsApp.
                     </p>
                   </div>
                 )}
               </div>
 
-              {/* Section 3: Custom Accessories & Embellishments (Flyer Services, Collapsible) */}
-              <div className="space-y-1">
-                <div className="bg-white border border-stone-200 rounded-2xl p-4 shadow-sm">
-                  <button
-                    type="button"
-                    onClick={() => setShowServices(!showServices)}
-                    className="w-full flex items-center justify-between text-left cursor-pointer focus:outline-none min-h-[44px]"
-                  >
-                    <div className="flex items-start gap-3">
-                      <Sparkles className="text-amber-700 shrink-0 mt-0.5" size={18} />
-                      <div>
-                        <h4 className="font-serif text-sm font-bold text-stone-900 leading-tight">
-                          Premium Embellishments & Craft Services <span className="text-xs font-normal text-stone-500">(Optional)</span>
-                        </h4>
-                        <p className="text-[10px] text-stone-500 mt-0.5">
-                          {selectedServices.length > 0
-                            ? `${selectedServices.length} custom service(s) active (+₦${selectedServices.reduce((acc, sId) => acc + (flyerServicesConfig.find(f => f.id === sId)?.price || 0), 0).toLocaleString()})`
-                            : "Add monogramming, fine stoning, precise beading, weaving, laser cuts, etc."}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      {selectedServices.length > 0 && (
-                        <span className="bg-amber-100 text-amber-800 font-semibold text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full">
-                          {selectedServices.length} Active
-                        </span>
-                      )}
-                      {showServices ? <ChevronUp size={18} className="text-stone-400" /> : <ChevronDown size={18} className="text-stone-400" />}
-                    </div>
-                  </button>
-
-                  <AnimatePresence>
-                    {showServices && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="border-t border-stone-100 mt-3 pt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" id="flyer-services-checkbox-grid">
-                          {flyerServicesConfig.map((service) => {
-                            const isSelected = selectedServices.includes(service.id);
-                            return (
-                              <button
-                                key={service.id}
-                                type="button"
-                                onClick={() => toggleService(service.id)}
-                                className={`p-3 rounded-xl border text-left flex items-start gap-2.5 transition cursor-pointer min-h-[44px] ${
-                                  isSelected
-                                    ? "border-amber-600 bg-amber-500/5 text-amber-800 font-semibold shadow-sm"
-                                    : "border-stone-200 bg-stone-50 text-stone-600 hover:border-stone-300 hover:bg-stone-100/50"
-                                }`}
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={isSelected}
-                                  readOnly
-                                  className="accent-amber-600 shrink-0 mt-0.5 rounded cursor-pointer h-4 w-4"
-                                />
-                                <div className="leading-tight">
-                                  <span className="text-xs font-bold block text-stone-900">{service.name}</span>
-                                  <span className="text-[9px] text-stone-500 block leading-tight mt-1">{service.desc}</span>
-                                  <span className="text-[10px] text-amber-800 font-mono font-bold block mt-1">+₦{service.price.toLocaleString()}</span>
-                                </div>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </div>
-
-              {/* Section 4: Measurements Gate (Only show if tailoring involved) */}
-              {orderType !== "fabric_only" && (
-                <div className="space-y-3">
-                  <label className="block text-[11px] font-bold uppercase tracking-widest text-amber-800">
-                    Step 2: Tailoring Measurements Specifications
-                  </label>
-                  <div className="flex flex-wrap gap-1 bg-stone-100 p-1 rounded-xl border border-stone-200 shadow-sm">
-                    <button
-                      type="button"
-                      onClick={() => setMeasurementsType("manual")}
-                      className={`flex-1 py-2 text-xs uppercase tracking-widest font-bold rounded-lg transition cursor-pointer min-h-[40px] ${
-                        measurementsType === "manual"
-                          ? "bg-amber-600 text-white shadow-sm"
-                          : "text-stone-500 hover:text-stone-850"
-                      }`}
-                    >
-                      Manual Setup
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setMeasurementsType("file_upload")}
-                      className={`flex-1 py-2 text-xs uppercase tracking-widest font-bold rounded-lg transition cursor-pointer min-h-[40px] ${
-                        measurementsType === "file_upload"
-                          ? "bg-amber-600 text-white shadow-sm"
-                          : "text-stone-500 hover:text-stone-850"
-                      }`}
-                    >
-                      Upload Sketch
-                    </button>
-                  </div>
-
-                  {/* Manual specification fields */}
-                  {measurementsType === "manual" && (
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white p-4.5 rounded-2xl border border-stone-200 shadow-sm">
-                      <div>
-                        <span className="block text-[10px] font-mono text-stone-500 uppercase tracking-widest mb-1">Neck (in)</span>
-                        <input
-                          type="number"
-                          step="0.1"
-                          placeholder="e.g. 15"
-                          value={manualSpecs.neck || ""}
-                          onChange={(e) => setManualSpecs({...manualSpecs, neck: parseFloat(e.target.value) || undefined})}
-                          className="w-full rounded-lg bg-stone-50 border border-stone-200 text-xs p-2 outline-none text-stone-800 focus:border-amber-600 focus:bg-white transition"
-                        />
-                      </div>
-                      <div>
-                        <span className="block text-[10px] font-mono text-stone-500 uppercase tracking-widest mb-1">Chest (in)</span>
-                        <input
-                          type="number"
-                          step="0.1"
-                          placeholder="e.g. 40"
-                          value={manualSpecs.chest || ""}
-                          onChange={(e) => setManualSpecs({...manualSpecs, chest: parseFloat(e.target.value) || undefined})}
-                          className="w-full rounded-lg bg-stone-50 border border-stone-200 text-xs p-2 outline-none text-stone-800 focus:border-amber-600 focus:bg-white transition"
-                        />
-                      </div>
-                      <div>
-                        <span className="block text-[10px] font-mono text-stone-500 uppercase tracking-widest mb-1">Shoulder (in)</span>
-                        <input
-                          type="number"
-                          step="0.1"
-                          placeholder="e.g. 18"
-                          value={manualSpecs.shoulder || ""}
-                          onChange={(e) => setManualSpecs({...manualSpecs, shoulder: parseFloat(e.target.value) || undefined})}
-                          className="w-full rounded-lg bg-stone-50 border border-stone-200 text-xs p-2 outline-none text-stone-800 focus:border-amber-600 focus:bg-white transition"
-                        />
-                      </div>
-                      <div>
-                        <span className="block text-[10px] font-mono text-stone-500 uppercase tracking-widest mb-1">Length (in)</span>
-                        <input
-                          type="number"
-                          step="0.1"
-                          placeholder="e.g. 56"
-                          value={manualSpecs.gownLength || ""}
-                          onChange={(e) => setManualSpecs({...manualSpecs, gownLength: parseFloat(e.target.value) || undefined})}
-                          className="w-full rounded-lg bg-stone-50 border border-stone-200 text-xs p-2 outline-none text-stone-800 focus:border-amber-600 focus:bg-white transition"
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* File uploads */}
-                  {measurementsType === "file_upload" && (
-                    <div className="bg-white p-5 rounded-2xl border border-stone-200 text-center shadow-sm">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        ref={fileInputRef}
-                        onChange={handleFileChange}
-                        className="hidden"
-                      />
-                      <div
-                        onClick={() => fileInputRef.current?.click()}
-                        className="border-2 border-dashed border-stone-200 hover:border-amber-600 bg-stone-50 rounded-xl p-6 cursor-pointer transition flex flex-col items-center justify-center gap-2"
-                      >
-                        <Upload className="text-stone-400" size={24} />
-                        <span className="text-xs font-semibold text-stone-800">
-                          {uploadedFileName || "Click or Drag design sketch / specs photo"}
-                        </span>
-                        <span className="text-[10px] text-stone-500">Supports JPG, PNG, up to 5MB</span>
-                      </div>
-                    </div>
-                  )}
-
-
-                </div>
-              )}
-
               {/* Section 5: Delivery / Logistics */}
               <div className="space-y-3">
                 <label className="block text-[11px] font-bold uppercase tracking-widest text-amber-800">
-                  Step {orderType === "fabric_only" ? "2" : "3"}: Delivery Logistics
+                  Step 3: Delivery Logistics
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <button
@@ -1045,7 +736,7 @@ export default function OrderSection({
                       placeholder="Provide the complete destination shipping address..."
                       value={deliveryAddress}
                       onChange={(e) => setDeliveryAddress(e.target.value)}
-                      className="w-full rounded-xl bg-white border border-stone-200 text-sm p-3 outline-none text-stone-800 focus:border-amber-600 focus:ring-1 focus:ring-amber-500 shadow-sm"
+                      className="w-full rounded-xl bg-white border border-stone-200 text-sm p-3 outline-none text-stone-800 focus:border-amber-600 focus:ring-1 focus:ring-amber-500 shadow-sm font-medium"
                     />
                   </motion.div>
                 )}
@@ -1061,42 +752,68 @@ export default function OrderSection({
                   placeholder="e.g., Request specific pattern combinations, preferred buttons, collar stitch requirements, or urgency deadlines..."
                   value={specialInstructions}
                   onChange={(e) => setSpecialInstructions(e.target.value)}
-                  className="w-full rounded-xl bg-white border border-stone-200 text-xs p-3 outline-none text-stone-800 focus:border-amber-600 focus:ring-1 focus:ring-amber-500 resize-none shadow-sm"
+                  className="w-full rounded-xl bg-white border border-stone-200 text-xs p-3 outline-none text-stone-800 focus:border-amber-600 focus:ring-1 focus:ring-amber-500 resize-none shadow-sm font-medium"
                 />
               </div>
 
               {/* Checkout Cost Summary Block */}
-              <div className="border-t border-stone-200 pt-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-stone-100/60 p-4.5 rounded-2xl border border-stone-200 shadow-sm">
-                <div>
-                  <p className="text-[10px] uppercase font-mono text-stone-500 tracking-wider">Inquiry Cost Estimate</p>
-                  <p className="font-serif text-2xl font-bold text-amber-800 mt-0.5">
-                    ₦{getCalculatedPrice().toLocaleString()}
-                  </p>
-                  <p className="text-[10px] text-stone-500 font-mono mt-0.5">
-                    {orderType !== "fabric_only" && customStyleId ? (
-                      <span>Includes chosen service (<strong>{fittingCategory === "female" ? "Standard Batch" : fittingCategory === "male" ? "Express Urgent" : fittingCategory === "elder" ? "Bulk Contract" : "Small Craft"} setup</strong>), supplies, precision templates & logistics</span>
-                    ) : orderType === "fabric_only" && selectedFabrics.length > 1 ? (
-                      <span>Includes <strong>{selectedFabrics.length} selected accessory supplies</strong> & logistics</span>
-                    ) : (
-                      "Includes selected accessories supplies & premium logistics"
-                    )}
-                  </p>
-                </div>
+              {orderType !== "custom_tailoring" ? (
+                <div className="border-t border-stone-200 pt-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-stone-100/60 p-4.5 rounded-2xl border border-stone-200 shadow-sm">
+                  <div>
+                    <p className="text-[10px] uppercase font-mono text-stone-500 tracking-wider">Inquiry Cost Estimate</p>
+                    <p className="font-serif text-2xl font-bold text-amber-800 mt-0.5">
+                      ₦{getCalculatedPrice().toLocaleString()}
+                    </p>
+                    <p className="text-[10px] text-stone-500 font-mono mt-0.5">
+                      {selectedFabrics.length > 1 ? (
+                        <span>Includes <strong>{selectedFabrics.length} selected accessory supplies</strong> & logistics</span>
+                      ) : (
+                        "Includes selected accessories supplies & premium logistics"
+                      )}
+                    </p>
+                  </div>
 
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold px-8 py-4 text-xs uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-1.5 shadow-lg shadow-amber-600/10 disabled:opacity-50 cursor-pointer min-h-[44px]"
-                  id="order-form-submit-btn"
-                >
-                  {isLoading ? (
-                    <Loader2 className="animate-spin text-white" size={16} />
-                  ) : (
-                    <CalendarCheck size={16} />
-                  )}
-                  Submit Inquiry Specs
-                </button>
-              </div>
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold px-8 py-4 text-xs uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-1.5 shadow-lg shadow-amber-600/10 disabled:opacity-50 cursor-pointer min-h-[44px]"
+                    id="order-form-submit-btn"
+                  >
+                    {isLoading ? (
+                      <Loader2 className="animate-spin text-white" size={16} />
+                    ) : (
+                      <CalendarCheck size={16} />
+                    )}
+                    Submit Inquiry Specs
+                  </button>
+                </div>
+              ) : (
+                <div className="border-t border-stone-200 pt-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-stone-100/60 p-4.5 rounded-2xl border border-stone-200 shadow-sm">
+                  <div>
+                    <p className="text-[10px] uppercase font-mono text-stone-500 tracking-wider">Custom Design Recreation</p>
+                    <p className="font-serif text-base font-bold text-amber-800 mt-1">
+                      Discuss Price & Timeline on WhatsApp
+                    </p>
+                    <p className="text-[10px] text-stone-500 font-mono mt-0.5">
+                      No upfront charges. Share your fabric preferences on WhatsApp and get a quote.
+                    </p>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-8 py-4 text-xs uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/10 disabled:opacity-50 cursor-pointer min-h-[44px]"
+                    id="order-form-submit-btn"
+                  >
+                    {isLoading ? (
+                      <Loader2 className="animate-spin text-white" size={16} />
+                    ) : (
+                      <CalendarCheck size={16} />
+                    )}
+                    Discuss on WhatsApp
+                  </button>
+                </div>
+              )}
             </form>
           )}
         </AnimatePresence>
