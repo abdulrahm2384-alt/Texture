@@ -24,20 +24,35 @@ import {
 import Modal from "./Modal";
 
 // Industrial machinery showcase image paths
-const monogramMachineImg = "/src/assets/images/monogram_machine_1784385472639.jpg";
-const laserCutMachineImg = "/src/assets/images/laser_cut_machine_1784385486693.jpg";
-const clotheBeadingMachineImg = "/src/assets/images/clothe_beading_machine_1784385501880.jpg";
-const stoningMachineImg = "/src/assets/images/stoning_machine_1784385517517.jpg";
-const cncDesktopRouterImg = "/src/assets/images/cnc_desktop_router_1784385532391.jpg";
+const defaultMonogramMachineImg = "/src/assets/images/monogram_machine_1784385472639.jpg";
+const defaultLaserCutMachineImg = "/src/assets/images/laser_cut_machine_1784385486693.jpg";
+const defaultClotheBeadingMachineImg = "/src/assets/images/clothe_beading_machine_1784385501880.jpg";
+const defaultStoningMachineImg = "/src/assets/images/stoning_machine_1784385517517.jpg";
+const defaultCncDesktopRouterImg = "/src/assets/images/cnc_desktop_router_1784385532391.jpg";
 
 interface AboutProps {
   isOpen: boolean;
   onClose: () => void;
   onOpenGallery: () => void;
   onOpenOrder: () => void;
+  monogramMachineImg?: string;
+  laserCutMachineImg?: string;
+  clotheBeadingMachineImg?: string;
+  stoningMachineImg?: string;
+  cncDesktopRouterImg?: string;
 }
 
-export default function About({ isOpen, onClose, onOpenGallery, onOpenOrder }: AboutProps) {
+export default function About({ 
+  isOpen, 
+  onClose, 
+  onOpenGallery, 
+  onOpenOrder,
+  monogramMachineImg,
+  laserCutMachineImg,
+  clotheBeadingMachineImg,
+  stoningMachineImg,
+  cncDesktopRouterImg
+}: AboutProps) {
   const flyerServices = [
     {
       icon: <Award className="text-amber-500" size={20} />,
@@ -108,31 +123,31 @@ export default function About({ isOpen, onClose, onOpenGallery, onOpenOrder }: A
     {
       name: "Monogram Machine",
       description: "Multi-needle computerized industrial monogram system for high-density embroidery, custom branding, and logo patches.",
-      image: monogramMachineImg,
+      image: monogramMachineImg || defaultMonogramMachineImg,
       spec: "12-Needle Auto-Color Change"
     },
     {
       name: "Laser Cut Machine",
       description: "High-power CO2 laser cutters that slice through fabrics with incredible detail for intricate shapes and custom lace borders.",
-      image: laserCutMachineImg,
+      image: laserCutMachineImg || defaultLaserCutMachineImg,
       spec: "0.1mm Tolerances"
     },
     {
       name: "Clothe Beading Machine",
       description: "Automated touch-screen bead and pearl setting machinery that rivets premium embellishments onto garments with secure metal backings.",
-      image: clotheBeadingMachineImg,
+      image: clotheBeadingMachineImg || defaultClotheBeadingMachineImg,
       spec: "Dual-Feeder Bead Riveter"
     },
     {
       name: "Stoning Machine",
       description: "Professional hot-fix rhinestone setter utilizing automatic templates and heat presses to apply sparkling crystal patterns onto luxury apparel.",
-      image: stoningMachineImg,
+      image: stoningMachineImg || defaultStoningMachineImg,
       spec: "Ultrasonic Bonding System"
     },
     {
       name: "CNC Desktop Router Machine",
       description: "Heavy-duty computerized rotary carving router used to shape custom rigid garment templates, design stencils, and boutique accessory molds.",
-      image: cncDesktopRouterImg,
+      image: cncDesktopRouterImg || defaultCncDesktopRouterImg,
       spec: "3D Engraving Precision"
     }
   ];

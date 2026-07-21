@@ -1044,6 +1044,11 @@ export interface ContactInfo {
   wingStylesBgUrl?: string;
   wingOrderBgUrl?: string;
   wingContactBgUrl?: string;
+  monogramMachineImg?: string;
+  laserCutMachineImg?: string;
+  clotheBeadingMachineImg?: string;
+  stoningMachineImg?: string;
+  cncDesktopRouterImg?: string;
   servicePrices?: {
     monogramming?: number;
     beading?: number;
@@ -1075,6 +1080,11 @@ export const DEFAULT_CONTACT_INFO: ContactInfo = {
   wingStylesBgUrl: "https://images.unsplash.com/photo-1618090584126-129cd1f3fbaa?auto=format&fit=crop&q=80&w=600",
   wingOrderBgUrl: "https://images.unsplash.com/photo-1598257006458-087169a1f08d?auto=format&fit=crop&q=80&w=600",
   wingContactBgUrl: "https://images.unsplash.com/photo-1423666639041-f56000c27a9a?auto=format&fit=crop&q=80&w=600",
+  monogramMachineImg: "/src/assets/images/monogram_machine_1784385472639.jpg",
+  laserCutMachineImg: "/src/assets/images/laser_cut_machine_1784385486693.jpg",
+  clotheBeadingMachineImg: "/src/assets/images/clothe_beading_machine_1784385501880.jpg",
+  stoningMachineImg: "/src/assets/images/stoning_machine_1784385517517.jpg",
+  cncDesktopRouterImg: "/src/assets/images/cnc_desktop_router_1784385532391.jpg",
   servicePrices: {
     monogramming: 15000,
     beading: 45000,

@@ -176,6 +176,11 @@ export default function App() {
         onClose={() => setAboutOpen(false)}
         onOpenGallery={() => setGalleryOpen(true)}
         onOpenOrder={() => setOrderOpen(true)}
+        monogramMachineImg={contactInfo?.monogramMachineImg}
+        laserCutMachineImg={contactInfo?.laserCutMachineImg}
+        clotheBeadingMachineImg={contactInfo?.clotheBeadingMachineImg}
+        stoningMachineImg={contactInfo?.stoningMachineImg}
+        cncDesktopRouterImg={contactInfo?.cncDesktopRouterImg}
       />
 
       <Gallery

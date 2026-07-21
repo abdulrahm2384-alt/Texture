@@ -27,7 +27,9 @@ import {
   Scissors,
   Award,
   Edit2,
-  Check
+  Check,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { ContactInfo } from "../types";
@@ -102,6 +104,11 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
   });
   const [loadingContact, setLoadingContact] = useState(false);
   const [savingContact, setSavingContact] = useState(false);
+
+  // Collapsible settings state for different image categories
+  const [imageSectionBrandingOpen, setImageSectionBrandingOpen] = useState(false);
+  const [imageSectionWingsOpen, setImageSectionWingsOpen] = useState(false);
+  const [imageSectionMachineryOpen, setImageSectionMachineryOpen] = useState(false);
 
   // Helper to check if testing/bypass mode is active
   const isTestingMode = () => {
@@ -2148,500 +2155,879 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
                       />
                     </div>
 
-                    {/* Branding Assets (Logo & Background) */}
-                    <div className="space-y-3 bg-stone-50 p-4 border border-stone-200 rounded-2xl">
-                      <h4 className="font-serif text-[10px] font-bold uppercase tracking-wider text-stone-700">Atelier Branding Assets</h4>
-                      <p className="text-[10px] text-stone-500 font-sans leading-normal">
-                        Configure custom logo and homepage background images. Leave empty or click reset to preserve the classic defaults.
-                      </p>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Logo URL / Base64 upload */}
-                        <div className="space-y-2 bg-white p-3.5 rounded-xl border border-stone-150">
-                          <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Custom Logo Asset</label>
-                          <div className="flex gap-2">
-                            <input
-                              type="text"
-                              value={contactInfo.logoUrl || ""}
-                              onChange={(e) => setContactInfo({ ...contactInfo, logoUrl: e.target.value })}
-                              placeholder="Image URL or Base64 data..."
-                              className="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-3 py-1.5 focus:outline-none focus:border-amber-600/50 text-stone-850 text-[11px]"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setContactInfo({
-                                  ...contactInfo,
-                                  logoUrl: "/src/assets/images/oluwashola_logo_1784138680903.jpg"
-                                });
-                                triggerToast("Logo reset to default value!");
-                              }}
-                              className="px-3 py-1.5 bg-stone-200 hover:bg-stone-300 rounded-xl text-[10px] font-semibold text-stone-700 transition shrink-0"
-                            >
-                              Reset
-                            </button>
+                    {/* Collapsible Atelier Branding Assets Section */}
+                    <div className="bg-stone-50 border border-stone-200 rounded-2xl overflow-hidden transition duration-350 shadow-sm">
+                      <button
+                        type="button"
+                        onClick={() => setImageSectionBrandingOpen(!imageSectionBrandingOpen)}
+                        className="w-full flex items-center justify-between p-4 bg-stone-50 hover:bg-stone-100/70 transition text-left focus:outline-none select-none"
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-serif text-[11px] font-bold uppercase tracking-wider text-stone-700">1. Atelier Branding Assets</h4>
+                            <span className="text-[8px] font-mono font-bold text-amber-800 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+                              2 Assets
+                            </span>
                           </div>
-                          
-                          <div className="border border-dashed border-stone-200 rounded-xl p-3 text-center bg-stone-50/50 hover:bg-stone-50 transition">
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={async (e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  try {
-                                    const base = await convertFileToBase64(file);
-                                    setContactInfo({ ...contactInfo, logoUrl: base });
-                                    triggerToast("New logo loaded!");
-                                  } catch (err) {
-                                    triggerToast("Error uploading image", "info");
-                                  }
-                                }
-                              }}
-                              className="hidden"
-                              id="branding-logo-upload"
-                            />
-                            <label htmlFor="branding-logo-upload" className="cursor-pointer flex flex-col items-center gap-1">
-                              <Upload size={14} className="text-stone-400" />
-                              <span className="text-[9px] text-stone-500 font-medium">Upload Custom Logo File</span>
-                            </label>
-                            {contactInfo.logoUrl && (
-                              <div className="mt-2 flex items-center justify-center gap-2 bg-white p-1.5 rounded-lg border border-stone-100 max-w-max mx-auto">
-                                <img src={contactInfo.logoUrl} className="h-8 w-8 rounded-full object-cover" alt="Logo preview" />
-                                <span className="text-[8px] font-mono text-stone-400 truncate max-w-[120px]">
-                                  {contactInfo.logoUrl.startsWith("data:") ? "Base64 Image" : "Custom URL"}
-                                </span>
+                          <p className="text-[10px] text-stone-500 font-sans leading-relaxed">
+                            Configure custom brand logo and homepage background/backdrop banner.
+                          </p>
+                        </div>
+                        <div className="h-7 w-7 rounded-full bg-stone-200/50 hover:bg-stone-200 flex items-center justify-center transition shrink-0">
+                          {imageSectionBrandingOpen ? (
+                            <ChevronUp size={14} className="text-stone-650" />
+                          ) : (
+                            <ChevronDown size={14} className="text-stone-650" />
+                          )}
+                        </div>
+                      </button>
+
+                      {imageSectionBrandingOpen && (
+                        <div className="p-4 pt-0 border-t border-stone-200/50 bg-stone-50/30 space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            {/* Logo URL / Base64 upload */}
+                            <div className="space-y-2 bg-white p-3.5 rounded-xl border border-stone-150">
+                              <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Custom Logo Asset</label>
+                              <div className="flex gap-2">
+                                <input
+                                  type="text"
+                                  value={contactInfo.logoUrl || ""}
+                                  onChange={(e) => setContactInfo({ ...contactInfo, logoUrl: e.target.value })}
+                                  placeholder="Image URL or Base64 data..."
+                                  className="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-3 py-1.5 focus:outline-none focus:border-amber-600/50 text-stone-850 text-[11px]"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setContactInfo({
+                                      ...contactInfo,
+                                      logoUrl: "/src/assets/images/oluwashola_logo_1784138680903.jpg"
+                                    });
+                                    triggerToast("Logo reset to default value!");
+                                  }}
+                                  className="px-3 py-1.5 bg-stone-200 hover:bg-stone-300 rounded-xl text-[10px] font-semibold text-stone-700 transition shrink-0"
+                                >
+                                  Reset
+                                </button>
                               </div>
-                            )}
+                              
+                              <div className="border border-dashed border-stone-200 rounded-xl p-3 text-center bg-stone-50/50 hover:bg-stone-50 transition">
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      try {
+                                        const base = await convertFileToBase64(file);
+                                        setContactInfo({ ...contactInfo, logoUrl: base });
+                                        triggerToast("New logo loaded!");
+                                      } catch (err) {
+                                        triggerToast("Error uploading image", "info");
+                                      }
+                                    }
+                                  }}
+                                  className="hidden"
+                                  id="branding-logo-upload"
+                                />
+                                <label htmlFor="branding-logo-upload" className="cursor-pointer flex flex-col items-center gap-1">
+                                  <Upload size={14} className="text-stone-400" />
+                                  <span className="text-[9px] text-stone-500 font-medium">Upload Custom Logo File</span>
+                                </label>
+                                {contactInfo.logoUrl && (
+                                  <div className="mt-2 flex items-center justify-center gap-2 bg-white p-1.5 rounded-lg border border-stone-100 max-w-max mx-auto">
+                                    <img src={contactInfo.logoUrl} className="h-8 w-8 rounded-full object-cover" alt="Logo preview" />
+                                    <span className="text-[8px] font-mono text-stone-400 truncate max-w-[120px]">
+                                      {contactInfo.logoUrl.startsWith("data:") ? "Base64 Image" : "Custom URL"}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Hero Bg URL / Base64 upload */}
+                            <div className="space-y-2 bg-white p-3.5 rounded-xl border border-stone-150">
+                              <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Custom Homepage Backdrop</label>
+                              <div className="flex gap-2">
+                                <input
+                                  type="text"
+                                  value={contactInfo.heroBgUrl || ""}
+                                  onChange={(e) => setContactInfo({ ...contactInfo, heroBgUrl: e.target.value })}
+                                  placeholder="Image URL or Base64 data..."
+                                  className="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-3 py-1.5 focus:outline-none focus:border-amber-600/50 text-stone-850 text-[11px]"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setContactInfo({
+                                      ...contactInfo,
+                                      heroBgUrl: "/src/assets/images/textile_hero_1784138693639.jpg"
+                                    });
+                                    triggerToast("Backdrop reset to default value!");
+                                  }}
+                                  className="px-3 py-1.5 bg-stone-200 hover:bg-stone-300 rounded-xl text-[10px] font-semibold text-stone-700 transition shrink-0"
+                                >
+                                  Reset
+                                </button>
+                              </div>
+                              
+                              <div className="border border-dashed border-stone-200 rounded-xl p-3 text-center bg-stone-50/50 hover:bg-stone-50 transition">
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      try {
+                                        const base = await convertFileToBase64(file);
+                                        setContactInfo({ ...contactInfo, heroBgUrl: base });
+                                        triggerToast("New backdrop loaded!");
+                                      } catch (err) {
+                                        triggerToast("Error uploading image", "info");
+                                      }
+                                    }
+                                  }}
+                                  className="hidden"
+                                  id="branding-bg-upload"
+                                />
+                                <label htmlFor="branding-bg-upload" className="cursor-pointer flex flex-col items-center gap-1">
+                                  <Upload size={14} className="text-stone-400" />
+                                  <span className="text-[9px] text-stone-500 font-medium">Upload Custom Backdrop File</span>
+                                </label>
+                                {contactInfo.heroBgUrl && (
+                                  <div className="mt-2 flex items-center justify-center gap-2 bg-white p-1.5 rounded-lg border border-stone-100 max-w-max mx-auto">
+                                    <img src={contactInfo.heroBgUrl} className="h-8 w-14 rounded object-cover" alt="Backdrop preview" />
+                                    <span className="text-[8px] font-mono text-stone-400 truncate max-w-[120px]">
+                                      {contactInfo.heroBgUrl.startsWith("data:") ? "Base64 Image" : "Custom URL"}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
                           </div>
                         </div>
-
-                        {/* Hero Bg URL / Base64 upload */}
-                        <div className="space-y-2 bg-white p-3.5 rounded-xl border border-stone-150">
-                          <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Custom Homepage Backdrop</label>
-                          <div className="flex gap-2">
-                            <input
-                              type="text"
-                              value={contactInfo.heroBgUrl || ""}
-                              onChange={(e) => setContactInfo({ ...contactInfo, heroBgUrl: e.target.value })}
-                              placeholder="Image URL or Base64 data..."
-                              className="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-3 py-1.5 focus:outline-none focus:border-amber-600/50 text-stone-850 text-[11px]"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setContactInfo({
-                                  ...contactInfo,
-                                  heroBgUrl: "/src/assets/images/textile_hero_1784138693639.jpg"
-                                });
-                                triggerToast("Backdrop reset to default value!");
-                              }}
-                              className="px-3 py-1.5 bg-stone-200 hover:bg-stone-300 rounded-xl text-[10px] font-semibold text-stone-700 transition shrink-0"
-                            >
-                              Reset
-                            </button>
-                          </div>
-                          
-                          <div className="border border-dashed border-stone-200 rounded-xl p-3 text-center bg-stone-50/50 hover:bg-stone-50 transition">
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={async (e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  try {
-                                    const base = await convertFileToBase64(file);
-                                    setContactInfo({ ...contactInfo, heroBgUrl: base });
-                                    triggerToast("New backdrop loaded!");
-                                  } catch (err) {
-                                    triggerToast("Error uploading image", "info");
-                                  }
-                                }
-                              }}
-                              className="hidden"
-                              id="branding-bg-upload"
-                            />
-                            <label htmlFor="branding-bg-upload" className="cursor-pointer flex flex-col items-center gap-1">
-                              <Upload size={14} className="text-stone-400" />
-                              <span className="text-[9px] text-stone-500 font-medium">Upload Custom Backdrop File</span>
-                            </label>
-                            {contactInfo.heroBgUrl && (
-                              <div className="mt-2 flex items-center justify-center gap-2 bg-white p-1.5 rounded-lg border border-stone-100 max-w-max mx-auto">
-                                <img src={contactInfo.heroBgUrl} className="h-8 w-14 rounded object-cover" alt="Backdrop preview" />
-                                <span className="text-[8px] font-mono text-stone-400 truncate max-w-[120px]">
-                                  {contactInfo.heroBgUrl.startsWith("data:") ? "Base64 Image" : "Custom URL"}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
+                      )}
                     </div>
 
-                    {/* Showroom Wing Cover Images Configuration */}
-                    <div className="space-y-3 bg-stone-50 p-4 border border-stone-200 rounded-2xl">
-                      <h4 className="font-serif text-[10px] font-bold uppercase tracking-wider text-stone-700">Showroom Wing Cover Images</h4>
-                      <p className="text-[10px] text-stone-500 font-sans leading-normal">
-                        Configure custom header cover images for each of the showroom landing wings. Click Reset to revert back to default live images anytime.
-                      </p>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        
-                        {/* 1. Our Legacy Cover */}
-                        <div className="space-y-2 bg-white p-3.5 rounded-xl border border-stone-150">
-                          <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">1. Our Legacy Cover</label>
-                          <div className="flex gap-2">
-                            <input
-                              type="text"
-                              value={contactInfo.wingAboutBgUrl || ""}
-                              onChange={(e) => setContactInfo({ ...contactInfo, wingAboutBgUrl: e.target.value })}
-                              placeholder="Image URL or Base64 data..."
-                              className="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-2 py-1.5 focus:outline-none focus:border-amber-600/50 text-stone-850 text-[10px]"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setContactInfo({
-                                  ...contactInfo,
-                                  wingAboutBgUrl: "https://images.unsplash.com/photo-1593032465175-481ac7f401a0?auto=format&fit=crop&q=80&w=600"
-                                });
-                                triggerToast("Our Legacy image reset!");
-                              }}
-                              className="px-2.5 py-1.5 bg-stone-200 hover:bg-stone-300 rounded-xl text-[9px] font-semibold text-stone-700 transition shrink-0"
-                            >
-                              Reset
-                            </button>
+                    {/* Collapsible Showroom Wing Cover Images Section */}
+                    <div className="bg-stone-50 border border-stone-200 rounded-2xl overflow-hidden transition duration-350 shadow-sm">
+                      <button
+                        type="button"
+                        onClick={() => setImageSectionWingsOpen(!imageSectionWingsOpen)}
+                        className="w-full flex items-center justify-between p-4 bg-stone-50 hover:bg-stone-100/70 transition text-left focus:outline-none select-none"
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-serif text-[11px] font-bold uppercase tracking-wider text-stone-700">2. Showroom Wing Cover Images</h4>
+                            <span className="text-[8px] font-mono font-bold text-amber-800 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+                              6 Assets
+                            </span>
                           </div>
-                          <div className="border border-dashed border-stone-200 rounded-xl p-2.5 text-center bg-stone-50/50 hover:bg-stone-50 transition">
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={async (e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  try {
-                                    const base = await convertFileToBase64(file);
-                                    setContactInfo({ ...contactInfo, wingAboutBgUrl: base });
-                                    triggerToast("Our Legacy image loaded!");
-                                  } catch (err) {
-                                    triggerToast("Error uploading image", "info");
-                                  }
-                                }
-                              }}
-                              className="hidden"
-                              id="wing-about-upload"
-                            />
-                            <label htmlFor="wing-about-upload" className="cursor-pointer flex flex-col items-center gap-1">
-                              <Upload size={12} className="text-stone-400" />
-                              <span className="text-[8px] text-stone-500 font-medium">Upload File</span>
-                            </label>
-                            {contactInfo.wingAboutBgUrl && (
-                              <div className="mt-2 flex items-center justify-center gap-2 bg-white p-1 rounded border border-stone-100 max-w-max mx-auto">
-                                <img src={contactInfo.wingAboutBgUrl} className="h-6 w-10 rounded object-cover" alt="Legacy Preview" />
-                                <span className="text-[7px] font-mono text-stone-400 truncate max-w-[80px]">
-                                  {contactInfo.wingAboutBgUrl.startsWith("data:") ? "Base64" : "Custom URL"}
-                                </span>
+                          <p className="text-[10px] text-stone-500 font-sans leading-relaxed">
+                            Configure custom header cover images for each of the showroom landing wings.
+                          </p>
+                        </div>
+                        <div className="h-7 w-7 rounded-full bg-stone-200/50 hover:bg-stone-200 flex items-center justify-center transition shrink-0">
+                          {imageSectionWingsOpen ? (
+                            <ChevronUp size={14} className="text-stone-650" />
+                          ) : (
+                            <ChevronDown size={14} className="text-stone-650" />
+                          )}
+                        </div>
+                      </button>
+
+                      {imageSectionWingsOpen && (
+                        <div className="p-4 pt-0 border-t border-stone-200/50 bg-stone-50/30 space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                            
+                            {/* 1. Our Legacy Cover */}
+                            <div className="space-y-2 bg-white p-3.5 rounded-xl border border-stone-150">
+                              <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">1. Our Legacy Cover</label>
+                              <div className="flex gap-2">
+                                <input
+                                  type="text"
+                                  value={contactInfo.wingAboutBgUrl || ""}
+                                  onChange={(e) => setContactInfo({ ...contactInfo, wingAboutBgUrl: e.target.value })}
+                                  placeholder="Image URL or Base64 data..."
+                                  className="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-2 py-1.5 focus:outline-none focus:border-amber-600/50 text-stone-850 text-[10px]"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setContactInfo({
+                                      ...contactInfo,
+                                      wingAboutBgUrl: "https://images.unsplash.com/photo-1593032465175-481ac7f401a0?auto=format&fit=crop&q=80&w=600"
+                                    });
+                                    triggerToast("Our Legacy image reset!");
+                                  }}
+                                  className="px-2.5 py-1.5 bg-stone-200 hover:bg-stone-300 rounded-xl text-[9px] font-semibold text-stone-700 transition shrink-0"
+                                >
+                                  Reset
+                                </button>
                               </div>
-                            )}
+                              <div className="border border-dashed border-stone-200 rounded-xl p-2.5 text-center bg-stone-50/50 hover:bg-stone-50 transition">
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      try {
+                                        const base = await convertFileToBase64(file);
+                                        setContactInfo({ ...contactInfo, wingAboutBgUrl: base });
+                                        triggerToast("Our Legacy image loaded!");
+                                      } catch (err) {
+                                        triggerToast("Error uploading image", "info");
+                                      }
+                                    }
+                                  }}
+                                  className="hidden"
+                                  id="wing-about-upload"
+                                />
+                                <label htmlFor="wing-about-upload" className="cursor-pointer flex flex-col items-center gap-1">
+                                  <Upload size={12} className="text-stone-400" />
+                                  <span className="text-[8px] text-stone-500 font-medium">Upload File</span>
+                                </label>
+                                {contactInfo.wingAboutBgUrl && (
+                                  <div className="mt-2 flex items-center justify-center gap-2 bg-white p-1 rounded border border-stone-100 max-w-max mx-auto">
+                                    <img src={contactInfo.wingAboutBgUrl} className="h-6 w-10 rounded object-cover" alt="Legacy Preview" />
+                                    <span className="text-[7px] font-mono text-stone-400 truncate max-w-[80px]">
+                                      {contactInfo.wingAboutBgUrl.startsWith("data:") ? "Base64" : "Custom URL"}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* 2. Bespoke Showcase Cover */}
+                            <div className="space-y-2 bg-white p-3.5 rounded-xl border border-stone-150">
+                              <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">2. Bespoke Showcase Cover</label>
+                              <div className="flex gap-2">
+                                <input
+                                  type="text"
+                                  value={contactInfo.wingGalleryBgUrl || ""}
+                                  onChange={(e) => setContactInfo({ ...contactInfo, wingGalleryBgUrl: e.target.value })}
+                                  placeholder="Image URL or Base64 data..."
+                                  className="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-2 py-1.5 focus:outline-none focus:border-amber-600/50 text-stone-850 text-[10px]"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setContactInfo({
+                                      ...contactInfo,
+                                      wingGalleryBgUrl: "https://images.unsplash.com/photo-1617137984095-74e4e5e3613f?auto=format&fit=crop&q=80&w=600"
+                                    });
+                                    triggerToast("Bespoke Showcase image reset!");
+                                  }}
+                                  className="px-2.5 py-1.5 bg-stone-200 hover:bg-stone-300 rounded-xl text-[9px] font-semibold text-stone-700 transition shrink-0"
+                                >
+                                  Reset
+                                </button>
+                              </div>
+                              <div className="border border-dashed border-stone-200 rounded-xl p-2.5 text-center bg-stone-50/50 hover:bg-stone-50 transition">
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      try {
+                                        const base = await convertFileToBase64(file);
+                                        setContactInfo({ ...contactInfo, wingGalleryBgUrl: base });
+                                        triggerToast("Showcase image loaded!");
+                                      } catch (err) {
+                                        triggerToast("Error uploading image", "info");
+                                      }
+                                    }
+                                  }}
+                                  className="hidden"
+                                  id="wing-gallery-upload"
+                                />
+                                <label htmlFor="wing-gallery-upload" className="cursor-pointer flex flex-col items-center gap-1">
+                                  <Upload size={12} className="text-stone-400" />
+                                  <span className="text-[8px] text-stone-500 font-medium">Upload File</span>
+                                </label>
+                                {contactInfo.wingGalleryBgUrl && (
+                                  <div className="mt-2 flex items-center justify-center gap-2 bg-white p-1 rounded border border-stone-100 max-w-max mx-auto">
+                                    <img src={contactInfo.wingGalleryBgUrl} className="h-6 w-10 rounded object-cover" alt="Gallery Preview" />
+                                    <span className="text-[7px] font-mono text-stone-400 truncate max-w-[80px]">
+                                      {contactInfo.wingGalleryBgUrl.startsWith("data:") ? "Base64" : "Custom URL"}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* 3. Luxury Fabrics Cover */}
+                            <div className="space-y-2 bg-white p-3.5 rounded-xl border border-stone-150">
+                              <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">3. Luxury Fabrics Cover</label>
+                              <div className="flex gap-2">
+                                <input
+                                  type="text"
+                                  value={contactInfo.wingFabricsBgUrl || ""}
+                                  onChange={(e) => setContactInfo({ ...contactInfo, wingFabricsBgUrl: e.target.value })}
+                                  placeholder="Image URL or Base64 data..."
+                                  className="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-2 py-1.5 focus:outline-none focus:border-amber-600/50 text-stone-850 text-[10px]"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setContactInfo({
+                                      ...contactInfo,
+                                      wingFabricsBgUrl: "https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17?auto=format&fit=crop&q=80&w=600"
+                                    });
+                                    triggerToast("Luxury Fabrics image reset!");
+                                  }}
+                                  className="px-2.5 py-1.5 bg-stone-200 hover:bg-stone-300 rounded-xl text-[9px] font-semibold text-stone-700 transition shrink-0"
+                                >
+                                  Reset
+                                </button>
+                              </div>
+                              <div className="border border-dashed border-stone-200 rounded-xl p-2.5 text-center bg-stone-50/50 hover:bg-stone-50 transition">
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      try {
+                                        const base = await convertFileToBase64(file);
+                                        setContactInfo({ ...contactInfo, wingFabricsBgUrl: base });
+                                        triggerToast("Fabrics cover loaded!");
+                                      } catch (err) {
+                                        triggerToast("Error uploading image", "info");
+                                      }
+                                    }
+                                  }}
+                                  className="hidden"
+                                  id="wing-fabrics-upload"
+                                />
+                                <label htmlFor="wing-fabrics-upload" className="cursor-pointer flex flex-col items-center gap-1">
+                                  <Upload size={12} className="text-stone-400" />
+                                  <span className="text-[8px] text-stone-500 font-medium">Upload File</span>
+                                </label>
+                                {contactInfo.wingFabricsBgUrl && (
+                                  <div className="mt-2 flex items-center justify-center gap-2 bg-white p-1 rounded border border-stone-100 max-w-max mx-auto">
+                                    <img src={contactInfo.wingFabricsBgUrl} className="h-6 w-10 rounded object-cover" alt="Fabrics Preview" />
+                                    <span className="text-[7px] font-mono text-stone-400 truncate max-w-[80px]">
+                                      {contactInfo.wingFabricsBgUrl.startsWith("data:") ? "Base64" : "Custom URL"}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* 4. Style Inspirations Cover */}
+                            <div className="space-y-2 bg-white p-3.5 rounded-xl border border-stone-150">
+                              <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">4. Style Inspirations Cover</label>
+                              <div className="flex gap-2">
+                                <input
+                                  type="text"
+                                  value={contactInfo.wingStylesBgUrl || ""}
+                                  onChange={(e) => setContactInfo({ ...contactInfo, wingStylesBgUrl: e.target.value })}
+                                  placeholder="Image URL or Base64 data..."
+                                  className="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-2 py-1.5 focus:outline-none focus:border-amber-600/50 text-stone-850 text-[10px]"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setContactInfo({
+                                      ...contactInfo,
+                                      wingStylesBgUrl: "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&q=80&w=600"
+                                    });
+                                    triggerToast("Style Inspirations image reset!");
+                                  }}
+                                  className="px-2.5 py-1.5 bg-stone-200 hover:bg-stone-300 rounded-xl text-[9px] font-semibold text-stone-700 transition shrink-0"
+                                >
+                                  Reset
+                                </button>
+                              </div>
+                              <div className="border border-dashed border-stone-200 rounded-xl p-2.5 text-center bg-stone-50/50 hover:bg-stone-50 transition">
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      try {
+                                        const base = await convertFileToBase64(file);
+                                        setContactInfo({ ...contactInfo, wingStylesBgUrl: base });
+                                        triggerToast("Styles cover loaded!");
+                                      } catch (err) {
+                                        triggerToast("Error uploading image", "info");
+                                      }
+                                    }
+                                  }}
+                                  className="hidden"
+                                  id="wing-styles-upload"
+                                />
+                                <label htmlFor="wing-styles-upload" className="cursor-pointer flex flex-col items-center gap-1">
+                                  <Upload size={12} className="text-stone-400" />
+                                  <span className="text-[8px] text-stone-500 font-medium">Upload File</span>
+                                </label>
+                                {contactInfo.wingStylesBgUrl && (
+                                  <div className="mt-2 flex items-center justify-center gap-2 bg-white p-1 rounded border border-stone-100 max-w-max mx-auto">
+                                    <img src={contactInfo.wingStylesBgUrl} className="h-6 w-10 rounded object-cover" alt="Styles Preview" />
+                                    <span className="text-[7px] font-mono text-stone-400 truncate max-w-[80px]">
+                                      {contactInfo.wingStylesBgUrl.startsWith("data:") ? "Base64" : "Custom URL"}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* 5. Book Tailoring Fit Cover */}
+                            <div className="space-y-2 bg-white p-3.5 rounded-xl border border-stone-150">
+                              <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">5. Book Tailoring Cover</label>
+                              <div className="flex gap-2">
+                                <input
+                                  type="text"
+                                  value={contactInfo.wingOrderBgUrl || ""}
+                                  onChange={(e) => setContactInfo({ ...contactInfo, wingOrderBgUrl: e.target.value })}
+                                  placeholder="Image URL or Base64 data..."
+                                  className="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-2 py-1.5 focus:outline-none focus:border-amber-600/50 text-stone-850 text-[10px]"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setContactInfo({
+                                      ...contactInfo,
+                                      wingOrderBgUrl: "https://images.unsplash.com/photo-1598257006458-087169a1f08d?auto=format&fit=crop&q=80&w=600"
+                                    });
+                                    triggerToast("Book Tailoring image reset!");
+                                  }}
+                                  className="px-2.5 py-1.5 bg-stone-200 hover:bg-stone-300 rounded-xl text-[9px] font-semibold text-stone-700 transition shrink-0"
+                                >
+                                  Reset
+                                </button>
+                              </div>
+                              <div className="border border-dashed border-stone-200 rounded-xl p-2.5 text-center bg-stone-50/50 hover:bg-stone-50 transition">
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      try {
+                                        const base = await convertFileToBase64(file);
+                                        setContactInfo({ ...contactInfo, wingOrderBgUrl: base });
+                                        triggerToast("Order wing cover loaded!");
+                                      } catch (err) {
+                                        triggerToast("Error uploading image", "info");
+                                      }
+                                    }
+                                  }}
+                                  className="hidden"
+                                  id="wing-order-upload"
+                                />
+                                <label htmlFor="wing-order-upload" className="cursor-pointer flex flex-col items-center gap-1">
+                                  <Upload size={12} className="text-stone-400" />
+                                  <span className="text-[8px] text-stone-500 font-medium">Upload File</span>
+                                </label>
+                                {contactInfo.wingOrderBgUrl && (
+                                  <div className="mt-2 flex items-center justify-center gap-2 bg-white p-1 rounded border border-stone-100 max-w-max mx-auto">
+                                    <img src={contactInfo.wingOrderBgUrl} className="h-6 w-10 rounded object-cover" alt="Order Preview" />
+                                    <span className="text-[7px] font-mono text-stone-400 truncate max-w-[80px]">
+                                      {contactInfo.wingOrderBgUrl.startsWith("data:") ? "Base64" : "Custom URL"}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* 6. Contact Marina Studio Cover */}
+                            <div className="space-y-2 bg-white p-3.5 rounded-xl border border-stone-150">
+                              <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">6. Studio Contact Cover</label>
+                              <div className="flex gap-2">
+                                <input
+                                  type="text"
+                                  value={contactInfo.wingContactBgUrl || ""}
+                                  onChange={(e) => setContactInfo({ ...contactInfo, wingContactBgUrl: e.target.value })}
+                                  placeholder="Image URL or Base64 data..."
+                                  className="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-2 py-1.5 focus:outline-none focus:border-amber-600/50 text-stone-850 text-[10px]"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setContactInfo({
+                                      ...contactInfo,
+                                      wingContactBgUrl: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=600"
+                                    });
+                                    triggerToast("Studio Contact image reset!");
+                                  }}
+                                  className="px-2.5 py-1.5 bg-stone-200 hover:bg-stone-300 rounded-xl text-[9px] font-semibold text-stone-700 transition shrink-0"
+                                >
+                                  Reset
+                                </button>
+                              </div>
+                              <div className="border border-dashed border-stone-200 rounded-xl p-2.5 text-center bg-stone-50/50 hover:bg-stone-50 transition">
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      try {
+                                        const base = await convertFileToBase64(file);
+                                        setContactInfo({ ...contactInfo, wingContactBgUrl: base });
+                                        triggerToast("Contact cover loaded!");
+                                      } catch (err) {
+                                        triggerToast("Error uploading image", "info");
+                                      }
+                                    }
+                                  }}
+                                  className="hidden"
+                                  id="wing-contact-upload"
+                                />
+                                <label htmlFor="wing-contact-upload" className="cursor-pointer flex flex-col items-center gap-1">
+                                  <Upload size={12} className="text-stone-400" />
+                                  <span className="text-[8px] text-stone-500 font-medium">Upload File</span>
+                                </label>
+                                {contactInfo.wingContactBgUrl && (
+                                  <div className="mt-2 flex items-center justify-center gap-2 bg-white p-1 rounded border border-stone-100 max-w-max mx-auto">
+                                    <img src={contactInfo.wingContactBgUrl} className="h-6 w-10 rounded object-cover" alt="Contact Preview" />
+                                    <span className="text-[7px] font-mono text-stone-400 truncate max-w-[80px]">
+                                      {contactInfo.wingContactBgUrl.startsWith("data:") ? "Base64" : "Custom URL"}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
                           </div>
                         </div>
+                      )}
+                    </div>
 
-                        {/* 2. Bespoke Showcase Cover */}
-                        <div className="space-y-2 bg-white p-3.5 rounded-xl border border-stone-150">
-                          <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">2. Bespoke Showcase Cover</label>
-                          <div className="flex gap-2">
-                            <input
-                              type="text"
-                              value={contactInfo.wingGalleryBgUrl || ""}
-                              onChange={(e) => setContactInfo({ ...contactInfo, wingGalleryBgUrl: e.target.value })}
-                              placeholder="Image URL or Base64 data..."
-                              className="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-2 py-1.5 focus:outline-none focus:border-amber-600/50 text-stone-850 text-[10px]"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setContactInfo({
-                                  ...contactInfo,
-                                  wingGalleryBgUrl: "https://images.unsplash.com/photo-1617137984095-74e4e5e3613f?auto=format&fit=crop&q=80&w=600"
-                                });
-                                triggerToast("Bespoke Showcase image reset!");
-                              }}
-                              className="px-2.5 py-1.5 bg-stone-200 hover:bg-stone-300 rounded-xl text-[9px] font-semibold text-stone-700 transition shrink-0"
-                            >
-                              Reset
-                            </button>
+                    {/* Collapsible Advanced Industrial Machinery Images Section */}
+                    <div className="bg-stone-50 border border-stone-200 rounded-2xl overflow-hidden transition duration-350 shadow-sm">
+                      <button
+                        type="button"
+                        onClick={() => setImageSectionMachineryOpen(!imageSectionMachineryOpen)}
+                        className="w-full flex items-center justify-between p-4 bg-stone-50 hover:bg-stone-100/70 transition text-left focus:outline-none select-none"
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-serif text-[11px] font-bold uppercase tracking-wider text-stone-700">3. Advanced Industrial Machinery Images</h4>
+                            <span className="text-[8px] font-mono font-bold text-amber-800 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+                              5 Assets
+                            </span>
                           </div>
-                          <div className="border border-dashed border-stone-200 rounded-xl p-2.5 text-center bg-stone-50/50 hover:bg-stone-50 transition">
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={async (e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  try {
-                                    const base = await convertFileToBase64(file);
-                                    setContactInfo({ ...contactInfo, wingGalleryBgUrl: base });
-                                    triggerToast("Showcase image loaded!");
-                                  } catch (err) {
-                                    triggerToast("Error uploading image", "info");
-                                  }
-                                }
-                              }}
-                              className="hidden"
-                              id="wing-gallery-upload"
-                            />
-                            <label htmlFor="wing-gallery-upload" className="cursor-pointer flex flex-col items-center gap-1">
-                              <Upload size={12} className="text-stone-400" />
-                              <span className="text-[8px] text-stone-500 font-medium">Upload File</span>
-                            </label>
-                            {contactInfo.wingGalleryBgUrl && (
-                              <div className="mt-2 flex items-center justify-center gap-2 bg-white p-1 rounded border border-stone-100 max-w-max mx-auto">
-                                <img src={contactInfo.wingGalleryBgUrl} className="h-6 w-10 rounded object-cover" alt="Gallery Preview" />
-                                <span className="text-[7px] font-mono text-stone-400 truncate max-w-[80px]">
-                                  {contactInfo.wingGalleryBgUrl.startsWith("data:") ? "Base64" : "Custom URL"}
-                                </span>
+                          <p className="text-[10px] text-stone-500 font-sans leading-relaxed">
+                            Configure custom images for active machines shown in the "Our Legacy" (About) modal.
+                          </p>
+                        </div>
+                        <div className="h-7 w-7 rounded-full bg-stone-200/50 hover:bg-stone-200 flex items-center justify-center transition shrink-0">
+                          {imageSectionMachineryOpen ? (
+                            <ChevronUp size={14} className="text-stone-650" />
+                          ) : (
+                            <ChevronDown size={14} className="text-stone-650" />
+                          )}
+                        </div>
+                      </button>
+
+                      {imageSectionMachineryOpen && (
+                        <div className="p-4 pt-0 border-t border-stone-200/50 bg-stone-50/30 space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                            
+                            {/* 1. Monogram Machine */}
+                            <div className="space-y-2 bg-white p-3.5 rounded-xl border border-stone-150">
+                              <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">1. Monogram Machine Image</label>
+                              <div className="flex gap-2">
+                                <input
+                                  type="text"
+                                  value={contactInfo.monogramMachineImg || ""}
+                                  onChange={(e) => setContactInfo({ ...contactInfo, monogramMachineImg: e.target.value })}
+                                  placeholder="Image URL or Base64 data..."
+                                  className="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-2 py-1.5 focus:outline-none focus:border-amber-600/50 text-stone-850 text-[10px]"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setContactInfo({
+                                      ...contactInfo,
+                                      monogramMachineImg: "/src/assets/images/monogram_machine_1784385472639.jpg"
+                                    });
+                                    triggerToast("Monogram Machine image reset!");
+                                  }}
+                                  className="px-2.5 py-1.5 bg-stone-200 hover:bg-stone-300 rounded-xl text-[9px] font-semibold text-stone-700 transition shrink-0"
+                                >
+                                  Reset
+                                </button>
                               </div>
-                            )}
+                              <div className="border border-dashed border-stone-200 rounded-xl p-2.5 text-center bg-stone-50/50 hover:bg-stone-50 transition">
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      try {
+                                        const base = await convertFileToBase64(file);
+                                        setContactInfo({ ...contactInfo, monogramMachineImg: base });
+                                        triggerToast("Monogram Machine image loaded!");
+                                      } catch (err) {
+                                        triggerToast("Error uploading image", "info");
+                                      }
+                                    }
+                                  }}
+                                  className="hidden"
+                                  id="monogram-machine-upload"
+                                />
+                                <label htmlFor="monogram-machine-upload" className="cursor-pointer flex flex-col items-center gap-1">
+                                  <Upload size={12} className="text-stone-400" />
+                                  <span className="text-[8px] text-stone-500 font-medium">Upload File</span>
+                                </label>
+                                {contactInfo.monogramMachineImg && (
+                                  <div className="mt-2 flex items-center justify-center gap-2 bg-white p-1 rounded border border-stone-100 max-w-max mx-auto">
+                                    <img src={contactInfo.monogramMachineImg} className="h-6 w-10 rounded object-cover" alt="Monogram Machine Preview" />
+                                    <span className="text-[7px] font-mono text-stone-400 truncate max-w-[80px]">
+                                      {contactInfo.monogramMachineImg.startsWith("data:") ? "Base64" : "Custom URL"}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* 2. Laser Cut Machine */}
+                            <div className="space-y-2 bg-white p-3.5 rounded-xl border border-stone-150">
+                              <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">2. Laser Cut Machine Image</label>
+                              <div className="flex gap-2">
+                                <input
+                                  type="text"
+                                  value={contactInfo.laserCutMachineImg || ""}
+                                  onChange={(e) => setContactInfo({ ...contactInfo, laserCutMachineImg: e.target.value })}
+                                  placeholder="Image URL or Base64 data..."
+                                  className="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-2 py-1.5 focus:outline-none focus:border-amber-600/50 text-stone-850 text-[10px]"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setContactInfo({
+                                      ...contactInfo,
+                                      laserCutMachineImg: "/src/assets/images/laser_cut_machine_1784385486693.jpg"
+                                    });
+                                    triggerToast("Laser Cut Machine image reset!");
+                                  }}
+                                  className="px-2.5 py-1.5 bg-stone-200 hover:bg-stone-300 rounded-xl text-[9px] font-semibold text-stone-700 transition shrink-0"
+                                >
+                                  Reset
+                                </button>
+                              </div>
+                              <div className="border border-dashed border-stone-200 rounded-xl p-2.5 text-center bg-stone-50/50 hover:bg-stone-50 transition">
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      try {
+                                        const base = await convertFileToBase64(file);
+                                        setContactInfo({ ...contactInfo, laserCutMachineImg: base });
+                                        triggerToast("Laser Cut Machine image loaded!");
+                                      } catch (err) {
+                                        triggerToast("Error uploading image", "info");
+                                      }
+                                    }
+                                  }}
+                                  className="hidden"
+                                  id="laser-machine-upload"
+                                />
+                                <label htmlFor="laser-machine-upload" className="cursor-pointer flex flex-col items-center gap-1">
+                                  <Upload size={12} className="text-stone-400" />
+                                  <span className="text-[8px] text-stone-500 font-medium">Upload File</span>
+                                </label>
+                                {contactInfo.laserCutMachineImg && (
+                                  <div className="mt-2 flex items-center justify-center gap-2 bg-white p-1 rounded border border-stone-100 max-w-max mx-auto">
+                                    <img src={contactInfo.laserCutMachineImg} className="h-6 w-10 rounded object-cover" alt="Laser Machine Preview" />
+                                    <span className="text-[7px] font-mono text-stone-400 truncate max-w-[80px]">
+                                      {contactInfo.laserCutMachineImg.startsWith("data:") ? "Base64" : "Custom URL"}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* 3. Clothe Beading Machine */}
+                            <div className="space-y-2 bg-white p-3.5 rounded-xl border border-stone-150">
+                              <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">3. Clothe Beading Machine Image</label>
+                              <div className="flex gap-2">
+                                <input
+                                  type="text"
+                                  value={contactInfo.clotheBeadingMachineImg || ""}
+                                  onChange={(e) => setContactInfo({ ...contactInfo, clotheBeadingMachineImg: e.target.value })}
+                                  placeholder="Image URL or Base64 data..."
+                                  className="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-2 py-1.5 focus:outline-none focus:border-amber-600/50 text-stone-850 text-[10px]"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setContactInfo({
+                                      ...contactInfo,
+                                      clotheBeadingMachineImg: "/src/assets/images/clothe_beading_machine_1784385501880.jpg"
+                                    });
+                                    triggerToast("Beading Machine image reset!");
+                                  }}
+                                  className="px-2.5 py-1.5 bg-stone-200 hover:bg-stone-300 rounded-xl text-[9px] font-semibold text-stone-700 transition shrink-0"
+                                >
+                                  Reset
+                                </button>
+                              </div>
+                              <div className="border border-dashed border-stone-200 rounded-xl p-2.5 text-center bg-stone-50/50 hover:bg-stone-50 transition">
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      try {
+                                        const base = await convertFileToBase64(file);
+                                        setContactInfo({ ...contactInfo, clotheBeadingMachineImg: base });
+                                        triggerToast("Beading Machine image loaded!");
+                                      } catch (err) {
+                                        triggerToast("Error uploading image", "info");
+                                      }
+                                    }
+                                  }}
+                                  className="hidden"
+                                  id="beading-machine-upload"
+                                />
+                                <label htmlFor="beading-machine-upload" className="cursor-pointer flex flex-col items-center gap-1">
+                                  <Upload size={12} className="text-stone-400" />
+                                  <span className="text-[8px] text-stone-500 font-medium">Upload File</span>
+                                </label>
+                                {contactInfo.clotheBeadingMachineImg && (
+                                  <div className="mt-2 flex items-center justify-center gap-2 bg-white p-1 rounded border border-stone-100 max-w-max mx-auto">
+                                    <img src={contactInfo.clotheBeadingMachineImg} className="h-6 w-10 rounded object-cover" alt="Beading Machine Preview" />
+                                    <span className="text-[7px] font-mono text-stone-400 truncate max-w-[80px]">
+                                      {contactInfo.clotheBeadingMachineImg.startsWith("data:") ? "Base64" : "Custom URL"}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* 4. Stoning Machine */}
+                            <div className="space-y-2 bg-white p-3.5 rounded-xl border border-stone-150">
+                              <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">4. Crystal Stoning Machine Image</label>
+                              <div className="flex gap-2">
+                                <input
+                                  type="text"
+                                  value={contactInfo.stoningMachineImg || ""}
+                                  onChange={(e) => setContactInfo({ ...contactInfo, stoningMachineImg: e.target.value })}
+                                  placeholder="Image URL or Base64 data..."
+                                  className="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-2 py-1.5 focus:outline-none focus:border-amber-600/50 text-stone-850 text-[10px]"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setContactInfo({
+                                      ...contactInfo,
+                                      stoningMachineImg: "/src/assets/images/stoning_machine_1784385517517.jpg"
+                                    });
+                                    triggerToast("Stoning Machine image reset!");
+                                  }}
+                                  className="px-2.5 py-1.5 bg-stone-200 hover:bg-stone-300 rounded-xl text-[9px] font-semibold text-stone-700 transition shrink-0"
+                                >
+                                  Reset
+                                </button>
+                              </div>
+                              <div className="border border-dashed border-stone-200 rounded-xl p-2.5 text-center bg-stone-50/50 hover:bg-stone-50 transition">
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      try {
+                                        const base = await convertFileToBase64(file);
+                                        setContactInfo({ ...contactInfo, stoningMachineImg: base });
+                                        triggerToast("Stoning Machine image loaded!");
+                                      } catch (err) {
+                                        triggerToast("Error uploading image", "info");
+                                      }
+                                    }
+                                  }}
+                                  className="hidden"
+                                  id="stoning-machine-upload"
+                                />
+                                <label htmlFor="stoning-machine-upload" className="cursor-pointer flex flex-col items-center gap-1">
+                                  <Upload size={12} className="text-stone-400" />
+                                  <span className="text-[8px] text-stone-500 font-medium">Upload File</span>
+                                </label>
+                                {contactInfo.stoningMachineImg && (
+                                  <div className="mt-2 flex items-center justify-center gap-2 bg-white p-1 rounded border border-stone-100 max-w-max mx-auto">
+                                    <img src={contactInfo.stoningMachineImg} className="h-6 w-10 rounded object-cover" alt="Stoning Machine Preview" />
+                                    <span className="text-[7px] font-mono text-stone-400 truncate max-w-[80px]">
+                                      {contactInfo.stoningMachineImg.startsWith("data:") ? "Base64" : "Custom URL"}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* 5. CNC Desktop Router Machine */}
+                            <div className="space-y-2 bg-white p-3.5 rounded-xl border border-stone-150">
+                              <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">5. CNC Desktop Router Image</label>
+                              <div className="flex gap-2">
+                                <input
+                                  type="text"
+                                  value={contactInfo.cncDesktopRouterImg || ""}
+                                  onChange={(e) => setContactInfo({ ...contactInfo, cncDesktopRouterImg: e.target.value })}
+                                  placeholder="Image URL or Base64 data..."
+                                  className="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-2 py-1.5 focus:outline-none focus:border-amber-600/50 text-stone-850 text-[10px]"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setContactInfo({
+                                      ...contactInfo,
+                                      cncDesktopRouterImg: "/src/assets/images/cnc_desktop_router_1784385532391.jpg"
+                                    });
+                                    triggerToast("CNC Desktop Router image reset!");
+                                  }}
+                                  className="px-2.5 py-1.5 bg-stone-200 hover:bg-stone-300 rounded-xl text-[9px] font-semibold text-stone-700 transition shrink-0"
+                                >
+                                  Reset
+                                </button>
+                              </div>
+                              <div className="border border-dashed border-stone-200 rounded-xl p-2.5 text-center bg-stone-50/50 hover:bg-stone-50 transition">
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      try {
+                                        const base = await convertFileToBase64(file);
+                                        setContactInfo({ ...contactInfo, cncDesktopRouterImg: base });
+                                        triggerToast("CNC Desktop Router image loaded!");
+                                      } catch (err) {
+                                        triggerToast("Error uploading image", "info");
+                                      }
+                                    }
+                                  }}
+                                  className="hidden"
+                                  id="cnc-machine-upload"
+                                />
+                                <label htmlFor="cnc-machine-upload" className="cursor-pointer flex flex-col items-center gap-1">
+                                  <Upload size={12} className="text-stone-400" />
+                                  <span className="text-[8px] text-stone-500 font-medium">Upload File</span>
+                                </label>
+                                {contactInfo.cncDesktopRouterImg && (
+                                  <div className="mt-2 flex items-center justify-center gap-2 bg-white p-1 rounded border border-stone-100 max-w-max mx-auto">
+                                    <img src={contactInfo.cncDesktopRouterImg} className="h-6 w-10 rounded object-cover" alt="CNC Machine Preview" />
+                                    <span className="text-[7px] font-mono text-stone-400 truncate max-w-[80px]">
+                                      {contactInfo.cncDesktopRouterImg.startsWith("data:") ? "Base64" : "Custom URL"}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
                           </div>
                         </div>
-
-                        {/* 3. Luxury Fabrics Cover */}
-                        <div className="space-y-2 bg-white p-3.5 rounded-xl border border-stone-150">
-                          <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">3. Luxury Fabrics Cover</label>
-                          <div className="flex gap-2">
-                            <input
-                              type="text"
-                              value={contactInfo.wingFabricsBgUrl || ""}
-                              onChange={(e) => setContactInfo({ ...contactInfo, wingFabricsBgUrl: e.target.value })}
-                              placeholder="Image URL or Base64 data..."
-                              className="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-2 py-1.5 focus:outline-none focus:border-amber-600/50 text-stone-850 text-[10px]"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setContactInfo({
-                                  ...contactInfo,
-                                  wingFabricsBgUrl: "https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17?auto=format&fit=crop&q=80&w=600"
-                                });
-                                triggerToast("Luxury Fabrics image reset!");
-                              }}
-                              className="px-2.5 py-1.5 bg-stone-200 hover:bg-stone-300 rounded-xl text-[9px] font-semibold text-stone-700 transition shrink-0"
-                            >
-                              Reset
-                            </button>
-                          </div>
-                          <div className="border border-dashed border-stone-200 rounded-xl p-2.5 text-center bg-stone-50/50 hover:bg-stone-50 transition">
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={async (e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  try {
-                                    const base = await convertFileToBase64(file);
-                                    setContactInfo({ ...contactInfo, wingFabricsBgUrl: base });
-                                    triggerToast("Fabrics cover loaded!");
-                                  } catch (err) {
-                                    triggerToast("Error uploading image", "info");
-                                  }
-                                }
-                              }}
-                              className="hidden"
-                              id="wing-fabrics-upload"
-                            />
-                            <label htmlFor="wing-fabrics-upload" className="cursor-pointer flex flex-col items-center gap-1">
-                              <Upload size={12} className="text-stone-400" />
-                              <span className="text-[8px] text-stone-500 font-medium">Upload File</span>
-                            </label>
-                            {contactInfo.wingFabricsBgUrl && (
-                              <div className="mt-2 flex items-center justify-center gap-2 bg-white p-1 rounded border border-stone-100 max-w-max mx-auto">
-                                <img src={contactInfo.wingFabricsBgUrl} className="h-6 w-10 rounded object-cover" alt="Fabrics Preview" />
-                                <span className="text-[7px] font-mono text-stone-400 truncate max-w-[80px]">
-                                  {contactInfo.wingFabricsBgUrl.startsWith("data:") ? "Base64" : "Custom URL"}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* 4. Style Inspirations Cover */}
-                        <div className="space-y-2 bg-white p-3.5 rounded-xl border border-stone-150">
-                          <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">4. Style Inspirations Cover</label>
-                          <div className="flex gap-2">
-                            <input
-                              type="text"
-                              value={contactInfo.wingStylesBgUrl || ""}
-                              onChange={(e) => setContactInfo({ ...contactInfo, wingStylesBgUrl: e.target.value })}
-                              placeholder="Image URL or Base64 data..."
-                              className="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-2 py-1.5 focus:outline-none focus:border-amber-600/50 text-stone-850 text-[10px]"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setContactInfo({
-                                  ...contactInfo,
-                                  wingStylesBgUrl: "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&q=80&w=600"
-                                });
-                                triggerToast("Style Inspirations image reset!");
-                              }}
-                              className="px-2.5 py-1.5 bg-stone-200 hover:bg-stone-300 rounded-xl text-[9px] font-semibold text-stone-700 transition shrink-0"
-                            >
-                              Reset
-                            </button>
-                          </div>
-                          <div className="border border-dashed border-stone-200 rounded-xl p-2.5 text-center bg-stone-50/50 hover:bg-stone-50 transition">
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={async (e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  try {
-                                    const base = await convertFileToBase64(file);
-                                    setContactInfo({ ...contactInfo, wingStylesBgUrl: base });
-                                    triggerToast("Styles cover loaded!");
-                                  } catch (err) {
-                                    triggerToast("Error uploading image", "info");
-                                  }
-                                }
-                              }}
-                              className="hidden"
-                              id="wing-styles-upload"
-                            />
-                            <label htmlFor="wing-styles-upload" className="cursor-pointer flex flex-col items-center gap-1">
-                              <Upload size={12} className="text-stone-400" />
-                              <span className="text-[8px] text-stone-500 font-medium">Upload File</span>
-                            </label>
-                            {contactInfo.wingStylesBgUrl && (
-                              <div className="mt-2 flex items-center justify-center gap-2 bg-white p-1 rounded border border-stone-100 max-w-max mx-auto">
-                                <img src={contactInfo.wingStylesBgUrl} className="h-6 w-10 rounded object-cover" alt="Styles Preview" />
-                                <span className="text-[7px] font-mono text-stone-400 truncate max-w-[80px]">
-                                  {contactInfo.wingStylesBgUrl.startsWith("data:") ? "Base64" : "Custom URL"}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* 5. Book Tailoring Fit Cover */}
-                        <div className="space-y-2 bg-white p-3.5 rounded-xl border border-stone-150">
-                          <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">5. Book Tailoring Cover</label>
-                          <div className="flex gap-2">
-                            <input
-                              type="text"
-                              value={contactInfo.wingOrderBgUrl || ""}
-                              onChange={(e) => setContactInfo({ ...contactInfo, wingOrderBgUrl: e.target.value })}
-                              placeholder="Image URL or Base64 data..."
-                              className="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-2 py-1.5 focus:outline-none focus:border-amber-600/50 text-stone-850 text-[10px]"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setContactInfo({
-                                  ...contactInfo,
-                                  wingOrderBgUrl: "https://images.unsplash.com/photo-1598257006458-087169a1f08d?auto=format&fit=crop&q=80&w=600"
-                                });
-                                triggerToast("Book Tailoring image reset!");
-                              }}
-                              className="px-2.5 py-1.5 bg-stone-200 hover:bg-stone-300 rounded-xl text-[9px] font-semibold text-stone-700 transition shrink-0"
-                            >
-                              Reset
-                            </button>
-                          </div>
-                          <div className="border border-dashed border-stone-200 rounded-xl p-2.5 text-center bg-stone-50/50 hover:bg-stone-50 transition">
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={async (e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  try {
-                                    const base = await convertFileToBase64(file);
-                                    setContactInfo({ ...contactInfo, wingOrderBgUrl: base });
-                                    triggerToast("Order wing cover loaded!");
-                                  } catch (err) {
-                                    triggerToast("Error uploading image", "info");
-                                  }
-                                }
-                              }}
-                              className="hidden"
-                              id="wing-order-upload"
-                            />
-                            <label htmlFor="wing-order-upload" className="cursor-pointer flex flex-col items-center gap-1">
-                              <Upload size={12} className="text-stone-400" />
-                              <span className="text-[8px] text-stone-500 font-medium">Upload File</span>
-                            </label>
-                            {contactInfo.wingOrderBgUrl && (
-                              <div className="mt-2 flex items-center justify-center gap-2 bg-white p-1 rounded border border-stone-100 max-w-max mx-auto">
-                                <img src={contactInfo.wingOrderBgUrl} className="h-6 w-10 rounded object-cover" alt="Order Preview" />
-                                <span className="text-[7px] font-mono text-stone-400 truncate max-w-[80px]">
-                                  {contactInfo.wingOrderBgUrl.startsWith("data:") ? "Base64" : "Custom URL"}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* 6. Contact Marina Studio Cover */}
-                        <div className="space-y-2 bg-white p-3.5 rounded-xl border border-stone-150">
-                          <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">6. Studio Contact Cover</label>
-                          <div className="flex gap-2">
-                            <input
-                              type="text"
-                              value={contactInfo.wingContactBgUrl || ""}
-                              onChange={(e) => setContactInfo({ ...contactInfo, wingContactBgUrl: e.target.value })}
-                              placeholder="Image URL or Base64 data..."
-                              className="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-2 py-1.5 focus:outline-none focus:border-amber-600/50 text-stone-850 text-[10px]"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setContactInfo({
-                                  ...contactInfo,
-                                  wingContactBgUrl: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=600"
-                                });
-                                triggerToast("Studio Contact image reset!");
-                              }}
-                              className="px-2.5 py-1.5 bg-stone-200 hover:bg-stone-300 rounded-xl text-[9px] font-semibold text-stone-700 transition shrink-0"
-                            >
-                              Reset
-                            </button>
-                          </div>
-                          <div className="border border-dashed border-stone-200 rounded-xl p-2.5 text-center bg-stone-50/50 hover:bg-stone-50 transition">
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={async (e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  try {
-                                    const base = await convertFileToBase64(file);
-                                    setContactInfo({ ...contactInfo, wingContactBgUrl: base });
-                                    triggerToast("Contact cover loaded!");
-                                  } catch (err) {
-                                    triggerToast("Error uploading image", "info");
-                                  }
-                                }
-                              }}
-                              className="hidden"
-                              id="wing-contact-upload"
-                            />
-                            <label htmlFor="wing-contact-upload" className="cursor-pointer flex flex-col items-center gap-1">
-                              <Upload size={12} className="text-stone-400" />
-                              <span className="text-[8px] text-stone-500 font-medium">Upload File</span>
-                            </label>
-                            {contactInfo.wingContactBgUrl && (
-                              <div className="mt-2 flex items-center justify-center gap-2 bg-white p-1 rounded border border-stone-100 max-w-max mx-auto">
-                                <img src={contactInfo.wingContactBgUrl} className="h-6 w-10 rounded object-cover" alt="Contact Preview" />
-                                <span className="text-[7px] font-mono text-stone-400 truncate max-w-[80px]">
-                                  {contactInfo.wingContactBgUrl.startsWith("data:") ? "Base64" : "Custom URL"}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                      </div>
+                      )}
                     </div>
 
                     <div className="space-y-3 bg-stone-50 p-4 border border-stone-200 rounded-2xl">

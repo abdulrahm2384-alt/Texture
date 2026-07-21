@@ -834,6 +834,11 @@ app.post("/api/admin/contact", async (req, res) => {
       wingStylesBgUrl,
       wingOrderBgUrl,
       wingContactBgUrl,
+      monogramMachineImg,
+      laserCutMachineImg,
+      clotheBeadingMachineImg,
+      stoningMachineImg,
+      cncDesktopRouterImg,
       servicePrices
     } = req.body;
 
@@ -859,6 +864,11 @@ app.post("/api/admin/contact", async (req, res) => {
       wingStylesBgUrl: wingStylesBgUrl || "",
       wingOrderBgUrl: wingOrderBgUrl || "",
       wingContactBgUrl: wingContactBgUrl || "",
+      monogramMachineImg: monogramMachineImg || "",
+      laserCutMachineImg: laserCutMachineImg || "",
+      clotheBeadingMachineImg: clotheBeadingMachineImg || "",
+      stoningMachineImg: stoningMachineImg || "",
+      cncDesktopRouterImg: cncDesktopRouterImg || "",
       servicePrices: servicePrices || undefined
     });
 

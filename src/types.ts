@@ -101,6 +101,11 @@ export interface ContactInfo {
   wingStylesBgUrl?: string;
   wingOrderBgUrl?: string;
   wingContactBgUrl?: string;
+  monogramMachineImg?: string;
+  laserCutMachineImg?: string;
+  clotheBeadingMachineImg?: string;
+  stoningMachineImg?: string;
+  cncDesktopRouterImg?: string;
   servicePrices?: {
     monogramming?: number;
     beading?: number;
