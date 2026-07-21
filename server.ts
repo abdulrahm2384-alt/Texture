@@ -825,7 +825,16 @@ app.post("/api/admin/contact", async (req, res) => {
       mapUrl,
       tiktokUrl,
       instagramUrl,
-      youtubeUrl
+      youtubeUrl,
+      logoUrl,
+      heroBgUrl,
+      wingAboutBgUrl,
+      wingGalleryBgUrl,
+      wingFabricsBgUrl,
+      wingStylesBgUrl,
+      wingOrderBgUrl,
+      wingContactBgUrl,
+      servicePrices
     } = req.body;
 
     if (!phoneNumber || !displayPhone || !emailAddress || !physicalAddress) {
@@ -841,7 +850,16 @@ app.post("/api/admin/contact", async (req, res) => {
       mapUrl: mapUrl || "",
       tiktokUrl: tiktokUrl || "",
       instagramUrl: instagramUrl || "",
-      youtubeUrl: youtubeUrl || ""
+      youtubeUrl: youtubeUrl || "",
+      logoUrl: logoUrl || "",
+      heroBgUrl: heroBgUrl || "",
+      wingAboutBgUrl: wingAboutBgUrl || "",
+      wingGalleryBgUrl: wingGalleryBgUrl || "",
+      wingFabricsBgUrl: wingFabricsBgUrl || "",
+      wingStylesBgUrl: wingStylesBgUrl || "",
+      wingOrderBgUrl: wingOrderBgUrl || "",
+      wingContactBgUrl: wingContactBgUrl || "",
+      servicePrices: servicePrices || undefined
     });
 
     if (updated) {

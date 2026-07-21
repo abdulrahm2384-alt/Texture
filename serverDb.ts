@@ -319,14 +319,14 @@ export async function initializeDatabase(): Promise<boolean> {
     await connection.query(`
       CREATE TABLE IF NOT EXISTS \`system_config\` (
         \`key\` VARCHAR(50) NOT NULL,
-        \`value\` TEXT NOT NULL,
+        \`value\` LONGTEXT NOT NULL,
         PRIMARY KEY (\`key\`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
 
-    // Ensure system_config column is modified to TEXT for existing databases
+    // Ensure system_config column is modified to LONGTEXT for existing databases
     try {
-      await connection.query("ALTER TABLE `system_config` MODIFY COLUMN `value` TEXT NOT NULL");
+      await connection.query("ALTER TABLE `system_config` MODIFY COLUMN `value` LONGTEXT NOT NULL");
     } catch (sysErr) {
       console.log("Database system_config column modification already applied or not needed:", sysErr);
     }

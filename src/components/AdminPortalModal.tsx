@@ -1213,7 +1213,7 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
                         activeTab === "contact" ? "border-amber-600 text-amber-800 font-bold" : "border-transparent text-stone-500 hover:text-stone-800"
                       }`}
                     >
-                      Contact Coordinates
+                      Contact and Pages Settings
                     </button>
                   </div>
 
@@ -2065,13 +2065,13 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
                   <div className="flex items-center justify-between pb-2 border-b border-stone-100">
                     <div className="flex items-center gap-2">
                       <Phone size={14} className="text-amber-800" />
-                      <h3 className="font-serif text-xs uppercase tracking-wider text-amber-850 font-bold">Update Atelier Contact Coordinates</h3>
+                      <h3 className="font-serif text-xs uppercase tracking-wider text-amber-850 font-bold">Update Atelier Contact and Pages Settings</h3>
                     </div>
                     {loadingContact && <Loader2 size={12} className="animate-spin text-amber-700" />}
                   </div>
 
                   <p className="text-[11px] text-stone-500 leading-relaxed font-light">
-                    Modify physical coordinates, email, hotlines, maps locator embed, and active social profiles shown dynamically across user digital viewports.
+                    Modify contact information, website addresses, active social profiles, custom brand logos, and page backgrounds shown across the digital showroom.
                   </p>
 
                   <form onSubmit={handleSaveContact} className="space-y-4 text-xs">
@@ -2681,158 +2681,12 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
                       </div>
                     </div>
 
-                    {/* Dynamic Services & Supplies Pricing Configuration */}
-                    <div className="space-y-3 bg-stone-50 p-4 border border-stone-200 rounded-2xl">
-                      <h4 className="font-serif text-[10px] font-bold uppercase tracking-wider text-stone-700">Dynamic Finishing & Supplies Prices (₦)</h4>
-                      <p className="text-[10px] text-stone-500 font-sans leading-normal">
-                        Configure dynamic, professional finishing service fees that will apply during user order calculation. Set custom rates below.
-                      </p>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="space-y-1">
-                          <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Monogramming</label>
-                          <input
-                            type="number"
-                            value={contactInfo.servicePrices?.monogramming ?? 15000}
-                            onChange={(e) => setContactInfo({
-                              ...contactInfo,
-                              servicePrices: {
-                                ...(contactInfo.servicePrices || {}),
-                                monogramming: Number(e.target.value)
-                              }
-                            })}
-                            className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 font-mono text-[11px]"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Beading & Embroidery</label>
-                          <input
-                            type="number"
-                            value={contactInfo.servicePrices?.beading ?? 45000}
-                            onChange={(e) => setContactInfo({
-                              ...contactInfo,
-                              servicePrices: {
-                                ...(contactInfo.servicePrices || {}),
-                                beading: Number(e.target.value)
-                              }
-                            })}
-                            className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 font-mono text-[11px]"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Crystal Stoning</label>
-                          <input
-                            type="number"
-                            value={contactInfo.servicePrices?.stoning ?? 30000}
-                            onChange={(e) => setContactInfo({
-                              ...contactInfo,
-                              servicePrices: {
-                                ...(contactInfo.servicePrices || {}),
-                                stoning: Number(e.target.value)
-                              }
-                            })}
-                            className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 font-mono text-[11px]"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Classic Sewing</label>
-                          <input
-                            type="number"
-                            value={contactInfo.servicePrices?.sewing ?? 40000}
-                            onChange={(e) => setContactInfo({
-                              ...contactInfo,
-                              servicePrices: {
-                                ...(contactInfo.servicePrices || {}),
-                                sewing: Number(e.target.value)
-                              }
-                            })}
-                            className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 font-mono text-[11px]"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Laser Fabric Cutting</label>
-                          <input
-                            type="number"
-                            value={contactInfo.servicePrices?.laser_cut ?? 25000}
-                            onChange={(e) => setContactInfo({
-                              ...contactInfo,
-                              servicePrices: {
-                                ...(contactInfo.servicePrices || {}),
-                                laser_cut: Number(e.target.value)
-                              }
-                            })}
-                            className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 font-mono text-[11px]"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">CNC Pattern Routing</label>
-                          <input
-                            type="number"
-                            value={contactInfo.servicePrices?.cnc_router ?? 35000}
-                            onChange={(e) => setContactInfo({
-                              ...contactInfo,
-                              servicePrices: {
-                                ...(contactInfo.servicePrices || {}),
-                                cnc_router: Number(e.target.value)
-                              }
-                            })}
-                            className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 font-mono text-[11px]"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Traditional Weaving</label>
-                          <input
-                            type="number"
-                            value={contactInfo.servicePrices?.weaving ?? 50000}
-                            onChange={(e) => setContactInfo({
-                              ...contactInfo,
-                              servicePrices: {
-                                ...(contactInfo.servicePrices || {}),
-                                weaving: Number(e.target.value)
-                              }
-                            })}
-                            className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 font-mono text-[11px]"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Premium I-Let Rings</label>
-                          <input
-                            type="number"
-                            value={contactInfo.servicePrices?.i_let ?? 10000}
-                            onChange={(e) => setContactInfo({
-                              ...contactInfo,
-                              servicePrices: {
-                                ...(contactInfo.servicePrices || {}),
-                                i_let: Number(e.target.value)
-                              }
-                            })}
-                            className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 font-mono text-[11px]"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">Machine Button-Holes</label>
-                          <input
-                            type="number"
-                            value={contactInfo.servicePrices?.button_holes ?? 5000}
-                            onChange={(e) => setContactInfo({
-                              ...contactInfo,
-                              servicePrices: {
-                                ...(contactInfo.servicePrices || {}),
-                                button_holes: Number(e.target.value)
-                              }
-                            })}
-                            className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:border-amber-600/50 text-stone-800 font-mono text-[11px]"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
                     <button
                       type="submit"
                       disabled={savingContact}
                       className="w-full bg-amber-700 hover:bg-amber-800 disabled:bg-amber-700/30 text-white font-serif font-bold py-2.5 rounded-xl uppercase tracking-wider transition flex items-center justify-center gap-2 shadow-sm cursor-pointer"
                     >
-                      {savingContact ? <Loader2 className="animate-spin h-3.5 w-3.5" /> : "Save Coordinates"}
+                      {savingContact ? <Loader2 className="animate-spin h-3.5 w-3.5" /> : "Save Contact and Pages Settings"}
                     </button>
                   </form>
                 </div>
