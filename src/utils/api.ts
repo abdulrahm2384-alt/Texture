@@ -292,7 +292,11 @@ export async function updateContactInfoAdmin(info: ContactInfo): Promise<{ succe
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || "Failed to update contact information");
-  localStorage.setItem("oluwashola_testing_contact", JSON.stringify(info));
+  try {
+    localStorage.setItem("oluwashola_testing_contact", JSON.stringify(info));
+  } catch (e) {
+    console.warn("Could not save local backup of contact info due to storage limitations:", e);
+  }
   return data;
 }
 
