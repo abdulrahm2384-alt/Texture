@@ -2320,7 +2320,7 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
                           <div className="flex items-center gap-2">
                             <h4 className="font-serif text-[11px] font-bold uppercase tracking-wider text-stone-700">2. Showroom Wing Cover Images</h4>
                             <span className="text-[8px] font-mono font-bold text-amber-800 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full uppercase tracking-wider">
-                              6 Assets
+                              4 Assets
                             </span>
                           </div>
                           <p className="text-[10px] text-stone-500 font-sans leading-relaxed">
@@ -2338,7 +2338,7 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
 
                       {imageSectionWingsOpen && (
                         <div className="p-4 pt-0 border-t border-stone-200/50 bg-stone-50/30 space-y-4">
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 mt-4">
                             
                             {/* 1. Our Legacy Cover */}
                             <div className="space-y-2 bg-white p-3.5 rounded-xl border border-stone-150">
@@ -2399,9 +2399,9 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
                               </div>
                             </div>
 
-                            {/* 2. Bespoke Showcase Cover */}
+                            {/* 2. Completed Jobs Showcase Cover */}
                             <div className="space-y-2 bg-white p-3.5 rounded-xl border border-stone-150">
-                              <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">2. Bespoke Showcase Cover</label>
+                              <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">2. Completed Jobs Showcase Cover</label>
                               <div className="flex gap-2">
                                 <input
                                   type="text"
@@ -2417,7 +2417,7 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
                                       ...contactInfo,
                                       wingGalleryBgUrl: "https://images.unsplash.com/photo-1617137984095-74e4e5e3613f?auto=format&fit=crop&q=80&w=600"
                                     });
-                                    triggerToast("Bespoke Showcase image reset!");
+                                    triggerToast("Completed Jobs Showcase image reset!");
                                   }}
                                   className="px-2.5 py-1.5 bg-stone-200 hover:bg-stone-300 rounded-xl text-[9px] font-semibold text-stone-700 transition shrink-0"
                                 >
@@ -2458,9 +2458,9 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
                               </div>
                             </div>
 
-                            {/* 3. Luxury Fabrics Cover */}
+                            {/* 3. Bespoke Boutique & Supplies Cover */}
                             <div className="space-y-2 bg-white p-3.5 rounded-xl border border-stone-150">
-                              <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">3. Luxury Fabrics Cover</label>
+                              <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">3. Bespoke Boutique & Supplies Cover</label>
                               <div className="flex gap-2">
                                 <input
                                   type="text"
@@ -2474,9 +2474,9 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
                                   onClick={() => {
                                     setContactInfo({
                                       ...contactInfo,
-                                      wingFabricsBgUrl: "https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17?auto=format&fit=crop&q=80&w=600"
+                                      wingFabricsBgUrl: "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&q=80&w=600"
                                     });
-                                    triggerToast("Luxury Fabrics image reset!");
+                                    triggerToast("Bespoke Boutique image reset!");
                                   }}
                                   className="px-2.5 py-1.5 bg-stone-200 hover:bg-stone-300 rounded-xl text-[9px] font-semibold text-stone-700 transition shrink-0"
                                 >
@@ -2493,7 +2493,7 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
                                       try {
                                         const base = await convertFileToBase64(file);
                                         setContactInfo({ ...contactInfo, wingFabricsBgUrl: base });
-                                        triggerToast("Fabrics cover loaded!");
+                                        triggerToast("Boutique cover loaded!");
                                       } catch (err) {
                                         triggerToast("Error uploading image", "info");
                                       }
@@ -2517,127 +2517,9 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
                               </div>
                             </div>
 
-                            {/* 4. Style Inspirations Cover */}
+                            {/* 4. Contact Lagos Desk Cover */}
                             <div className="space-y-2 bg-white p-3.5 rounded-xl border border-stone-150">
-                              <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">4. Style Inspirations Cover</label>
-                              <div className="flex gap-2">
-                                <input
-                                  type="text"
-                                  value={contactInfo.wingStylesBgUrl || ""}
-                                  onChange={(e) => setContactInfo({ ...contactInfo, wingStylesBgUrl: e.target.value })}
-                                  placeholder="Image URL or Base64 data..."
-                                  className="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-2 py-1.5 focus:outline-none focus:border-amber-600/50 text-stone-850 text-[10px]"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setContactInfo({
-                                      ...contactInfo,
-                                      wingStylesBgUrl: "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&q=80&w=600"
-                                    });
-                                    triggerToast("Style Inspirations image reset!");
-                                  }}
-                                  className="px-2.5 py-1.5 bg-stone-200 hover:bg-stone-300 rounded-xl text-[9px] font-semibold text-stone-700 transition shrink-0"
-                                >
-                                  Reset
-                                </button>
-                              </div>
-                              <div className="border border-dashed border-stone-200 rounded-xl p-2.5 text-center bg-stone-50/50 hover:bg-stone-50 transition">
-                                <input
-                                  type="file"
-                                  accept="image/*"
-                                  onChange={async (e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) {
-                                      try {
-                                        const base = await convertFileToBase64(file);
-                                        setContactInfo({ ...contactInfo, wingStylesBgUrl: base });
-                                        triggerToast("Styles cover loaded!");
-                                      } catch (err) {
-                                        triggerToast("Error uploading image", "info");
-                                      }
-                                    }
-                                  }}
-                                  className="hidden"
-                                  id="wing-styles-upload"
-                                />
-                                <label htmlFor="wing-styles-upload" className="cursor-pointer flex flex-col items-center gap-1">
-                                  <Upload size={12} className="text-stone-400" />
-                                  <span className="text-[8px] text-stone-500 font-medium">Upload File</span>
-                                </label>
-                                {contactInfo.wingStylesBgUrl && (
-                                  <div className="mt-2 flex items-center justify-center gap-2 bg-white p-1 rounded border border-stone-100 max-w-max mx-auto">
-                                    <img src={contactInfo.wingStylesBgUrl} className="h-6 w-10 rounded object-cover" alt="Styles Preview" />
-                                    <span className="text-[7px] font-mono text-stone-400 truncate max-w-[80px]">
-                                      {contactInfo.wingStylesBgUrl.startsWith("data:") ? "Base64" : "Custom URL"}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* 5. Book Tailoring Fit Cover */}
-                            <div className="space-y-2 bg-white p-3.5 rounded-xl border border-stone-150">
-                              <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">5. Book Tailoring Cover</label>
-                              <div className="flex gap-2">
-                                <input
-                                  type="text"
-                                  value={contactInfo.wingOrderBgUrl || ""}
-                                  onChange={(e) => setContactInfo({ ...contactInfo, wingOrderBgUrl: e.target.value })}
-                                  placeholder="Image URL or Base64 data..."
-                                  className="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-2 py-1.5 focus:outline-none focus:border-amber-600/50 text-stone-850 text-[10px]"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setContactInfo({
-                                      ...contactInfo,
-                                      wingOrderBgUrl: "https://images.unsplash.com/photo-1598257006458-087169a1f08d?auto=format&fit=crop&q=80&w=600"
-                                    });
-                                    triggerToast("Book Tailoring image reset!");
-                                  }}
-                                  className="px-2.5 py-1.5 bg-stone-200 hover:bg-stone-300 rounded-xl text-[9px] font-semibold text-stone-700 transition shrink-0"
-                                >
-                                  Reset
-                                </button>
-                              </div>
-                              <div className="border border-dashed border-stone-200 rounded-xl p-2.5 text-center bg-stone-50/50 hover:bg-stone-50 transition">
-                                <input
-                                  type="file"
-                                  accept="image/*"
-                                  onChange={async (e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) {
-                                      try {
-                                        const base = await convertFileToBase64(file);
-                                        setContactInfo({ ...contactInfo, wingOrderBgUrl: base });
-                                        triggerToast("Order wing cover loaded!");
-                                      } catch (err) {
-                                        triggerToast("Error uploading image", "info");
-                                      }
-                                    }
-                                  }}
-                                  className="hidden"
-                                  id="wing-order-upload"
-                                />
-                                <label htmlFor="wing-order-upload" className="cursor-pointer flex flex-col items-center gap-1">
-                                  <Upload size={12} className="text-stone-400" />
-                                  <span className="text-[8px] text-stone-500 font-medium">Upload File</span>
-                                </label>
-                                {contactInfo.wingOrderBgUrl && (
-                                  <div className="mt-2 flex items-center justify-center gap-2 bg-white p-1 rounded border border-stone-100 max-w-max mx-auto">
-                                    <img src={contactInfo.wingOrderBgUrl} className="h-6 w-10 rounded object-cover" alt="Order Preview" />
-                                    <span className="text-[7px] font-mono text-stone-400 truncate max-w-[80px]">
-                                      {contactInfo.wingOrderBgUrl.startsWith("data:") ? "Base64" : "Custom URL"}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* 6. Contact Marina Studio Cover */}
-                            <div className="space-y-2 bg-white p-3.5 rounded-xl border border-stone-150">
-                              <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">6. Studio Contact Cover</label>
+                              <label className="text-stone-500 font-mono text-[9px] uppercase tracking-wider block font-semibold">4. Contact Lagos Desk Cover</label>
                               <div className="flex gap-2">
                                 <input
                                   type="text"
@@ -2651,9 +2533,9 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
                                   onClick={() => {
                                     setContactInfo({
                                       ...contactInfo,
-                                      wingContactBgUrl: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=600"
+                                      wingContactBgUrl: "https://images.unsplash.com/photo-1423666639041-f56000c27a9a?auto=format&fit=crop&q=80&w=600"
                                     });
-                                    triggerToast("Studio Contact image reset!");
+                                    triggerToast("Contact Lagos Desk image reset!");
                                   }}
                                   className="px-2.5 py-1.5 bg-stone-200 hover:bg-stone-300 rounded-xl text-[9px] font-semibold text-stone-700 transition shrink-0"
                                 >
@@ -2670,7 +2552,7 @@ export default function AdminPortalModal({ isOpen, onClose, triggerToast, onCata
                                       try {
                                         const base = await convertFileToBase64(file);
                                         setContactInfo({ ...contactInfo, wingContactBgUrl: base });
-                                        triggerToast("Contact cover loaded!");
+                                        triggerToast("Contact Lagos Desk cover loaded!");
                                       } catch (err) {
                                         triggerToast("Error uploading image", "info");
                                       }
